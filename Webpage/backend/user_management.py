@@ -1,0 +1,296 @@
+## Przechowujemy tutaj endpointy powiązane z schematem user_management
+
+from flask import Blueprint, request, jsonify
+from backend import db
+from backend.models import User, UserAddress, AddressType
+from flask_jwt_extended import get_jwt_identity, jwt_required
+
+user_management_bp = Blueprint('user_management', __name__, url_prefix='/api/user_management')
+
+@user_management_bp.route('/register', methods=['POST'])
+def register():
+
+    """-------------------------------Tworzenie nowego użytkownika-------------------------------"""
+
+    try:
+        data = request.get_json()
+        
+        # Sprawdzenie czy mamy wszystkie wymagane pola
+        required_fields = ['login', 'password', 'first_name', 'last_name', 'email', 'phone_number']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+
+        # Sprawdzenie formatu email
+        if not User.validate_email(data['email']):
+            return jsonify({'error': 'Invalid email format'}), 400
+
+        # Sprawdzenie formatu numeru telefonu
+        if not User.validate_phone(data['phone_number']):
+            return jsonify({'error': 'Invalid phone number format'}), 400
+
+        # Sprawdzenie czy login, email lub numer telefonu są już w bazie danych
+        if User.query.filter_by(login=data['login']).first(): # automatycznie połaczone do modelu. Zapytanie do bazy na bazie modelu User
+            return jsonify({'error': 'Login already exists'}), 409
+        
+        if User.query.filter_by(email=data['email']).first():
+            return jsonify({'error': 'Email already exists'}), 409
+        
+        if User.query.filter_by(phone_number=data['phone_number']).first():
+            return jsonify({'error': 'Phone number already exists'}), 409
+        
+        # do zmiennej przypisujemy obiekt User z danymi z requesta
+        user = User(
+            login=data['login'],
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            email=data['email'],
+            phone_number=data['phone_number']
+        )
+        user.set_password(data['password']) # i hashujemy hasło
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'User created successfully',
+            'user': user.to_json()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+@user_management_bp.route('/change_password', methods=['POST'])
+@jwt_required()
+def change_password():
+
+    """-------------------------------Zmiana hasła użytkownika-------------------------------"""
+
+    # można dodać jeszce możliwośc zmiany pozostałych danych użytkownika, ale to już nie jest priorytetem
+    data = request.get_json()
+    current_user_id = get_jwt_identity()
+    user = User.query.filter_by(id=current_user_id).first()
+
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+ 
+    if not data.get('old_password') or not data.get('new_password'):
+        return jsonify({'error': 'Old password and new password are required'}), 400
+
+    if not user.check_password(data['old_password']):
+        return jsonify({'error': 'Invalid old password'}), 401
+
+    user.set_password(data['new_password'])
+    db.session.commit()
+
+    return jsonify({'message': 'Password changed successfully'}), 200
+
+
+@user_management_bp.route('/me', methods=['GET'])
+@jwt_required()
+def get_current_user():
+
+    """-------------------------------Pobranie danych aktualnego użytkownika-------------------------------"""
+
+    try:
+        current_user_id = get_jwt_identity()
+        user = User.query.get(current_user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        return jsonify(user.to_json()), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+
+@user_management_bp.route('/delete', methods=['DELETE'])
+@jwt_required()
+def delete_user():
+
+    """-------------------------------Usunięcie konta użytkownika przez użytkownika-------------------------------"""
+
+    try:
+
+        data = request.get_json()
+        current_user_id = get_jwt_identity()
+        user = User.query.filter_by(id=current_user_id).first()
+
+        if not user:
+            return jsonify({'error': 'User does not exist'}), 404
+        
+        if not data.get('password'):
+            return jsonify({'error': 'password is required'}), 400
+        
+        if not user.check_password(data['password']):
+            return jsonify({'error': 'Invalid password'}), 401
+
+        # Przechowujemy informacje o użytkowniku przed usunięciem
+        # aby móc zwrócić ją w odpowiedzi
+        user_info = {
+            'login': user.login
+        }
+        
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'User deleted successfully',
+            'deleted_user': user_info
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+
+@user_management_bp.route('/register_address', methods=['POST'])
+@jwt_required()
+def register_address():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+
+        required_fields = ['street_name', 'building_number', 'zip_code', 'city']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+
+        if not UserAddress.validate_zip_code(data['zip_code']): 
+            return jsonify({'error': 'Invalid zip code format'}), 400
+
+        if data.get('nip') and not UserAddress.validate_nip(data.get('nip')): # sprawdzamy czy nip w ogóle został podany i jak tak to go walidujemy
+            return jsonify({'error': 'Invalid NIP format'}), 400
+
+        type_str = data.get('type', 'shipping')  # default 'shipping', dodatkowe wyłapanie błedu aby ten się w ogóle wyświetlił
+        try:
+            address_type = AddressType(type_str)
+        except ValueError:
+            return jsonify({'error': f'Invalid address type: {type_str}'}), 400
+
+        # Create address instance
+        address = UserAddress(
+            user_id=current_user_id,
+            title=data.get('title'),
+            company_name=data.get('company_name'),
+            first_name=data.get('first_name'),
+            last_name=data.get('last_name'),
+            nip=data.get('nip'),
+            street_name=data['street_name'],
+            building_number=data['building_number'],
+            flat_number=data.get('flat_number'),
+            zip_code=data['zip_code'],
+            city=data['city'],
+            type=address_type.value # używamy .value aby uzyskać wartość enum
+        )
+
+        db.session.add(address)
+        db.session.commit()
+
+        return jsonify({'message': 'Address registered successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
+    
+
+@user_management_bp.route('/my_all_addresses', methods=['GET'])
+@jwt_required()
+def get_all_addresses():
+
+    """-------------------------------Pobranie wszystkich adresów użytkownika-------------------------------"""
+
+    try:
+        current_user_id = get_jwt_identity()
+        addresses = UserAddress.query.filter_by(user_id=current_user_id).all()
+
+        if not addresses:
+            return jsonify({'message': 'No addresses found'}), 404
+
+        return jsonify([address.to_json() for address in addresses]), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+    
+
+@user_management_bp.route('/delete_address', methods=['DELETE'])
+@jwt_required()
+def delete_address():
+
+    """-------------------------------Usunięcie adresu użytkownika-------------------------------"""
+
+    try:
+
+        data = request.get_json()
+        current_user_id = get_jwt_identity()
+        address = UserAddress.query.filter_by(id=data.get('id'), user_id=current_user_id).first() # po stronie frontend numer ID adresu musi być przekazany do przycisku x
+
+        if not address:
+            return jsonify({'error': 'Address does not exist'}), 404
+
+        db.session.delete(address)
+        db.session.commit()
+
+        return jsonify({'message': 'Address deleted successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
+    
+    
+###################################################### endpointy dla administaratora ###########################################################
+
+
+@user_management_bp.route('/delete/<int:user_id>', methods=['DELETE'])
+def delete_user_by_id(user_id):
+
+    """-------------------------------Usunięcie konta użytkownika przez administratora-------------------------------"""
+# trzeba tutaj dodać sprawdzenie czy użytkownik jest administratorem !!
+    try:
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Przechowujemy informacje o użytkowniku przed usunięciem
+        # aby móc zwrócić ją w odpowiedzi
+        user_info = {
+            'login': user.login,
+        }
+        
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'User deleted successfully',
+            'deleted_user': user_info
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Internal server error'}), 500
+    
+    
+@user_management_bp.route('/all_users', methods=['GET'])
+def get_all_users():
+
+    """-------------------------------Pobranie wszystkich użytkowników-------------------------------"""
+
+    try:
+        users = User.query.all()        
+        return jsonify([user.to_json() for user in users]), 200
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500

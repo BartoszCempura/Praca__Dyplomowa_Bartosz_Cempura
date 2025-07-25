@@ -1,0 +1,60 @@
+Tworze folder Backend
+w niem instaluje virtualne środowisko dla Flask:
+    python -m venv env
+Aktywacja virtualnego środowiska dla backend:
+    Webpage\backend\env\Scripts\activate.bat
+Wszystkie instalacje muszą zostać wykonane w środowisklu virtualnym:
+
+!!!_____________________________Ważne________________________________!!!
+
+    where pip
+    where python
+    wynik musi wyglądac tak"
+        (env) C:\Repozytorium Programy\Praca__Dyplomowa_Bartosz_Cempura\Webpage\backend>where python
+        C:\Repozytorium Programy\Praca__Dyplomowa_Bartosz_Cempura\Webpage\backend\env\Scripts\python.exe
+        C:\Users\cempu\AppData\Local\Microsoft\WindowsApps\python.exe"
+        cd webpage/backend (jak zacyznamy w C:\Repozytorium Programy\Praca__Dyplomowa_Bartosz_Cempura)
+        webpage\backend\env\Scripts\activate.bat
+
+!!!_____Zamykanie: Webpage\backend\env\Scripts\deactivate.bat________!!!
+
+    Instalacja Flask i jego biblioitek
+        pip install flask flask-jwt-extended flask-sqlalchemy Flask-CORS Flask-Mail pandas psycopg2-binary
+    Instalujemy serwery developerskie i produkcuyjne:
+        pip install gunicorn gevent
+    Sprawdzamy poprawnośc instalacji za pomocą:
+        pip list
+    Nastepnie zapisujemy dane o zainstalowanych wtycznkach i ich wersji do pliku (w celu odtworzenia instalacji na innym urządzeniu)
+        pip freeze > "../../Additional Files/requirements.txt" (dwa foldery wstecz)
+
+Dodajemy pliki do katalogu backend:
+    __init__.py - 
+    auth.py - 
+    main.py - 
+    models.py - 
+Dodajemy plik do Website:
+    start_backend.py - uruchamianie serwera backend dla aplikacji 
+
+Tworze folder Frontend
+    Instalacj React na scuffolding Vite (musze mieć wcześniej zainstalowane w systemie node.js)
+        cd.. (wracamy do Webpage)
+        npm create vite@latest frontend -- --template react
+        cd frontend
+        npm install
+    Instalacja Tailwind css wraz z Vite plugin oraz kolekcji klas daisyUI
+        npm install tailwindcss@latest @tailwindcss/vite@latest daisyui@latest
+
+    Następnie wykonujemy procedure konfiguracyjną zawartą pod tym adresem:
+        https://daisyui.com/docs/install/react/
+    Konfiguracja Vite + React + tailwind css umożliwa uruchomienie serwera dev za pomocą komendy:
+    
+        cd Webpage\frontend
+        npm run dev
+    
+    Wszystkie dodatki i nowe klasy powinny teraz działąć. Podkreślenie @plugin "daisyui"; jest błędem Visual Studio Code
+
+
+    Informacje o potencjalnych ulepszeniach:
+
+    - @auth_bp.route('/xyz', methods=['POST']) - zmiana danych konta użytkownika - narazie zostajemy przy zmianie hasła 
+
