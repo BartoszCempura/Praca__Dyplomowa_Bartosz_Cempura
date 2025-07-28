@@ -4,8 +4,11 @@ from flask import Blueprint, request, jsonify
 from backend import db
 from backend.models import User, UserAddress, AddressType
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from backend.utils import role_required
 
 user_management_bp = Blueprint('user_management', __name__, url_prefix='/api/user_management')
+
+## ###################################################################### Użytkownicy ######################################################################
 
 @user_management_bp.route('/register', methods=['POST'])
 def register():
@@ -150,7 +153,7 @@ def delete_user():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-
+## ###################################################################### Adresy dostawy ######################################################################
 
 @user_management_bp.route('/register_address', methods=['POST'])
 @jwt_required()
@@ -175,6 +178,11 @@ def register_address():
             address_type = AddressType(type_str)
         except ValueError:
             return jsonify({'error': f'Invalid address type: {type_str}'}), 400
+        
+        if address_type == AddressType.default:
+            if_default_check = UserAddress.query.filter_by(type='default', user_id=current_user_id).first()
+            if if_default_check:
+                return jsonify({'error': 'Default address already exists'}), 400
 
         # Create address instance
         address = UserAddress(
@@ -254,6 +262,8 @@ def delete_address():
 
 
 @user_management_bp.route('/delete/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+@role_required('admin')
 def delete_user_by_id(user_id):
 
     """-------------------------------Usunięcie konta użytkownika przez administratora-------------------------------"""
@@ -284,6 +294,8 @@ def delete_user_by_id(user_id):
     
     
 @user_management_bp.route('/all_users', methods=['GET'])
+@jwt_required()
+@role_required('admin')
 def get_all_users():
 
     """-------------------------------Pobranie wszystkich użytkowników-------------------------------"""

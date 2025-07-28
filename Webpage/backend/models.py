@@ -4,6 +4,14 @@ from datetime import datetime, timezone
 from backend import db
 import enum
 import re
+from sqlalchemy import CheckConstraint, func, Numeric
+
+"""____________________________________________________________________________________________________________________"""
+
+""" Modele dla api user_management
+    - User: model reprezentujący użytkownika
+    - UserAddress: model reprezentujący adres dostawy użytkownika
+    - AddressType: enum reprezentujący typ adresu"""
 
 class User(db.Model): # model reprezentujący użytkownika w bazie danych
     __tablename__ = 'users'
@@ -16,8 +24,9 @@ class User(db.Model): # model reprezentujący użytkownika w bazie danych
     last_name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False, unique=True)
     phone_number = db.Column(db.String(20), nullable=False, unique=True)
-    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    role = db.Column(db.String(50), nullable=False, default='user') # domyślnie każdy użytkownik jest zwykłym użytkownikiem
 
     def to_json(self): # metoda do konwersji obiektu użytkownika na słownik JSON
         return {
@@ -29,6 +38,7 @@ class User(db.Model): # model reprezentujący użytkownika w bazie danych
             "phone_number": self.phone_number,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "role": self.role
         }
     
 
@@ -117,4 +127,72 @@ class UserAddress(db.Model): # model reprezentujący adres dostawy użytkownika 
     def validate_zip_code(zip_code):
         pattern = r'^[0-9]{2}-[0-9]{3}$'
         return re.match(pattern, zip_code) is not None
+
+"""____________________________________________________________________________________________________________________"""
+
+"""Modele dla api catalog 
+    - Categories: model reprezentujący kategorię w bazie danych
+    - Attributes: model reprezentujący atrybut, cechy produktu"""
+
+class Categories(db.Model): # model reprezentujący kategorię w bazie danych
+    __tablename__ = 'categories'
+    __table_args__ = {'schema': 'catalog'}
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False, unique=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('catalog.categories.id'), nullable=True) # kategorie z null to kategorie główne ładowane podczas uruchomienia strony
+    # kategorie które mają parent_id to kategorie podrzędne i będą ładowane po najechaniu na przycisk kategorii głównej
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "parent_id": self.parent_id
+        }
+    
+class Attributes(db.Model): # model reprezentujący atrybut w bazie danych
+    __tablename__ = 'attributes'
+    __table_args__ = {'schema': 'catalog'}
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False, unique=True)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name
+        }
+
+class Products(db.Model): # model reprezentujący produkt w bazie danych
+    __tablename__ = 'products'
+    __table_args__ = (
+        CheckConstraint('quantity >= 0', name='check_quantity_non_negative'),
+        CheckConstraint('unit_price >= 0', name='check_unit_price_non_negative'),
+        {'schema': 'catalog'}
+    )
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('catalog.categories.id'), nullable=False)
+    name = db.Column(db.String(255), nullable=False, unique=True)
+    description = db.Column(db.Text, nullable=True)
+    image = db.Column(db.String(255), nullable=True)  # URL do zdjęcia produktu
+    quantity = db.Column(db.Integer, nullable=False, default=0)  # Ilość dostępna w magazynie
+    unit_price = db.Column(Numeric(10, 2), nullable=False) # cena ja jednostkę z pominięciem promocji. SQLAlchemy zamiast Decimal stosuje dla walut Numeric
+    # Numeric(10, 2) oznacza maksymalnie 10 cyfr, z czego 2 po przecinku
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "category_id": self.category_id,
+            "name": self.name,
+            "description": self.description,
+            "image": self.image,
+            "quantity": self.quantity,
+            "unit_price": self.unit_price,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
+
     

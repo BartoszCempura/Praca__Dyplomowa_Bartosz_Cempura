@@ -2,9 +2,30 @@
 
 from flask import Blueprint, request, jsonify
 from backend import db
+from functools import wraps
+from flask_jwt_extended import get_jwt_identity
+from backend.models import User
 
 utils_bp = Blueprint('utils', __name__, url_prefix='/api/utils')
+
+""" Endpoint do sprawdzenia stanu aplikacji - czy działa poprawnie """
 
 @utils_bp.route('/health', methods=['GET'])
 def health_check():
     return {'status': 'healthy'}, 200
+
+""" _____________________________________________________________________________________________________________________"""
+
+## Dekorator do sprawdzania roli użytkownika
+## Używany do zabezpieczenia endpointów, które powinny być dostępne tylko dla użytkowników o danej roli
+def role_required(required_role):
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            user_id = get_jwt_identity()
+            user = User.query.get(user_id)
+            if user.role != required_role:
+                return jsonify({"error": "Forbidden"}), 403
+            return fn(*args, **kwargs)
+        return decorator
+    return wrapper

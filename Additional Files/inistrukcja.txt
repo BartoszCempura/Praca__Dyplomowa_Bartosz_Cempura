@@ -54,7 +54,3 @@ Tworze folder Frontend
     Wszystkie dodatki i nowe klasy powinny teraz działąć. Podkreślenie @plugin "daisyui"; jest błędem Visual Studio Code
 
 
-    Informacje o potencjalnych ulepszeniach:
-
-    - @auth_bp.route('/xyz', methods=['POST']) - zmiana danych konta użytkownika - narazie zostajemy przy zmianie hasła 
-
