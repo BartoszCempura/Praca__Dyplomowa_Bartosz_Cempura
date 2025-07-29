@@ -142,12 +142,14 @@ class Categories(db.Model): # model reprezentujący kategorię w bazie danych
     name = db.Column(db.String(255), nullable=False, unique=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('catalog.categories.id'), nullable=True) # kategorie z null to kategorie główne ładowane podczas uruchomienia strony
     # kategorie które mają parent_id to kategorie podrzędne i będą ładowane po najechaniu na przycisk kategorii głównej
+    isused = db.Column(db.Boolean, default=True) # czy kategoria jest używana w produktach
 
     def to_json(self):
         return {
             "id": self.id,
             "name": self.name,
-            "parent_id": self.parent_id
+            "parent_id": self.parent_id,
+            "isused": self.isused  # dla tego modelu musze przekazywać wartośc json jako true albo false
         }
     
 class Attributes(db.Model): # model reprezentujący atrybut w bazie danych
