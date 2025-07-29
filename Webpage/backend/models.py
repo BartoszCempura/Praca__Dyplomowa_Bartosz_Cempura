@@ -98,7 +98,8 @@ class UserAddress(db.Model): # model reprezentujący adres dostawy użytkownika 
 
     # Rejestracja relacji dla SQLAlchemy
     # Umożliwia dostęp do adresów użytkownika poprzez atrybut 'addresses'
-    user = db.relationship('User', backref=db.backref('addresses', lazy=True, cascade='all, delete-orphan'))
+    ## user = db.relationship('User', backref=db.backref('addresses', lazy=True, cascade='all, delete-orphan')) - pozwala na bardziej obiektowe podejście
+    # umożliwia dostęp do użytkownika poprzez atrybut 'user' np user.adresses 
     
     def to_json(self): # metoda do konwersji obiektu adresu na słownik JSON
         return {
@@ -152,6 +153,21 @@ class Categories(db.Model): # model reprezentujący kategorię w bazie danych
             "isused": self.isused  # dla tego modelu musze przekazywać wartośc json jako true albo false
         }
     
+
+    @staticmethod
+    def validate_category_id(category_id):
+        category = Categories.query.get(category_id)
+
+        if not category: # jeśli kategoria nie istnieje
+            return False  
+
+        if category.parent_id is None or category.isused is False:  # jeśli kategoria jest główna lub nie jest używana
+            return False
+
+        return True  
+
+
+    
 class Attributes(db.Model): # model reprezentujący atrybut w bazie danych
     __tablename__ = 'attributes'
     __table_args__ = {'schema': 'catalog'}
@@ -176,18 +192,21 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     category_id = db.Column(db.Integer, db.ForeignKey('catalog.categories.id'), nullable=False)
     name = db.Column(db.String(255), nullable=False, unique=True)
-    description = db.Column(db.Text, nullable=True)
-    image = db.Column(db.String(255), nullable=True)  # URL do zdjęcia produktu
+    description = db.Column(db.Text, nullable=False)
+    image = db.Column(db.String(255), nullable=False)  # URL do zdjęcia produktu
     quantity = db.Column(db.Integer, nullable=False, default=0)  # Ilość dostępna w magazynie
-    unit_price = db.Column(Numeric(10, 2), nullable=False) # cena ja jednostkę z pominięciem promocji. SQLAlchemy zamiast Decimal stosuje dla walut Numeric
+    unit_price = db.Column(Numeric(10, 2), nullable=False, default=0) # cena ja jednostkę z pominięciem promocji. SQLAlchemy zamiast Decimal stosuje dla walut Numeric
     # Numeric(10, 2) oznacza maksymalnie 10 cyfr, z czego 2 po przecinku
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     def to_json(self):
+
+        category = Categories.query.get(self.category_id)
+
         return {
             "id": self.id,
-            "category_id": self.category_id,
+            "category": category.to_json() if category else None,
             "name": self.name,
             "description": self.description,
             "image": self.image,
