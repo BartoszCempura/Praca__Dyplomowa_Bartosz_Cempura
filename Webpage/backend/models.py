@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 from backend import db
 import enum
 import re
-from sqlalchemy import CheckConstraint, func, Numeric
+from sqlalchemy import CheckConstraint, UniqueConstraint, func, Numeric
+from slugify import slugify
 
 """____________________________________________________________________________________________________________________"""
 
@@ -128,12 +129,16 @@ class UserAddress(db.Model): # model reprezentujący adres dostawy użytkownika 
     def validate_zip_code(zip_code):
         pattern = r'^[0-9]{2}-[0-9]{3}$'
         return re.match(pattern, zip_code) is not None
+    
 
 """____________________________________________________________________________________________________________________"""
 
 """Modele dla api catalog 
     - Categories: model reprezentujący kategorię w bazie danych
-    - Attributes: model reprezentujący atrybut, cechy produktu"""
+    - Attributes: model reprezentujący atrybut, cechy produktu
+    - Products: model reprezentujący produkt w bazie danych
+    - ProductAttributes: model reprezentujący połączenie atrybut i produktu w bazie danych"""
+
 
 class Categories(db.Model): # model reprezentujący kategorię w bazie danych
     __tablename__ = 'categories'
@@ -143,17 +148,24 @@ class Categories(db.Model): # model reprezentujący kategorię w bazie danych
     name = db.Column(db.String(255), nullable=False, unique=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('catalog.categories.id'), nullable=True) # kategorie z null to kategorie główne ładowane podczas uruchomienia strony
     # kategorie które mają parent_id to kategorie podrzędne i będą ładowane po najechaniu na przycisk kategorii głównej
+    slug = db.Column(db.String(255), unique=True, nullable=False) # unikalny identyfikator kategorii, używany w URL
     isused = db.Column(db.Boolean, default=True) # czy kategoria jest używana w produktach
+
+    def __init__(self, name, parent_id=None, isused=True): #pozwala na tworzenie instancji kategorii z nazwą, opcjonalnym parent_id i isuused z zadeklarowanymi wartościami za wczasu. Dodatkowo slugify name do unikalnego identyfikatora
+        self.name = name
+        self.slug = slugify(name)
+        self.parent_id = parent_id
+        self.isused = isused
 
     def to_json(self):
         return {
             "id": self.id,
-            "name": self.name,
+            "name": self.name,       
             "parent_id": self.parent_id,
-            "isused": self.isused  # dla tego modelu musze przekazywać wartośc json jako true albo false
+            "slug": self.slug,
+            "isused": self.isused  # jak chce zmienić musze przekazać wartość false
         }
     
-
     @staticmethod
     def validate_category_id(category_id):
         category = Categories.query.get(category_id)
@@ -180,6 +192,8 @@ class Attributes(db.Model): # model reprezentujący atrybut w bazie danych
             "id": self.id,
             "name": self.name
         }
+    
+
 
 class Products(db.Model): # model reprezentujący produkt w bazie danych
     __tablename__ = 'products'
@@ -202,11 +216,12 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
 
     def to_json(self):
 
-        category = Categories.query.get(self.category_id)
+        ##category = Categories.query.get(self.category_id) - to miło służyć pokazywaniu nazwy kategorii zamiast jej id
 
         return {
             "id": self.id,
-            "category": category.to_json() if category else None,
+           ## "category": category.to_json() if category else None,
+            "category_id": self.category_id,
             "name": self.name,
             "description": self.description,
             "image": self.image,
@@ -216,4 +231,24 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
 
-    
+
+
+class ProductAttributes(db.Model): # model reprezentujący atrybut w bazie danych
+    __tablename__ = 'product_attributes'
+    __table_args__ = (
+        UniqueConstraint('product_id', 'attribute_id', name='product_attributes_product_id_attribute_id_unique'),
+        {'schema': 'catalog'}
+    )
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
+    attribute_id = db.Column(db.Integer, db.ForeignKey('catalog.attributes.id', ondelete='CASCADE'), nullable=False)
+    value = db.Column(db.String(255), nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "product_id": self.product_id,
+            "attribute_id": self.attribute_id,
+            "value": self.value
+        }

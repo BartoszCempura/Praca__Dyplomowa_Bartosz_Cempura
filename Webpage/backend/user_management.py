@@ -180,7 +180,10 @@ def register_address():
             return jsonify({'error': f'Invalid address type: {type_str}'}), 400
         
         if address_type == AddressType.default:
-            if_default_check = UserAddress.query.filter_by(type='default', user_id=current_user_id).first()
+            if_default_check = UserAddress.query.filter(
+                UserAddress.type == 'default',
+                UserAddress.user_id == current_user_id
+            ).first()
             if if_default_check:
                 return jsonify({'error': 'Default address already exists'}), 400
 
@@ -242,7 +245,11 @@ def delete_address():
 
         data = request.get_json()
         current_user_id = get_jwt_identity()
-        address = UserAddress.query.filter_by(id=data.get('id'), user_id=current_user_id).first() # po stronie frontend numer ID adresu musi być przekazany do przycisku x
+
+        address = UserAddress.query.filter(
+            UserAddress.id == data.get('id'),
+            UserAddress.user_id == current_user_id
+        ).first() # po stronie frontend numer ID adresu musi być przekazany do przycisku x
 
         if not address:
             return jsonify({'error': 'Address does not exist'}), 404

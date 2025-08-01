@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
 from backend import db
-from backend.models import Categories, Attributes, Products
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from backend.models import Categories, Attributes, Products, ProductAttributes
+from flask_jwt_extended import jwt_required
 from backend.utils import role_required
+from sqlalchemy import func
 
 catalog_bp = Blueprint('catalog', __name__, url_prefix='/api/catalog')
+
 
 ## ###################################################################### Kategorie ######################################################################
 
@@ -118,7 +120,7 @@ def modify_category(category_id):
     """-------------------------------Modyfikacja kategorii-------------------------------"""
 
     try:
-
+        # zastosowanie w przypadkach gdy użytkonik chce przypisac kategorii parent_id albo zmienić jej status na nieużywaną
         category = Categories.query.get(category_id)
 
         if not category:
@@ -144,6 +146,7 @@ def modify_category(category_id):
 
 
 ## ###################################################################### Atrybuty ######################################################################
+
 
 @catalog_bp.route('/add_atribute', methods=['POST'])
 @jwt_required()
@@ -208,7 +211,7 @@ def delete_attribute(attribute_id):
 
 
 @catalog_bp.route('/all_attributes', methods=['GET'])
-@jwt_required()
+@jwt_required() ## ??? potrzebne??
 @role_required('admin')
 def get_all_attributes():
 
@@ -216,8 +219,10 @@ def get_all_attributes():
 
     attributes = Attributes.query.all()
     return jsonify([attribute.to_json() for attribute in attributes])
+
     
 ## ###################################################################### Produkty ######################################################################
+
 
 @catalog_bp.route('/add_product', methods=['POST'])
 @jwt_required()
@@ -294,3 +299,137 @@ def delete_product(product_id):
         db.session.rollback()
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+    
+
+@catalog_bp.route('/all_products', methods=['GET'])
+@jwt_required()
+@role_required('admin')
+def get_all_products():
+
+    """-----------------------------Pobranie wszystkich produktów-------------------------------"""
+
+    products = Products.query.all()
+    return jsonify([product.to_json() for product in products])
+
+
+@catalog_bp.route('/products/<string:category_slug>', methods=['GET'])
+def get_products_by_category_slug(category_slug):
+
+    """-------------------------------Pobieranie produktów po slug kategorii z paginacją-------------------------------"""
+
+    try:
+        # endpoint używany do wyświelania produktów w danej kategorii na stronie głównej
+        # slug jest unikalnym identyfikatorem kategorii, który jest używany w URL
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('limit', 20, type=int)
+
+        category = Categories.query.filter_by(slug=category_slug, isused=True).first()
+        if not category:
+            return jsonify({"error": "Category not found"}), 404
+
+        pagination = Products.query.filter_by(category_id=category.id).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+
+        return jsonify({
+            "category": category.to_json(),
+            "products": [product.to_json() for product in pagination.items],
+            "total": pagination.total,
+            "page": pagination.page,
+            "pages": pagination.pages,
+            "has_next": pagination.has_next,
+            "has_prev": pagination.has_prev,
+            "next_page": pagination.next_num if pagination.has_next else None,
+            "prev_page": pagination.prev_num if pagination.has_prev else None
+        }), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+@catalog_bp.route('/modify_product/<int:product_id>', methods=['PUT'])
+@jwt_required()
+@role_required('admin')
+def modify_product(product_id):
+
+    """-------------------------------Modyfikacja produktu-------------------------------"""
+
+    try:
+
+        product = Products.query.get(product_id)
+
+        if not product:
+            return jsonify({"error": "Product not found"}), 404
+
+        data = request.get_json()
+
+        category = data.get('category_id') # jeżeli podano id kategorii to sprawdzamy czy jest poprawne
+
+        if category is not None:
+            if not Categories.validate_category_id(category):
+                return jsonify({"error": "Invalid category"}), 400
+            product.category_id = category
+        
+        new_name = data.get('name') # jeżeli podano nazwe to sprawdzamy czy jest unikalna
+        
+        if new_name and new_name != product.name:
+            if Products.query.filter_by(name=new_name).first():
+                return jsonify({"error": "Product name must be unique"}), 400
+            product.name = new_name
+
+        product.description = data.get('description', product.description)
+        product.image = data.get('image', product.image)
+        product.quantity = data.get('quantity', product.quantity)
+        product.unit_price = data.get('unit_price', product.unit_price)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Product modified successfully",
+            "product": product.to_json()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+@catalog_bp.route('/search_products', methods=['GET'])
+def search_products():
+
+    """-------------------------------Wyszukiwanie produktów-------------------------------"""
+
+    try:
+
+        search_value = request.args.get('q', '', type=str)
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('limit', 20, type=int)
+
+        if search_value:
+            results = Products.query.filter(func.lower(Products.name).contains(search_value.lower())) # pobieramy nazwy produktów, zmniejszmay rozmiar liter i to samo robimy dla wyszukiwanego ciągu znaków
+            # następnie sprawdzamy czy nazwa produktu zawiera wyszukiwany ciąg znaków
+
+        pagination = results.paginate(page=page, per_page=per_page, error_out=False)
+        products = pagination.items
+
+        return jsonify({
+            "products": [product.to_json() for product in products],
+            "total": pagination.total,
+            "page": pagination.page,
+            "pages": pagination.pages,
+            "has_next": pagination.has_next,
+            "has_prev": pagination.has_prev,
+            "next_page": pagination.next_num if pagination.has_next else None,
+            "prev_page": pagination.prev_num if pagination.has_prev else None
+        }), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+## ###################################################################### Produkty ######################################################################
+
+

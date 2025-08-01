@@ -19,7 +19,7 @@ Wszystkie instalacje muszą zostać wykonane w środowisklu virtualnym:
 !!!_____Zamykanie: Webpage\backend\env\Scripts\deactivate.bat________!!!
 
     Instalacja Flask i jego biblioitek
-        pip install flask flask-jwt-extended flask-sqlalchemy Flask-CORS Flask-Mail pandas psycopg2-binary
+        pip install flask flask-jwt-extended flask-sqlalchemy Flask-CORS Flask-Mail pandas psycopg2-binary python-slugify
     Instalujemy serwery developerskie i produkcuyjne:
         pip install gunicorn gevent
     Sprawdzamy poprawnośc instalacji za pomocą:
