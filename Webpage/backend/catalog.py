@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from backend import db
-from backend.models import Categories, Attributes, Products, ProductAttributes
+from backend.models import Categories, Attributes, Products, ProductAttributes, AttributeWeights, ProductAccessories, Promotions
 from flask_jwt_extended import jwt_required
 from backend.utils import role_required
 from sqlalchemy import func
@@ -430,6 +430,566 @@ def search_products():
         return jsonify({'error': 'Internal server error'}), 500
 
 
-## ###################################################################### Produkty ######################################################################
+## ###################################################################### Atrybuty produktów ######################################################################
 
 
+@catalog_bp.route('/connect_attribute_to_product', methods=['POST'])
+@jwt_required()
+@role_required('admin')
+def connect_attribute_to_product():
+
+    """-------------------------------Dodanie nowego atrybutu dla produktu-------------------------------"""
+
+    try:
+
+        data = request.get_json()
+
+        required_fields = ['product_id', 'attribute_id', 'value']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+
+        if not Products.query.get(data.get('product_id')):
+            return jsonify({"error": "Invalid product"}), 400
+
+        if not Attributes.query.get(data.get('attribute_id')):
+            return jsonify({"error": "Invalid attribute"}), 400
+        
+        existing = ProductAttributes.query.filter(
+            ProductAttributes.product_id==data.get('product_id'),
+            ProductAttributes.attribute_id==data.get('attribute_id')
+        ).first()
+
+        if existing:
+            return jsonify({'error': 'Attribute already connected to product'}), 400
+
+        new_attribute = ProductAttributes(
+            product_id=data.get('product_id'),
+            attribute_id=data.get('attribute_id'),
+            value=data.get('value')
+        )
+        db.session.add(new_attribute)
+        db.session.commit()
+
+        return jsonify({'message': 'Product attribute created successfully',
+                        'attribute': new_attribute.to_json()
+                        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+
+@catalog_bp.route('/get_all_attributes_of_product/<int:product_id>', methods=['GET'])
+def get_all_attributes_of_product(product_id):
+
+    """-------------------------------Pobranie wszystkich atrybutów produktu (tylko name + value)-------------------------------"""
+
+    try:
+        # endpoint używany do pobierania atrybutów produktu na stronie produktu
+        # zwraca tylko nazwy atrybutów i ich wartości
+        product = Products.query.get(product_id)
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+
+        results = db.session.query(
+            Attributes.name,
+            ProductAttributes.value
+        ).join(Attributes, ProductAttributes.attribute_id == Attributes.id
+        ).filter(ProductAttributes.product_id == product_id).all() #łączymy dwie tabele: ProductAttributes i Attributes, aby pobrać nazwy atrybutów i ich wartości dla danego produktu
+
+        return jsonify([{'name': name, 'value': value} for name, value in results]), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+    
+@catalog_bp.route('/get_full_attribute_and_product_connection_info/<int:product_id>', methods=['GET'])
+@jwt_required()
+@role_required('admin')
+def get_full_attribute_and_product_connection_info(product_id):
+
+    """-------------------------------Pobranie wszystkich atrybutów produktu (tylko name + value)-------------------------------"""
+
+    try:
+        ## dla panelu administratora gdzie będą potrzebne wszystkie informacje o połączeniu atrybutu z produktem
+        product = Products.query.get(product_id)
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+        
+        results = ProductAttributes.query.filter_by(product_id=product_id).all()
+
+        return jsonify([result.to_json() for result in results]), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+    
+
+@catalog_bp.route('/delete_attribute_product_connection/<int:connection_id>', methods=['GET'])
+@jwt_required()
+@role_required('admin')
+def delete_attribute_product_connection(connection_id):
+
+    """-------------------------------Usunięcie połączenia atrybutu z produktem-------------------------------"""
+
+    try:
+
+        ## powinien być używany z ADMIN get_full_attribute_and_product_connection_info
+
+        connection = ProductAttributes.query.get(connection_id)
+
+        if not connection:
+            return jsonify({'error': 'There is no such connection'}), 404
+
+        db.session.delete(connection)
+        db.session.commit()
+
+        return jsonify({'message': 'Connection deleted successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+    
+    
+@catalog_bp.route('/modify_connection_value/<int:ProductAttributes_id>', methods=['PUT'])
+@jwt_required()
+@role_required('admin')
+def modify_connection_value(ProductAttributes_id):
+
+    """-------------------------------Modyfikacja wartości połączenia atrybutu z produktem-------------------------------"""  
+
+    try:
+
+        data = request.get_json()
+
+        connection = ProductAttributes.query.filter(
+            ProductAttributes.id == ProductAttributes_id
+        ).first()
+
+        if not connection:
+            return jsonify({'error': 'There is no such connection'}), 400
+
+        connection.value = data.get('value', connection.value)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Product aattribute value modified successfully",
+            "product": connection.to_json()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+## ###################################################################### wagi atrybutów ######################################################################
+
+
+@catalog_bp.route('/add_attribute_weight_for_category', methods=['POST'])
+@jwt_required()
+@role_required('admin')
+def add_attribute_weight_for_category():
+
+    try:
+        data = request.get_json()
+
+        required_fields = ['attribute_id', 'category_id', 'weight']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+
+        if not Attributes.query.get(data.get('attribute_id')):
+            return jsonify({"error": "Invalid attribute"}), 400
+
+        if not Categories.validate_category_id(data.get('category_id')):
+            return jsonify({"error": "Invalid category"}), 400
+        
+        existing_entry = AttributeWeights.query.filter(
+            AttributeWeights.attribute_id == data.get('attribute_id'),
+            AttributeWeights.category_id == data.get('category_id')
+        ).first()
+
+        if existing_entry:
+            return jsonify({'error': 'This attribute is already assigned to the given category'}), 400
+
+
+        set_up_weight = AttributeWeights(
+            attribute_id=data.get('attribute_id'),
+            category_id=data.get('category_id'),
+            weight=data.get('weight')
+        )
+        db.session.add(set_up_weight)
+        db.session.commit()
+
+
+        return jsonify({
+            "message": "Category weight for product set succesfully",
+            "product": set_up_weight.to_json()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+    
+
+@catalog_bp.route('/delete_attribute_category_weight/<int:AttributeWeights_id>', methods=['DELETE'])
+@jwt_required()
+@role_required('admin')
+def delete_attribute_category_weight(AttributeWeights_id):
+
+    """-------------------------------Usunięcie wagi dla kategorii-------------------------------"""
+
+    try:
+
+        attribute_weight = AttributeWeights.query.get(AttributeWeights_id)
+
+        if not attribute_weight:
+            return jsonify({'error': 'There is no such attribute weight'}), 404
+
+        db.session.delete(attribute_weight)
+        db.session.commit()
+
+        return jsonify({'message': 'Attribute weight deleted successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+@catalog_bp.route('/modify_attribute_weight/<int:AttributeWeights_id>', methods=['PUT'])
+@jwt_required()
+@role_required('admin')
+def modify_attribute_weight(AttributeWeights_id):
+
+    """-------------------------------Modyfikacja wartości połączenia atrybutu z produktem-------------------------------"""  
+
+    try:
+
+        data = request.get_json()
+
+        attribute_weight = AttributeWeights.query.get(AttributeWeights_id)
+
+        if not attribute_weight:
+            return jsonify({'error': 'There is no such attribute weight'}), 404
+
+        attribute_weight.weight = data.get('weight', attribute_weight.weight)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Product attribute value modified successfully",
+            "product": attribute_weight.to_json()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+    
+@catalog_bp.route('/get_all_attribute_weights_for_category/<int:category_id>', methods=['GET'])
+@jwt_required()
+@role_required('admin')
+def get_attribute_weights_for_category(category_id):
+
+    """-------------------------------Zwraca wszystkie atrybuty dla wybranej kategorii-------------------------------"""  
+
+    try:
+
+        if not Categories.validate_category_id(category_id):
+            return jsonify({"error": "Invalid category"}), 400
+
+        results = AttributeWeights.query.filter_by(category_id=category_id).all()
+
+        if not results:
+            return jsonify({'error': 'There are no attribute weights for this category'}), 404
+
+        return jsonify([result.to_json() for result in results]), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+## ###################################################################### Akcesoria dla produktu ######################################################################
+
+
+@catalog_bp.route('/add_product_accessory_relation', methods=['POST'])
+@jwt_required()
+@role_required('admin')
+def add_product_accessory_relation():
+
+    """-------------------------------Dodawanie relacji między akcesorium a produktem-------------------------------"""
+
+    try:
+
+        data = request.get_json()
+
+        required_fields = ['product_id', 'accessory_product_id', 'weight']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+
+        if not Products.query.get(data.get('product_id')):
+            return jsonify({"error": "Invalid product"}), 400
+
+        if not Products.query.get(data.get('accessory_product_id')):
+            return jsonify({"error": "Invalid product"}), 400
+        
+        existing_entry = ProductAccessories.query.filter(
+            ProductAccessories.product_id == data.get('product_id'),
+            ProductAccessories.accessory_product_id == data.get('accessory_product_id')
+        ).first()
+
+        if existing_entry:
+            return jsonify({'error': 'This attribute is already assigned to the given category'}), 400
+
+
+        set_up_accessory = ProductAccessories(
+            product_id=data.get('product_id'),
+            accessory_product_id=data.get('accessory_product_id'),
+            weight=data.get('weight')
+        )
+        db.session.add(set_up_accessory)
+        db.session.commit()
+
+
+        return jsonify({
+            "message": "Accessory for product set succcess",
+            "product": set_up_accessory.to_json()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+    
+
+@catalog_bp.route('/delete_product_accessory_relation/<int:relation_id>', methods=['DELETE'])
+@jwt_required()
+@role_required('admin')
+def delete_product_accessory_relation(relation_id):
+
+    """-------------------------------Usunięcie relacji akcesorium dla produktu-------------------------------"""
+
+
+    try:
+
+        accessory_relation = ProductAccessories.query.get(relation_id)
+
+        if not accessory_relation:
+            return jsonify({'error': 'There is no such accessory relation'}), 404
+
+        db.session.delete(accessory_relation)
+        db.session.commit()
+
+        return jsonify({'message': 'Accessory relation deleted successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+@catalog_bp.route('/modify_relation_weight/<int:relation_id>', methods=['PUT'])
+@jwt_required()
+@role_required('admin')
+def modify_relation_weight(relation_id):
+
+    """-------------------------------Modyfikacja wartości wagi dla relacji akcesorium produkt-------------------------------"""  
+
+    try:
+
+        data = request.get_json()
+
+        relation_weight = ProductAccessories.query.get(relation_id)
+
+        if not relation_weight:
+            return jsonify({'error': 'There is no such relation'}), 404
+
+        relation_weight.weight = data.get('weight', relation_weight.weight)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Product aattribute value modified successfully",
+            "product": relation_weight.to_json()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+    
+@catalog_bp.route('/get_all_accessorys_for_product/<int:product_id>', methods=['GET'])
+@jwt_required()
+@role_required('admin')
+def get_all_accessorys_for_product(product_id):
+
+    """-------------------------------Zwraca wszystkie akcesoria w relacji z produktem-------------------------------"""  
+
+    try:
+
+        if not Products.query.get(product_id):
+            return jsonify({"error": "Invalid product"}), 400
+
+        results = ProductAccessories.query.filter_by(product_id=product_id).all()
+
+        if not results:
+            return jsonify({'error': 'There are no accessorys for this product'}), 404
+
+        return jsonify([result.to_json() for result in results]), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+
+## ###################################################################### Promocje ######################################################################
+
+
+@catalog_bp.route('/add_promotion', methods=['POST'])
+@jwt_required()
+@role_required('admin')
+def add_promotion():
+
+    """-------------------------------Dodawanie promocji-------------------------------"""
+
+    try:
+
+        data = request.get_json()
+
+        required_fields = ['name', 'discount_percent', 'start_date', 'end_date']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+
+        if Promotions.query.filter_by(name=data.get('name')).first():
+            return jsonify({"error": "A promotion with this name already exists"}), 409
+
+        if not Promotions.validate_discount(data.get('discount_percent')):
+            return jsonify({"error": "Discount needs to be bigger than 0%"}), 400
+
+        if not Promotions.validate_promotion_live(data.get('start_date'), data.get('end_date')):
+            return jsonify({"error": "The end date must be later than the start date"})
+
+        set_up_promotion = Promotions(
+            name=data.get('name'),
+            discount_percent=data.get('discount_percent'),
+            start_date=data.get('start_date'),
+            end_date=data.get('end_date')
+        )
+        db.session.add(set_up_promotion)
+        db.session.commit()
+
+
+        return jsonify({
+            "message": "Adding Promotion successsfull",
+            "product": set_up_promotion.to_json()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+    
+## not yet done
+@catalog_bp.route('/delete_promotion/<int:promotion_id>', methods=['DELETE'])
+@jwt_required()
+@role_required('admin')
+def delete_promotion(promotion_id):
+
+    """-------------------------------Usunięcie danej promocji-------------------------------"""
+
+
+    try:
+
+        accessory_relation = ProductAccessories.query.get(relation_id)
+
+        if not accessory_relation:
+            return jsonify({'error': 'There is no such accessory relation'}), 404
+
+        db.session.delete(accessory_relation)
+        db.session.commit()
+
+        return jsonify({'message': 'Accessory relation deleted successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+@catalog_bp.route('/modify_promotion/<int:promotion_id>', methods=['PUT'])
+@jwt_required()
+@role_required('admin')
+def modify_promotion(promotion_id):
+
+    """-------------------------------Modyfikacja wartości wagi dla relacji akcesorium produkt-------------------------------"""  
+
+    try:
+
+        data = request.get_json()
+
+        relation_weight = ProductAccessories.query.get(relation_id)
+
+        if not relation_weight:
+            return jsonify({'error': 'There is no such relation'}), 404
+
+        relation_weight.weight = data.get('weight', relation_weight.weight)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Product aattribute value modified successfully",
+            "product": relation_weight.to_json()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+    
+@catalog_bp.route('/get_all_promotions/<int:promotion_id>', methods=['GET'])
+@jwt_required()
+@role_required('admin')
+def get_all_promotions(promotion_id):
+
+    """-------------------------------Zwraca wszystkie akcesoria w relacji z produktem-------------------------------"""  
+
+    try:
+
+        if not Products.query.get(product_id):
+            return jsonify({"error": "Invalid product"}), 400
+
+        results = ProductAccessories.query.filter_by(product_id=product_id).all()
+
+        if not results:
+            return jsonify({'error': 'There are no accessorys for this product'}), 404
+
+        return jsonify([result.to_json() for result in results]), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500

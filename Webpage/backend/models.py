@@ -252,3 +252,86 @@ class ProductAttributes(db.Model): # model reprezentujący atrybut w bazie danyc
             "attribute_id": self.attribute_id,
             "value": self.value
         }
+
+
+
+class AttributeWeights(db.Model):
+    __tablename__ = 'attribute_weights'
+    __table_args__ = (
+        UniqueConstraint('category_id', 'attribute_id', name='attribute_weights_category_id_attribute_id_unique'),
+        {'schema': 'catalog'}
+    )
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    attribute_id = db.Column(db.Integer, db.ForeignKey('catalog.attributes.id', ondelete='CASCADE'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('catalog.categories.id', ondelete='CASCADE'), nullable=False)
+    weight = db.Column(Numeric(3, 2), nullable=False, default=1.00)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "attribute_id": self.attribute_id,
+            "category_id": self.category_id,          
+            "weight": self.weight
+        }
+    
+class ProductAccessories(db.Model):
+    __tablename__ = 'product_accessories'
+    __table_args__ = (
+        UniqueConstraint('product_id', 'accessory_product_id', name='product_accessories_product_id_accessory_product_id_unique'),
+        {'schema': 'catalog'}
+    )
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
+    accessory_product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
+    weight = db.Column(Numeric(3, 2), nullable=False, default=1.00)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "product_id": self.product_id,
+            "accessory_product_id": self.accessory_product_id,          
+            "weight": self.weight
+        }
+    
+## dodaj check constraint dla wcześniejszych modeli co kozystają z metod statycznych
+class Promotions(db.Model):
+    __tablename__ = 'promotions'
+    __table_args__ = (
+        CheckConstraint('discount_percent > 0 and discount_percent <= 100', name='promotions_discount_percent_check'),
+        CheckConstraint('start_date < end_date', name='promotions_start_before_end'),
+        {'schema': 'catalog'}
+    )
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    discount_percent = db.Column(Numeric(5, 2), nullable=False)
+    start_date = db.Column(db.DateTime(timezone=True), nullable=False)
+    end_date = db.Column(db.DateTime(timezone=True), nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "discount_percent": float(self.discount_percent), ## avoid json serialization
+            "start_date": self.start_date,
+            "end_date": self.end_date
+        }
+
+    @staticmethod
+    def validate_discount(discount_percent):
+        try:
+            value = float(discount_percent) # zabespieczenie przed wprowadzeniem string z json, parsowanie na float
+            return 0 < value <= 100
+        except (ValueError, TypeError):
+            return False
+
+    @staticmethod
+    def validate_promotion_live(start_date, end_date):
+        try:
+            start = datetime.fromisoformat(start_date)  # zabespieczenie przed wprowadzeniem string z json, parsowanie na datetime
+            end = datetime.fromisoformat(end_date)
+            return start < end
+        except Exception:
+            return False
