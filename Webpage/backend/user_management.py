@@ -313,3 +313,5 @@ def get_all_users():
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+    
+## trzeba dodać endpoint dla admina pozwalający na nadawanie admina innym użytkownikom, albo inny statuskonta dla innych zadań np dodawania produktów itp

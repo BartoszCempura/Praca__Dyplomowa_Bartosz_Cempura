@@ -134,10 +134,15 @@ class UserAddress(db.Model): # model reprezentujący adres dostawy użytkownika 
 """____________________________________________________________________________________________________________________"""
 
 """Modele dla api catalog 
-    - Categories: model reprezentujący kategorię w bazie danych
-    - Attributes: model reprezentujący atrybut, cechy produktu
+    - Categories: model reprezentujący kategorię produktu w bazie danych
+    - Attributes: model reprezentujący atrybuty i cechy produktu
     - Products: model reprezentujący produkt w bazie danych
-    - ProductAttributes: model reprezentujący połączenie atrybut i produktu w bazie danych"""
+    - ProductAttributes: model reprezentujący połączenie atrybut i produktu w bazie danych
+    - AttributeWeights: model reprezentujący wagę atrydutu dla danego produktu 
+    - ProductAccessories: model reprezentujący przypisanie produktu z kategorii akcesoriuim do produktu i propozycje sklepu
+    - Promotions: model reprezentujący ofertę promocyjną 
+    - ProductPromotions: model reprezentujący tabelę słownikową łączącą produkty z promocją
+    """
 
 
 class Categories(db.Model): # model reprezentujący kategorię w bazie danych
@@ -335,3 +340,20 @@ class Promotions(db.Model):
             return start < end
         except Exception:
             return False
+        
+class ProductPromotions(db.Model):
+    __tablename__ = 'product_promotions'
+    __table_args__ = (
+        db.PrimaryKeyConstraint('product_id', 'promotion_id'),
+        {'schema': 'catalog'}
+    )
+
+    product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
+    promotion_id = db.Column(db.Integer, db.ForeignKey('catalog.promotions.id', ondelete='CASCADE'), nullable=False)
+
+
+    def to_json(self):
+        return {
+            "product_id": self.product_id,
+            "promotion_id": self.promotion_id 
+        }

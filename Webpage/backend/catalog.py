@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from backend import db
-from backend.models import Categories, Attributes, Products, ProductAttributes, AttributeWeights, ProductAccessories, Promotions
+from backend.models import Categories, Attributes, Products, ProductAttributes, AttributeWeights, ProductAccessories, Promotions, ProductPromotions
 from flask_jwt_extended import jwt_required
 from backend.utils import role_required
 from sqlalchemy import func
@@ -312,6 +312,7 @@ def get_all_products():
     return jsonify([product.to_json() for product in products])
 
 
+
 @catalog_bp.route('/products/<string:category_slug>', methods=['GET'])
 def get_products_by_category_slug(category_slug):
 
@@ -570,9 +571,7 @@ def modify_connection_value(ProductAttributes_id):
 
         data = request.get_json()
 
-        connection = ProductAttributes.query.filter(
-            ProductAttributes.id == ProductAttributes_id
-        ).first()
+        connection = ProductAttributes.query.get(ProductAttributes_id)
 
         if not connection:
             return jsonify({'error': 'There is no such connection'}), 400
@@ -599,6 +598,8 @@ def modify_connection_value(ProductAttributes_id):
 @jwt_required()
 @role_required('admin')
 def add_attribute_weight_for_category():
+
+    """-------------------------------Dodawanie wagi kategorii dla produktu-------------------------------"""  
 
     try:
         data = request.get_json()
@@ -912,7 +913,7 @@ def add_promotion():
         return jsonify({'error': 'Internal server error'}), 500
     
     
-## not yet done
+
 @catalog_bp.route('/delete_promotion/<int:promotion_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
@@ -920,18 +921,17 @@ def delete_promotion(promotion_id):
 
     """-------------------------------Usunięcie danej promocji-------------------------------"""
 
-
     try:
 
-        accessory_relation = ProductAccessories.query.get(relation_id)
+        promotions = Promotions.query.get(promotion_id)
 
-        if not accessory_relation:
-            return jsonify({'error': 'There is no such accessory relation'}), 404
+        if not promotions:
+            return jsonify({'error': 'There is no promotion with such id'}), 404
 
-        db.session.delete(accessory_relation)
+        db.session.delete(promotions)
         db.session.commit()
 
-        return jsonify({'message': 'Accessory relation deleted successfully'}), 200
+        return jsonify({'message': 'Promotion deleted successfully'}), 200
 
     except Exception as e:
         db.session.rollback()
@@ -944,24 +944,27 @@ def delete_promotion(promotion_id):
 @role_required('admin')
 def modify_promotion(promotion_id):
 
-    """-------------------------------Modyfikacja wartości wagi dla relacji akcesorium produkt-------------------------------"""  
+    """-------------------------------Modyfikacja opisu danej promocji-------------------------------"""  
 
     try:
 
         data = request.get_json()
 
-        relation_weight = ProductAccessories.query.get(relation_id)
+        promotion = Promotions.query.get(promotion_id)
 
-        if not relation_weight:
-            return jsonify({'error': 'There is no such relation'}), 404
+        if not promotion:
+            return jsonify({'error': 'There is no promotion with such id'}), 404
 
-        relation_weight.weight = data.get('weight', relation_weight.weight)
+        promotion.name = data.get('name', promotion.name)
+        promotion.discount_percent = data.get('discount_percent', promotion.discount_percent)
+        promotion.start_date = data.get('start_date', promotion.start_date)
+        promotion.end_date = data.get('end_date', promotion.end_date)
 
         db.session.commit()
 
         return jsonify({
-            "message": "Product aattribute value modified successfully",
-            "product": relation_weight.to_json()
+            "message": "Promotion data modified successfully",
+            "product": promotion.to_json()
         }), 200
 
     except Exception as e:
@@ -971,25 +974,99 @@ def modify_promotion(promotion_id):
     
 
     
-@catalog_bp.route('/get_all_promotions/<int:promotion_id>', methods=['GET'])
+@catalog_bp.route('/get_all_promotions', methods=['GET'])
+def get_all_promotions():
+
+    """-------------------------------Zwraca wszystkie promocje-------------------------------"""  
+
+    promotions = Promotions.query.all()
+    return jsonify([promotion.to_json() for promotion in promotions]), 200
+
+## ###################################################################### Przypisywanie produktówdo promocji ######################################################################
+
+# react będzie przechowywał w usestate listę produktów które następnie będą przekazywane do endpoint dodającego promocje to bazy danych
+
+@catalog_bp.route('/add_products_to_promotion', methods=['POST'])
 @jwt_required()
 @role_required('admin')
-def get_all_promotions(promotion_id):
+def add_products_to_promotion():
 
-    """-------------------------------Zwraca wszystkie akcesoria w relacji z produktem-------------------------------"""  
+    """-------------------------------Przypisywanie produktów do promocji-------------------------------"""
 
     try:
+        data = request.get_json()
+        product_ids = data.get('product_ids') # przekazujemy do endpoint listę produktów 
 
-        if not Products.query.get(product_id):
-            return jsonify({"error": "Invalid product"}), 400
+        if not data.get('promotion_id') or not product_ids:
+            return jsonify({'error': 'promotion_id and product_ids are required'}), 400
 
-        results = ProductAccessories.query.filter_by(product_id=product_id).all()
+        if not Promotions.query.get(data.get('promotion_id')):
+            return jsonify({'error': 'Promotion not found'}), 404
 
-        if not results:
-            return jsonify({'error': 'There are no accessorys for this product'}), 404
+        added = []
+        for product_id in product_ids:
+            product = Products.query.get(product_id)
+            if not product:
+                continue  # sprawdzamy czy dany produkt istnieje, jak nie to go pomijamy
+      # można tutaj doać listę skipped która przechowywała by listę odrzuconych i zwrócić ją w wyniku
+            exists = ProductPromotions.query.filter_by(product_id=product_id).first() # sprawdzamy czy dany produkt jeż już w jakiejś promocji. Nie może być w 2 na raz
 
-        return jsonify([result.to_json() for result in results]), 200
+            if not exists:
+                promotion_for_product = ProductPromotions()
+                promotion_for_product.product_id = product_id
+                promotion_for_product.promotion_id = data.get('promotion_id')
+                db.session.add(promotion_for_product)
+                added.append(product_id)
 
+        db.session.commit()
+
+        return jsonify({
+            'message': f'Added {len(added)} products to promotion',
+            'product_ids': added
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+
+@catalog_bp.route('/get_all_products_in_promotion/<int:promotion_id>', methods=['GET'])
+def get_all_products_in_promotion(promotion_id):
+
+    """-------------------------------Pobieramy listę wszystkich produktów objętych promocją-------------------------------"""
+
+    try:
+        products = ProductPromotions.query.filter_by(promotion_id=promotion_id).all()
+        if not products:
+            return jsonify({'error': 'No products found for this promotion'}), 404
+        
+        return jsonify([product.to_json() for product in products]), 200
+    
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+    
+
+@catalog_bp.route('/remove_product_from_promotion/<int:product_id>', methods=['DELETE'])
+@jwt_required()
+@role_required('admin')
+def remove_product_from_promotion(product_id):
+     
+
+    try:
+
+        products = ProductPromotions.query.filter_by(product_id=product_id).first()
+        if not products:
+            return jsonify({'error': 'This product was not added to this promotion'}), 404
+        
+        db.session.delete(products)
+        db.session.commit()
+
+        return jsonify({'message': 'Product removed from promotion'}), 200
+    
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+      
