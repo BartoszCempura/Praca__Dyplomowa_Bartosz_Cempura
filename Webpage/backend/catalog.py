@@ -547,11 +547,23 @@ def delete_attribute_product_connection(connection_id):
 
         if not connection:
             return jsonify({'error': 'There is no such connection'}), 404
+        
+        product = Products.query.get(connection.product_id)
+        attribute = Attributes.query.get(connection.attribute_id)
+
+        deleted_connection = {
+            'product': product.name if product else None,
+            'attribute': attribute.name if attribute else None
+        }
 
         db.session.delete(connection)
         db.session.commit()
 
-        return jsonify({'message': 'Connection deleted successfully'}), 200
+        return jsonify({
+            "message": "Connection deleted successfully",
+            "product": deleted_connection['product'],
+            "attribute": deleted_connection['attribute']
+        }), 200
 
     except Exception as e:
         db.session.rollback()
@@ -658,11 +670,24 @@ def delete_attribute_category_weight(AttributeWeights_id):
 
         if not attribute_weight:
             return jsonify({'error': 'There is no such attribute weight'}), 404
+        
+        attribute = Attributes.query.get(attribute_weight.attribute_id)
+        category = Categories.query.get(attribute_weight.category_id)
 
-        db.session.delete(attribute_weight)
+        deleted_connection = {
+            'attribute': attribute.name if attribute else None,
+            'category': category.name if category else None
+        }
+
+        db.session.delete(deleted_connection)
         db.session.commit()
 
-        return jsonify({'message': 'Attribute weight deleted successfully'}), 200
+        return jsonify({
+            "message": "Connection deleted successfully",
+            "product": deleted_connection['attribute'],
+            "attribute": deleted_connection['category']
+        }), 200
+    
 
     except Exception as e:
         db.session.rollback()
@@ -795,11 +820,23 @@ def delete_product_accessory_relation(relation_id):
 
         if not accessory_relation:
             return jsonify({'error': 'There is no such accessory relation'}), 404
+        
+        product = Products.query.get(accessory_relation.product_id)
+        accessory = Products.query.get(accessory_relation.accessory_product_id)
+
+        deleted_connection ={
+            "product": product.name,
+            "accessory": accessory.name
+        }
 
         db.session.delete(accessory_relation)
         db.session.commit()
 
-        return jsonify({'message': 'Accessory relation deleted successfully'}), 200
+        return jsonify({
+            "message": "Connection deleted successfully",
+            "product": deleted_connection['product'],
+            "attribute": deleted_connection['accessory']
+        }), 200
 
     except Exception as e:
         db.session.rollback()
@@ -923,15 +960,22 @@ def delete_promotion(promotion_id):
 
     try:
 
-        promotions = Promotions.query.get(promotion_id)
+        promotion = Promotions.query.get(promotion_id)
 
-        if not promotions:
+        if not promotion:
             return jsonify({'error': 'There is no promotion with such id'}), 404
+        
+        promotion_name = {
+            "name": promotion.name
+        }
 
-        db.session.delete(promotions)
+        db.session.delete(promotion)
         db.session.commit()
 
-        return jsonify({'message': 'Promotion deleted successfully'}), 200
+        return jsonify({
+            "message": "Promotion deletion successsfull",
+            "Promotion": promotion_name.to_json()
+        }), 200
 
     except Exception as e:
         db.session.rollback()
@@ -1061,10 +1105,19 @@ def remove_product_from_promotion(product_id):
         if not products:
             return jsonify({'error': 'This product was not added to this promotion'}), 404
         
+        product = Products.query.get(products.product_id)
+
+        removed = {
+            "name": product.name
+        }
+        
         db.session.delete(products)
         db.session.commit()
 
-        return jsonify({'message': 'Product removed from promotion'}), 200
+        return jsonify({
+            "message": "Product removed from promotion",
+            "Product": removed.to_json()
+        }), 200
     
     except Exception as e:
         print(f"[ERROR]: {str(e)}")

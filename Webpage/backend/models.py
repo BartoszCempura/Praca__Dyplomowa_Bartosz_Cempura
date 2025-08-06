@@ -357,3 +357,34 @@ class ProductPromotions(db.Model):
             "product_id": self.product_id,
             "promotion_id": self.promotion_id 
         }
+    
+
+"""____________________________________________________________________________________________________________________"""
+
+"""Modele dla api commerce 
+    - DeliveryMethods: model reprezentujący obsługiwane przez sklep metody dostawy
+
+    """
+
+
+
+class DeliveryMethods(db.Model):
+    __tablename__ = 'delivery_methods'
+    __table_args__ = ({'schema': 'commerce'})
+
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    fee = db.Column(Numeric(10, 2), nullable=False, default=0.00)
+    estimated_delivery_days = db.Column(db.Integer, nullable=False, default=3)
+    is_active = db.Column(db.Boolean, nullable=False, default=True) # istotne aby nie usówać metody , ponieważ może to zaszkodzić danym transakcji z użyciem tej metody płatności
+    
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "fee": self.fee,
+            "estimated_delivery_days": self.estimated_delivery_days,
+            "is_active": self.is_active
+        }
