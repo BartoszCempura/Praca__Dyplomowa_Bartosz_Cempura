@@ -236,6 +236,23 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
 
+    def price_including_promotion(self):
+        now = datetime.now(timezone.utc)
+
+        check_if_promotion_apply = ProductPromotions.query.join(
+            Promotions, 
+            ProductPromotions.promotion_id == Promotions.id).filter(
+                ProductPromotions.product_id == self.id,
+                Promotions.start_date <= now,
+                Promotions.end_date >= now
+            ).first()
+        
+        if check_if_promotion_apply:
+            promotion = Promotions.query.get(check_if_promotion_apply.promotion_id)
+            discount = promotion.discount_percent / 100
+            return self.unit_price * (1 - discount)
+        
+        return self.unit_price
 
 
 class ProductAttributes(db.Model): # model reprezentujący atrybut w bazie danych
@@ -367,7 +384,6 @@ class ProductPromotions(db.Model):
     """
 
 
-
 class DeliveryMethods(db.Model):
     __tablename__ = 'delivery_methods'
     __table_args__ = ({'schema': 'commerce'})
@@ -388,3 +404,78 @@ class DeliveryMethods(db.Model):
             "estimated_delivery_days": self.estimated_delivery_days,
             "is_active": self.is_active
         }
+    
+class PaymentMethods (db.Model):
+    __tablename__ = 'payment_methods'
+    __table_args__ = ({'schema': 'commerce'})
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    image = db.Column(db.String(255))
+    fee = db.Column(Numeric(10, 2), nullable=False, default=0.00)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "image": self.image, # url do pliku z ikona metody
+            "fee": self.fee,
+            "is_active": self.is_active
+        }
+    
+class Carts (db.Model):
+    __tablename__ = 'carts'
+    __table_args__ = (
+        CheckConstraint('total_products_cost >= 0', name='carts_total_products_cost_check'),
+        {'schema': 'commerce'}
+    )
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='CASCADE'), nullable=False)
+    total_products_cost = db.Column(Numeric(10, 2), nullable=False, default=0.00)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "total_products_cost": self.total_products_cost,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
+    
+class CartProducts (db.Model):
+    __tablename__ = 'cart_products'
+    __table_args__ = (
+        CheckConstraint('quantity > 0', name='cart_products_quantity_check'),
+        UniqueConstraint('cart_id', 'product_id', name='cart_products_cart_id_product_id_unique'),
+        {'schema': 'commerce'}
+    )
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    cart_id = db.Column(db.Integer, db.ForeignKey('commerce.carts.id', ondelete='CASCADE'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit_price_with_discount = db.Column(Numeric(10, 2), nullable=False)
+    
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "cart_id": self.cart_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+            "unit_price_with_discount": self.unit_price_with_discount
+        }
+    
+    @staticmethod
+    def validate_quantity(quantity):
+        try:
+            quantity = int(quantity) # zabespieczenie przed wprowadzeniem string
+            if quantity < 1: # quantity musi być przynajmniej 1
+                return None
+            return quantity
+        except (TypeError, ValueError):
+            return None

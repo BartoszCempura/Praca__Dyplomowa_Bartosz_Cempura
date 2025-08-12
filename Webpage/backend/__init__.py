@@ -1,11 +1,13 @@
 ## to jest główny plik inicjalizujący aplikację Flask
 
-from flask import Flask, app
+from flask import Flask
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
+from backend.scheduler import init_scheduler
+
 
 db = SQLAlchemy()
 jwt = JWTManager() 
@@ -56,6 +58,8 @@ def create_app():
     with app.app_context():
        from . import models ## importujemy modele z pliku models.py, aby były dostępne w kontekście aplikacji
        db.create_all() ## tworzymy wszystkie tabele w bazie danych, jeśli nie istnieją
+
+    init_scheduler(app)
 
     return app ## zwracamy aplikację Flask
 

@@ -72,6 +72,7 @@ if __name__ == '__main__':
         mode = choose_mode()
         os.environ['SERVER_MODE'] = mode
 
+
         if mode == 'development':
             open_browser("http://127.0.0.1:5000/api/utils/health", 2)
     else:

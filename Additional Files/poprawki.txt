@@ -1,0 +1,4 @@
+W backend brak weryfikacji typów wprowadzanych danych, nie ma zwrotu błędu / obsługiwane przez frontend ale powinno byc i na backend
+
+
+

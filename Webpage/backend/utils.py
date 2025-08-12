@@ -1,7 +1,6 @@
 ## tutaj będziemy deklarowac endpointy - czyli co się wyświetla nam na 
 
-from flask import Blueprint, request, jsonify
-from backend import db
+from flask import Blueprint, jsonify
 from functools import wraps
 from flask_jwt_extended import get_jwt_identity
 from backend.models import User
@@ -29,3 +28,4 @@ def role_required(required_role):
             return fn(*args, **kwargs)
         return decorator
     return wrapper
+
