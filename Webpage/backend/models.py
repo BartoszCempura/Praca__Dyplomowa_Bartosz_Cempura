@@ -509,8 +509,8 @@ class Transactions (db.Model):
     )
     delivery_method_id = db.Column(db.Integer, db.ForeignKey('commerce.delivery_methods.id', ondelete='CASCADE'), nullable=False)
     payment_method_id = db.Column(db.Integer, db.ForeignKey('commerce.payment_methods.id', ondelete='CASCADE'), nullable=False)
-    delivery_deadline = db.Column(db.date)
-    notes = db.Column(db.text)
+    delivery_deadline = db.Column(db.Date)
+    notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
