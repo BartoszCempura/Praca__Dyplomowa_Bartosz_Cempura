@@ -11,7 +11,7 @@ def clear_expired_carts():
 
     """-------------------------------Job usówania koszyków nieaktualizowanych przez 3 dni-------------------------------"""
 
-    # Pobieramy instancję aplikacji z scheduler
+    # Pobieramy instancję aplikacji z scheduler. Niezbędne aby uniknąć pętli importów
     app = scheduler.app
     
     with app.app_context():

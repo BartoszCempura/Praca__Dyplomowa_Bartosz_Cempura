@@ -380,7 +380,9 @@ class ProductPromotions(db.Model):
 
 """Modele dla api commerce 
     - DeliveryMethods: model reprezentujący obsługiwane przez sklep metody dostawy
-
+    - PaymentMethods: model reprezentujący obsługiwane przez sklep metody płatności
+    - Carts: model reprezentujący koszyk użytkownika i jego wartość
+    - CartProducts: model reprezentujący związek produkt i koszyk
     """
 
 
@@ -405,6 +407,7 @@ class DeliveryMethods(db.Model):
             "is_active": self.is_active
         }
     
+    
 class PaymentMethods (db.Model):
     __tablename__ = 'payment_methods'
     __table_args__ = ({'schema': 'commerce'})
@@ -424,6 +427,7 @@ class PaymentMethods (db.Model):
             "is_active": self.is_active
         }
     
+    
 class Carts (db.Model):
     __tablename__ = 'carts'
     __table_args__ = (
@@ -442,9 +446,10 @@ class Carts (db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "total_products_cost": self.total_products_cost,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+    
     
 class CartProducts (db.Model):
     __tablename__ = 'cart_products'
@@ -479,3 +484,49 @@ class CartProducts (db.Model):
             return quantity
         except (TypeError, ValueError):
             return None
+        
+        
+
+class TransactionSatus(enum.Enum):
+    pending = 'pending'
+    shipped = 'shipped'
+    completed = 'completed'
+    cancelled = 'cancelled'
+        
+class Transactions (db.Model):
+    __tablename__ = 'transactions'
+    __table_args__ = ({'schema': 'commerce'})
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='CASCADE'), nullable=False)
+    total_transaction_value = db.Column(Numeric(10, 2), nullable=False, default=0.00)
+    billing_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_adresses.id', ondelete='CASCADE'), nullable=False)
+    shipping_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_adresses.id', ondelete='CASCADE'), nullable=False)
+    status = db.Column(
+        db.Enum(TransactionSatus, name='transaction_status', schema='commerce'),
+        nullable=False,
+        default=TransactionSatus.pending
+    )
+    delivery_method_id = db.Column(db.Integer, db.ForeignKey('commerce.delivery_methods.id', ondelete='CASCADE'), nullable=False)
+    payment_method_id = db.Column(db.Integer, db.ForeignKey('commerce.payment_methods.id', ondelete='CASCADE'), nullable=False)
+    delivery_deadline = db.Column(db.date)
+    notes = db.Column(db.text)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "total_transaction_value": self.total_transaction_value,
+            "billing_address_id": self.billing_address_id,
+            "shipping_address_id": self.shipping_address_id,
+            "status": self.status.value,
+            "delivery_method_id": self.delivery_method_id,
+            "payment_method_id": self.payment_method_id,
+            "delivery_deadline": self.delivery_deadline,
+            "notes": self.notes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
