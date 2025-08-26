@@ -1,4 +1,14 @@
 W backend brak weryfikacji typów wprowadzanych danych, nie ma zwrotu błędu / obsługiwane przez frontend ale powinno byc i na backend
 
 
+Sprawdż czy masz komunikaty błędów opisane w języku algielskim lub polskim. Zdecyduj się na jeden z nich
+
+Rozkmiń co zrobić z wprowadzaenim billing adress i shipping adress - narazie masz do wyboru id. Może tak zostaw i nie przejmuj sie tym na przyszłość
+
+Dodaj metode wyświetlania transakcji - może być też dla użytkownika 
+
+dodaj metode zmiany statusu transakcji
+
+
+
 

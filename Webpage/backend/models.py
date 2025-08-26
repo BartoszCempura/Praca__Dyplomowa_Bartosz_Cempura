@@ -1,6 +1,6 @@
 # tutaj będziemy przechowywać modele naszych baz danych
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from backend import db
 import enum
 import re
@@ -407,6 +407,11 @@ class DeliveryMethods(db.Model):
             "is_active": self.is_active
         }
     
+    @staticmethod
+    def delivery_date(method):
+        now = datetime.now(timezone.utc)
+        return now +  timedelta(days=method.estimated_delivery_days) if method else None
+    
     
 class PaymentMethods (db.Model):
     __tablename__ = 'payment_methods'
@@ -488,10 +493,10 @@ class CartProducts (db.Model):
         
 
 class TransactionSatus(enum.Enum):
-    pending = 'pending'
-    shipped = 'shipped'
-    completed = 'completed'
-    cancelled = 'cancelled'
+    Pending = 'Pending'
+    Shipped = 'Shipped'
+    Completed = 'Completed'
+    Cancelled = 'Cancelled'
         
 class Transactions (db.Model):
     __tablename__ = 'transactions'
@@ -500,12 +505,12 @@ class Transactions (db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='CASCADE'), nullable=False)
     total_transaction_value = db.Column(Numeric(10, 2), nullable=False, default=0.00)
-    billing_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_adresses.id', ondelete='CASCADE'), nullable=False)
-    shipping_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_adresses.id', ondelete='CASCADE'), nullable=False)
+    billing_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_addresses.id', ondelete='CASCADE'), nullable=False)
+    shipping_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_addresses.id', ondelete='CASCADE'), nullable=False)
     status = db.Column(
         db.Enum(TransactionSatus, name='transaction_status', schema='commerce'),
         nullable=False,
-        default=TransactionSatus.pending
+        default=TransactionSatus.Pending
     )
     delivery_method_id = db.Column(db.Integer, db.ForeignKey('commerce.delivery_methods.id', ondelete='CASCADE'), nullable=False)
     payment_method_id = db.Column(db.Integer, db.ForeignKey('commerce.payment_methods.id', ondelete='CASCADE'), nullable=False)
@@ -522,11 +527,32 @@ class Transactions (db.Model):
             "billing_address_id": self.billing_address_id,
             "shipping_address_id": self.shipping_address_id,
             "status": self.status.value,
-            "delivery_method_id": self.delivery_method_id,
+            "delivery_method_id": self.delivery_method_id, # ze względu na typ kolumny Date, będzie tu przechowywana data dostawy bez uwzględnienia godzin, minut i sekund
             "payment_method_id": self.payment_method_id,
             "delivery_deadline": self.delivery_deadline,
             "notes": self.notes,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+class TransactionProducts (db.Model):
+    __tablename__ = 'transaction_products'
+    __table_args__ = (
+        UniqueConstraint('transaction_id', 'product_id', name='transaction_products_transaction_id_product_id_unique'),
+        {'schema': 'commerce'})
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('commerce.transactions.id', ondelete='CASCADE'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit_price_with_discount  = db.Column(Numeric(10, 2), nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "transaction_id": self.transaction_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+            "unit_price_with_discount": self.unit_price_with_discount
         }
 

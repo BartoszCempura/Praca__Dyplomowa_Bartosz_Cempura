@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from backend import db
-from backend.models import DeliveryMethods, PaymentMethods, Carts, CartProducts, Products, ProductPromotions, Promotions
+from backend.models import DeliveryMethods, PaymentMethods, Carts, CartProducts, Products, Transactions, TransactionSatus, TransactionProducts
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from backend.utils import role_required
 from sqlalchemy import func
@@ -370,3 +370,63 @@ def get_cart():
 
 ## ###################################################################### Transakcje i produkty w nich ######################################################################
 
+@commerce_bp.route('/closing_purchase', methods=['POST'])
+@jwt_required()
+def closing_purchase():
+
+    """---------------------Zamknięcie zakupu---------------------"""
+
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
+
+        required_fields = ['billing_address_id', 'shipping_address_id', 'delivery_method_id', 'payment_method_id']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+
+        cart = Carts.query.filter_by(user_id=user_id).first()
+        if not cart:
+            return jsonify({'error': 'Nie znaleziono koszyka'}), 404
+
+        if cart.total_products_cost == 0:
+            return jsonify({'error': 'Koszyk jest pusty'}), 400
+
+        delivery_method = DeliveryMethods.query.filter_by(id=data.get('delivery_method_id'), is_active=True).first()
+
+        # Tworzenie nowej transakcji
+        new_transaction = Transactions(
+            user_id=user_id,
+            total_transaction_value=cart.total_products_cost,
+            billing_address_id=data.get('billing_address_id'),
+            shipping_address_id=data.get('shipping_address_id'),
+            delivery_method_id=delivery_method.id,
+            payment_method_id=data.get('payment_method_id'),
+            delivery_deadline=DeliveryMethods.delivery_date(delivery_method),
+            notes=data.get('notes')
+        )
+        db.session.add(new_transaction)
+        db.session.flush()  # potrzebne, by mieć transaction.id
+
+        # Przeniesienie produktów z koszyka do transakcji
+        cart_products = CartProducts.query.filter_by(cart_id=cart.id).all()
+        for cart_product in cart_products:
+            new_transaction_product = TransactionProducts(
+                transaction_id=new_transaction.id,
+                product_id=cart_product.product_id,
+                quantity=cart_product.quantity,
+                unit_price_with_discount=cart_product.unit_price_with_discount
+            )
+            db.session.add(new_transaction_product)
+
+        # Usunięcie koszyka
+        db.session.delete(cart)
+
+        db.session.commit()
+
+        return jsonify({'message': 'Zakup zakończony pomyślnie'}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
