@@ -1,13 +1,16 @@
 W backend brak weryfikacji typów wprowadzanych danych, nie ma zwrotu błędu / obsługiwane przez frontend ale powinno byc i na backend
-
+na tę chwile jak zakońcyz się promocja a ty dodajesz podukt który maszjeszcze w koszyku po promocyjnej cenie to wygląda na to że pozostaje promocyjna cena. Nie zajmujemy się tym bo nie jest to coś co będzie przedmiotem samego projektu
+Rozkmiń co zrobić z wprowadzaenim billing adress i shipping adress - narazie masz do wyboru id. Może tak zostaw i nie przejmuj sie tym na przyszłość
+___________________________________________________ Pilne _________________________________________________________________________
 
 Sprawdż czy masz komunikaty błędów opisane w języku algielskim lub polskim. Zdecyduj się na jeden z nich
 
-Rozkmiń co zrobić z wprowadzaenim billing adress i shipping adress - narazie masz do wyboru id. Może tak zostaw i nie przejmuj sie tym na przyszłość
+Dodaj metode wyświetlania transakcji dla administratora po statusie i po deactivate
 
-Dodaj metode wyświetlania transakcji - może być też dla użytkownika 
+Zastanów się czy zmodyfikować coś w metodach zwracania danych dla użytkownijków. Masz dodaną nową relacje w transactions. Zastanów się co gdzie powinno być zwracane a co nie
 
-dodaj metode zmiany statusu transakcji
+Zastanów się jeszcze nad konstrukcją kodu tej nowej metody dla wyświetlania transakcji
+
 
 
 

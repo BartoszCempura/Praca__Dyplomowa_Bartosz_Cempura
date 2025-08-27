@@ -492,7 +492,7 @@ class CartProducts (db.Model):
         
         
 
-class TransactionSatus(enum.Enum):
+class TransactionStatus(enum.Enum):
     Pending = 'Pending'
     Shipped = 'Shipped'
     Completed = 'Completed'
@@ -508,9 +508,9 @@ class Transactions (db.Model):
     billing_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_addresses.id', ondelete='CASCADE'), nullable=False)
     shipping_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_addresses.id', ondelete='CASCADE'), nullable=False)
     status = db.Column(
-        db.Enum(TransactionSatus, name='transaction_status', schema='commerce'),
+        db.Enum(TransactionStatus, name='transaction_status', schema='commerce'),
         nullable=False,
-        default=TransactionSatus.Pending
+        default=TransactionStatus.Pending
     )
     delivery_method_id = db.Column(db.Integer, db.ForeignKey('commerce.delivery_methods.id', ondelete='CASCADE'), nullable=False)
     payment_method_id = db.Column(db.Integer, db.ForeignKey('commerce.payment_methods.id', ondelete='CASCADE'), nullable=False)
@@ -518,6 +518,11 @@ class Transactions (db.Model):
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    billing_address = db.relationship('UserAddress', foreign_keys=[billing_address_id])
+    shipping_address = db.relationship('UserAddress', foreign_keys=[shipping_address_id])
+    delivery_method = db.relationship('DeliveryMethods', foreign_keys=[delivery_method_id])
+    payment_method = db.relationship('PaymentMethods', foreign_keys=[payment_method_id])
 
     def to_json(self):
         return {
@@ -534,6 +539,20 @@ class Transactions (db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+    
+    def to_user_view_json(self):
+        return {
+            "Transaction_id": self.id,
+            "total_transaction_value": self.total_transaction_value,
+            "status": self.status.value,
+            "delivery_deadline": self.delivery_deadline.isoformat(),
+
+            "billing_address": self.billing_address.to_json(),
+            "shipping_address": self.shipping_address.to_json(),
+            
+            "payment_method": self.payment_method.name,
+            "delivery_method": self.delivery_method.name,
+        }
 
 class TransactionProducts (db.Model):
     __tablename__ = 'transaction_products'
@@ -547,6 +566,8 @@ class TransactionProducts (db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     unit_price_with_discount  = db.Column(Numeric(10, 2), nullable=False)
 
+    product = db.relationship('Products', foreign_keys=[product_id])
+
     def to_json(self):
         return {
             "id": self.id,
@@ -556,3 +577,9 @@ class TransactionProducts (db.Model):
             "unit_price_with_discount": self.unit_price_with_discount
         }
 
+    def to_user_view_json(self):
+        return {
+            "product_name": self.product.name,
+            "quantity": self.quantity,
+            "unit_price_with_discount": self.unit_price_with_discount
+        }

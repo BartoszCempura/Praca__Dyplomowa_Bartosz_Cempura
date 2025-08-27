@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from backend import db
-from backend.models import DeliveryMethods, PaymentMethods, Carts, CartProducts, Products, Transactions, TransactionSatus, TransactionProducts
+from backend.models import DeliveryMethods, PaymentMethods, Carts, CartProducts, Products, Transactions, TransactionStatus, TransactionProducts
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from backend.utils import role_required
 from sqlalchemy import func
+from decimal import Decimal
 
 commerce_bp = Blueprint('commerce', __name__, url_prefix='/api/commerce')
 
@@ -263,7 +264,10 @@ def add_product_to_cart():
 
         # Aktualizujemy łączny koszt koszyka
         cart.total_products_cost = db.session.query(
-            db.func.sum(CartProducts.quantity * CartProducts.unit_price_with_discount)
+            func.coalesce(
+            db.func.sum(CartProducts.quantity * CartProducts.unit_price_with_discount),
+            Decimal("0.00")
+            )
         ).filter_by(cart_id=cart.id).scalar()
 
         db.session.commit()
@@ -323,7 +327,10 @@ def remove_product_from_cart():
 
         # Aktualizujemy łączny koszt koszyka
         cart.total_products_cost = db.session.query(
-            db.func.sum(CartProducts.quantity * CartProducts.unit_price_with_discount)
+            func.coalesce(
+            db.func.sum(CartProducts.quantity * CartProducts.unit_price_with_discount),
+            Decimal("0.00")
+            )
         ).filter_by(cart_id=cart.id).scalar()
 
         db.session.commit()
@@ -393,15 +400,16 @@ def closing_purchase():
             return jsonify({'error': 'Koszyk jest pusty'}), 400
 
         delivery_method = DeliveryMethods.query.filter_by(id=data.get('delivery_method_id'), is_active=True).first()
+        payment_method = PaymentMethods.query.filter_by(id=data.get('payment_method_id'), is_active=True).first()
 
         # Tworzenie nowej transakcji
         new_transaction = Transactions(
             user_id=user_id,
-            total_transaction_value=cart.total_products_cost,
+            total_transaction_value=cart.total_products_cost + delivery_method.fee + payment_method.fee,
             billing_address_id=data.get('billing_address_id'),
             shipping_address_id=data.get('shipping_address_id'),
             delivery_method_id=delivery_method.id,
-            payment_method_id=data.get('payment_method_id'),
+            payment_method_id=payment_method.id,
             delivery_deadline=DeliveryMethods.delivery_date(delivery_method),
             notes=data.get('notes')
         )
@@ -428,5 +436,88 @@ def closing_purchase():
 
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+@commerce_bp.route('/update_transaction_status/<int:transaction_id>', methods=['PUT'])
+@jwt_required()
+@role_required('admin')
+def modify_transaction_status(transaction_id):
+
+    """-------------------------------Zmiana statusy transakcji-------------------------------"""
+
+    try:
+        # tutaj należało by dodać możliwośc logowania zmian w bazie dancyh ze względu na audyty i zasady RODO. Na tę chwile pomijamy ze względów czasowych
+        data = request.get_json()
+        new_status = data.get('status')
+        new_notes = data.get('notes')
+        transaction = Transactions.query.get(transaction_id)
+
+        changes = []
+
+        if new_status and new_status != transaction.status.value:
+            changes.append(f"Status zmieniony z {transaction.status.value} na {new_status}")
+            transaction.status = TransactionStatus(new_status)
+
+            if transaction.status == TransactionStatus.Cancelled:
+
+                products_associated_with_transaction = TransactionProducts.query.filter_by(transaction_id=transaction.id).all()
+                for transaction_product in products_associated_with_transaction:
+                    product = Products.query.get(transaction_product.product_id)
+                    if product:
+                        product.quantity += transaction_product.quantity  # zwracamy produkty na stan magazynowy
+
+                db.session.delete(transaction)
+                db.session.commit()
+                return jsonify({'message': 'Transakcja anulowana i usunięta pomyślnie'}), 200
+
+        if new_notes and new_notes != transaction.notes:
+            changes.append("Dodano notatkę")
+            transaction.notes += f" Admin: {new_notes}"
+
+        if not changes:
+            return jsonify({'error': 'Nie wprowadzono żadnych zmian'}), 409
+        
+        
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Transaction data modified successfully",
+            "changes": changes
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+@commerce_bp.route('/get_all_user_transactions', methods=['GET'])
+@jwt_required()
+def get_all_user_transactions():
+
+    """-------------------------------Zwraca wszystkie transakcje użytkownika-------------------------------"""  
+
+    try:
+
+        user_id = get_jwt_identity()
+        tranzacje = Transactions.query.filter_by(user_id=user_id).all()
+
+        if not tranzacje:
+            return jsonify({"error": "Brak transakcji dla konta użytkownika"}), 400
+
+        response_data = []
+        for tranzakcja in tranzacje:
+            data = tranzakcja.to_user_view_json()
+            produkty = TransactionProducts.query.filter_by(transaction_id=tranzakcja.id).all()
+            data["producty"] = [p.to_user_view_json() for p in produkty]
+            response_data.append(data)
+
+        return jsonify(response_data), 200
+        
+
+    except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500

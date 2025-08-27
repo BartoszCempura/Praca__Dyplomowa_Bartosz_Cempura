@@ -1122,4 +1122,3 @@ def remove_product_from_promotion(product_id):
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-      
