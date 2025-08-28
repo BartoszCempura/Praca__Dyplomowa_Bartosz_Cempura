@@ -5,11 +5,9 @@ ___________________________________________________ Pilne ______________________
 
 Sprawdż czy masz komunikaty błędów opisane w języku algielskim lub polskim. Zdecyduj się na jeden z nich
 
-Dodaj metode wyświetlania transakcji dla administratora po statusie i po deactivate
-
 Zastanów się czy zmodyfikować coś w metodach zwracania danych dla użytkownijków. Masz dodaną nową relacje w transactions. Zastanów się co gdzie powinno być zwracane a co nie
 
-Zastanów się jeszcze nad konstrukcją kodu tej nowej metody dla wyświetlania transakcji
+
 
 
 

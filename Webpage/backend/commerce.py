@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from backend import db
-from backend.models import DeliveryMethods, PaymentMethods, Carts, CartProducts, Products, Transactions, TransactionStatus, TransactionProducts
+from backend.models import DeliveryMethods, PaymentMethods, Carts, CartProducts, Products, Transactions, TransactionStatus, TransactionProducts, User, Wishlists
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from backend.utils import role_required
 from sqlalchemy import func
@@ -377,6 +377,7 @@ def get_cart():
 
 ## ###################################################################### Transakcje i produkty w nich ######################################################################
 
+
 @commerce_bp.route('/closing_purchase', methods=['POST'])
 @jwt_required()
 def closing_purchase():
@@ -501,23 +502,139 @@ def get_all_user_transactions():
     """-------------------------------Zwraca wszystkie transakcje użytkownika-------------------------------"""  
 
     try:
-
         user_id = get_jwt_identity()
-        tranzacje = Transactions.query.filter_by(user_id=user_id).all()
+        user = User.query.get(user_id) # tę sama funkcjonalnośc może używać admin ale dla wszystkich tranzakcji w bazie danych
+        status = request.args.get('status')
+        raw_date_from = request.args.get('date_from')
+        raw_date_to = request.args.get('date_to')
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('limit', 20, type=int)
 
-        if not tranzacje:
+        transakcje = Transactions.query
+        if user.role != 'admin':
+            transakcje = transakcje.filter_by(user_id=user_id)
+
+        if status:
+            transakcje = transakcje.filter_by(status=status)
+        if raw_date_from:
+            date_from = Transactions.str_date(raw_date_from)
+            if date_from:       
+                transakcje = transakcje.filter(Transactions.updated_at >= date_from)
+        if raw_date_to:
+            date_to = Transactions.str_date(raw_date_to)
+            if date_to:    
+                date_to = date_to.replace(hour=23, minute=59, second=59)
+                transakcje = transakcje.filter(Transactions.updated_at <= date_to)
+
+        pagination = transakcje.order_by(Transactions.updated_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+
+        transakcje = pagination.items
+
+        if not transakcje:
             return jsonify({"error": "Brak transakcji dla konta użytkownika"}), 400
 
         response_data = []
-        for tranzakcja in tranzacje:
-            data = tranzakcja.to_user_view_json()
-            produkty = TransactionProducts.query.filter_by(transaction_id=tranzakcja.id).all()
-            data["producty"] = [p.to_user_view_json() for p in produkty]
+        for transakcja in transakcje:
+            data = transakcja.to_json_user_view()
+            produkty = TransactionProducts.query.filter_by(transaction_id=transakcja.id).all()
+            data["producty"] = [p.to_json_user_view() for p in produkty]
             response_data.append(data)
 
-        return jsonify(response_data), 200
+        return jsonify({
+            "transakcje": response_data,
+            "total": pagination.total,
+            "page": pagination.page,
+            "pages": pagination.pages,
+            "has_next": pagination.has_next,
+            "has_prev": pagination.has_prev,
+            "next_page": pagination.next_num if pagination.has_next else None,
+            "prev_page": pagination.prev_num if pagination.has_prev else None
+        }), 200
         
 
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+## ###################################################################### Whishlist ######################################################################
+
+
+@commerce_bp.route('/add_to_whishlist', methods=['POST'])
+@jwt_required()
+def add_to_whishlist():
+
+    """-------------------------------Dodawanie produktu do listy ulubionych-------------------------------"""
+
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    try:
+
+        produkt = Products.query.get(data['product_id'])
+
+        if not produkt:
+            return jsonify({'error': 'Produkt nie istnieje'}), 404
+
+
+        wishlist_item = Wishlists(
+            user_id=user_id, 
+            product_id=data['product_id']
+        )
+
+        db.session.add(wishlist_item)
+        db.session.commit()
+
+        return jsonify({'message': 'Produkt dodany do ulubionych'}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+@commerce_bp.route('/remove_from_whishlist/<int:product_id>', methods=['DELETE'])
+@jwt_required()
+def remove_from_whishlist(product_id):
+
+    """-------------------------------Usuwanie produktu z listy ulubionych-------------------------------"""
+
+    user_id = get_jwt_identity()
+
+    try:
+        wishlist_item = Wishlists.query.filter_by(user_id=user_id, product_id=product_id).first()
+
+        if not wishlist_item:
+            return jsonify({'error': 'Produkt nie znajduje się w ulubionych'}), 404
+
+        db.session.delete(wishlist_item)
+        db.session.commit()
+
+        return jsonify({'message': 'Produkt usunięty z ulubionych'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@commerce_bp.route('/get_wishlist', methods=['GET'])
+@jwt_required()
+def get_wishlist():
+
+    """-------------------------------Pobieramy listę wszystkich ulubionych produktów-------------------------------"""
+
+    user_id = get_jwt_identity()
+
+    try:
+        products = Wishlists.query.filter_by(user_id=user_id).all()
+        if not products:
+            return jsonify({'error': 'No products found in wishlist'}), 404
+
+        return jsonify([product.to_json() for product in products]), 200
+    
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500

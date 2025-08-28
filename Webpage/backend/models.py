@@ -219,13 +219,15 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+    category = db.relationship('Categories', foreign_keys=[category_id])
+
     def to_json(self):
 
         ##category = Categories.query.get(self.category_id) - to miło służyć pokazywaniu nazwy kategorii zamiast jej id
 
         return {
             "id": self.id,
-           ## "category": category.to_json() if category else None,
+            "category_name": self.category.name,
             "category_id": self.category_id,
             "name": self.name,
             "description": self.description,
@@ -234,6 +236,13 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
             "unit_price": self.unit_price,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def to_json_user_view(self):
+        return {
+            "name": self.name,
+            "image": self.image,
+            "unit_price": self.unit_price
         }
 
     def price_including_promotion(self):
@@ -383,6 +392,9 @@ class ProductPromotions(db.Model):
     - PaymentMethods: model reprezentujący obsługiwane przez sklep metody płatności
     - Carts: model reprezentujący koszyk użytkownika i jego wartość
     - CartProducts: model reprezentujący związek produkt i koszyk
+    - Transactions: model reprezentujący zatwierdzone transakcję użytkownika
+    - TransactionProducts: kopia CartProducts dla zatwierdzonych transakcji, w celu przechowywania informacji o produktach będących jej przedmiotem
+    - Wishlist: tabela przechowująca informacje u ulubionych produktach dla klienta
     """
 
 
@@ -519,7 +531,6 @@ class Transactions (db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    billing_address = db.relationship('UserAddress', foreign_keys=[billing_address_id])
     shipping_address = db.relationship('UserAddress', foreign_keys=[shipping_address_id])
     delivery_method = db.relationship('DeliveryMethods', foreign_keys=[delivery_method_id])
     payment_method = db.relationship('PaymentMethods', foreign_keys=[payment_method_id])
@@ -540,19 +551,23 @@ class Transactions (db.Model):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
     
-    def to_user_view_json(self):
+    def to_json_user_view(self):
         return {
             "Transaction_id": self.id,
             "total_transaction_value": self.total_transaction_value,
             "status": self.status.value,
             "delivery_deadline": self.delivery_deadline.isoformat(),
-
-            "billing_address": self.billing_address.to_json(),
-            "shipping_address": self.shipping_address.to_json(),
-            
+            "shipping_address": self.shipping_address.to_json(),         
             "payment_method": self.payment_method.name,
             "delivery_method": self.delivery_method.name,
+            "date_of_order": self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None
         }
+    @staticmethod
+    def str_date(date):
+        try:
+            return datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            return None
 
 class TransactionProducts (db.Model):
     __tablename__ = 'transaction_products'
@@ -577,9 +592,27 @@ class TransactionProducts (db.Model):
             "unit_price_with_discount": self.unit_price_with_discount
         }
 
-    def to_user_view_json(self):
+    def to_json_user_view(self):
         return {
             "product_name": self.product.name,
             "quantity": self.quantity,
             "unit_price_with_discount": self.unit_price_with_discount
         }
+
+class Wishlists (db.Model):
+    __tablename__ = 'wishlists'
+    __table_args__ = (
+        db.PrimaryKeyConstraint('user_id', 'product_id'),
+        {'schema': 'commerce'}
+    )
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='CASCADE'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
+
+    product = db.relationship('Products', foreign_keys=[product_id])
+
+    def to_json(self):
+        return {
+            "product": self.product.to_json_user_view() if self.product else None
+        }
+

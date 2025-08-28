@@ -404,13 +404,15 @@ def search_products():
 
     try:
 
-        search_value = request.args.get('q', '', type=str)
+        search_value = request.args.get('search', '', type=str)
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('limit', 20, type=int)
 
         if search_value:
             results = Products.query.filter(func.lower(Products.name).contains(search_value.lower())) # pobieramy nazwy produktów, zmniejszmay rozmiar liter i to samo robimy dla wyszukiwanego ciągu znaków
             # następnie sprawdzamy czy nazwa produktu zawiera wyszukiwany ciąg znaków
+        else:
+            results = Products.query # jeśli nie ma wartości wyszukiwania, zwracamy wszystkie produkty
 
         pagination = results.paginate(page=page, per_page=per_page, error_out=False)
         products = pagination.items
