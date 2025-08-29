@@ -173,15 +173,15 @@ def register_address():
         if data.get('nip') and not UserAddress.validate_nip(data.get('nip')): # sprawdzamy czy nip w ogóle został podany i jak tak to go walidujemy
             return jsonify({'error': 'Invalid NIP format'}), 400
 
-        type_str = data.get('type', 'shipping')  # default 'shipping', dodatkowe wyłapanie błedu aby ten się w ogóle wyświetlił
+        type_str = data.get('type', 'Shipping')  # default 'shipping', dodatkowe wyłapanie błedu aby ten się w ogóle wyświetlił
         try:
             address_type = AddressType(type_str)
         except ValueError:
             return jsonify({'error': f'Invalid address type: {type_str}'}), 400
         
-        if address_type == AddressType.default:
+        if address_type == AddressType.Default:
             if_default_check = UserAddress.query.filter(
-                UserAddress.type == 'default',
+                UserAddress.type == 'Default',
                 UserAddress.user_id == current_user_id
             ).first()
             if if_default_check:

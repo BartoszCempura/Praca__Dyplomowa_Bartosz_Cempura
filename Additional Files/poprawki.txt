@@ -7,6 +7,8 @@ Sprawdż czy masz komunikaty błędów opisane w języku algielskim lub polskim.
 
 Zastanów się czy zmodyfikować coś w metodach zwracania danych dla użytkownijków. Masz dodaną nową relacje w transactions. Zastanów się co gdzie powinno być zwracane a co nie
 
+"delivery_deadline": "Tue, 02 Sep 2025 00:00:00 GMT", dla transakcji nie pokazuje końca dnia. Może to być problematyczne. Rozwiąż jutro
+
 
 
 

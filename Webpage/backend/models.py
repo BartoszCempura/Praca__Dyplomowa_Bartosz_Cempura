@@ -5,6 +5,7 @@ from backend import db
 import enum
 import re
 from sqlalchemy import CheckConstraint, UniqueConstraint, func, Numeric
+from sqlalchemy.dialects.postgresql import JSONB
 from slugify import slugify
 
 """____________________________________________________________________________________________________________________"""
@@ -16,7 +17,11 @@ from slugify import slugify
 
 class User(db.Model): # model reprezentujący użytkownika w bazie danych
     __tablename__ = 'users'
-    __table_args__ = {'schema': 'user_management'}
+    __table_args__ = (
+        CheckConstraint(r"email  ~* '^[^@]+@[^@]+.[^@]+$'", name='users_email_check'),
+        CheckConstraint(r"phone_number ~ '^[0-9]{3} [0-9]{3} [0-9]{3}$'", name='users_phone_number_check'),
+        {'schema': 'user_management'}
+    )
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     login = db.Column(db.String(255), nullable=False, unique=True)
@@ -70,14 +75,18 @@ class User(db.Model): # model reprezentujący użytkownika w bazie danych
 
 
 class AddressType(enum.Enum):
-    shipping = 'shipping'
-    billing = 'billing'
-    default = 'default'
-    other = 'other'
+    Shipping = 'Shipping'
+    Billing = 'Billing'
+    Default = 'Default'
+    Other = 'Other'
 
 class UserAddress(db.Model): # model reprezentujący adres dostawy użytkownika w bazie danych
     __tablename__ = 'users_addresses'
-    __table_args__ = {'schema': 'user_management'}
+    __table_args__ = (
+        CheckConstraint(r"zip_code  ~ '^[0-9]{2}-[0-9]{3}$'", name='users_addresses_zip_code_check'),
+        CheckConstraint(r"nip ~ '^[0-9]{3}-[0-9]{6}-[0-9]{1}$'", name='users_addresses_nip_check'),
+        {'schema': 'user_management'}
+    )
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='CASCADE'), nullable=False)
@@ -94,7 +103,7 @@ class UserAddress(db.Model): # model reprezentujący adres dostawy użytkownika 
     type = db.Column(
         db.Enum(AddressType, name='address_type', schema='user_management'),
         nullable=False,
-        default=AddressType.shipping
+        default=AddressType.Shipping
     )
 
     # Rejestracja relacji dla SQLAlchemy
@@ -222,9 +231,6 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
     category = db.relationship('Categories', foreign_keys=[category_id])
 
     def to_json(self):
-
-        ##category = Categories.query.get(self.category_id) - to miło służyć pokazywaniu nazwy kategorii zamiast jej id
-
         return {
             "id": self.id,
             "category_name": self.category.name,
@@ -326,7 +332,7 @@ class ProductAccessories(db.Model):
             "weight": self.weight
         }
     
-## dodaj check constraint dla wcześniejszych modeli co kozystają z metod statycznych
+
 class Promotions(db.Model):
     __tablename__ = 'promotions'
     __table_args__ = (
@@ -517,8 +523,10 @@ class Transactions (db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='CASCADE'), nullable=False)
     total_transaction_value = db.Column(Numeric(10, 2), nullable=False, default=0.00)
-    billing_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_addresses.id', ondelete='CASCADE'), nullable=False)
-    shipping_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_addresses.id', ondelete='CASCADE'), nullable=False)
+    billing_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_addresses.id', ondelete='SET NULL'), nullable=True)
+    shipping_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_addresses.id', ondelete='SET NULL'), nullable=True)
+    billing_address_data = db.Column(JSONB, nullable=False) # rozwiązanie przehowuje słownik z adresem wykożystanym w tranzakcji. W celach historycznych i audytowych
+    shipping_address_data = db.Column(JSONB, nullable=False) ## /\
     status = db.Column(
         db.Enum(TransactionStatus, name='transaction_status', schema='commerce'),
         nullable=False,
@@ -541,14 +549,16 @@ class Transactions (db.Model):
             "user_id": self.user_id,
             "total_transaction_value": self.total_transaction_value,
             "billing_address_id": self.billing_address_id,
-            "shipping_address_id": self.shipping_address_id,
+            "billing_address_data": self.billing_address_data,
+            "shipping_address_id": self.shipping_address_id,          
+            "shipping_address_data": self.shipping_address_data,
             "status": self.status.value,
             "delivery_method_id": self.delivery_method_id, # ze względu na typ kolumny Date, będzie tu przechowywana data dostawy bez uwzględnienia godzin, minut i sekund
             "payment_method_id": self.payment_method_id,
             "delivery_deadline": self.delivery_deadline,
             "notes": self.notes,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "created_at": self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
+            "updated_at": self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None,
         }
     
     def to_json_user_view(self):
@@ -557,7 +567,7 @@ class Transactions (db.Model):
             "total_transaction_value": self.total_transaction_value,
             "status": self.status.value,
             "delivery_deadline": self.delivery_deadline.isoformat(),
-            "shipping_address": self.shipping_address.to_json(),         
+            "shipping_address": self.shipping_address_data,         
             "payment_method": self.payment_method.name,
             "delivery_method": self.delivery_method.name,
             "date_of_order": self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None
@@ -615,4 +625,17 @@ class Wishlists (db.Model):
         return {
             "product": self.product.to_json_user_view() if self.product else None
         }
+
+"""____________________________________________________________________________________________________________________"""
+
+"""Modele dla api analytics 
+    - UserProductInteractions: model przechowujący interakcje użytkowników z danym produktem na stronie
+    - ProductReviews: model przechowujący recenzje produktów
+    """
+
+class InteractionType(enum.Enum):
+    View = 'View'
+    AddToCart = 'AddToCart'
+    Purchase = 'Purchase'
+    Review = 'Review'
 

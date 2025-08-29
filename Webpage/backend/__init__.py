@@ -52,8 +52,10 @@ def create_app():
     app.register_blueprint(user_management_bp)
     from .catalog import catalog_bp ## importujemy moduł catalog, który będzie zawierał endpointy związane z katalogiem produktów
     app.register_blueprint(catalog_bp)
-    from .commerce import commerce_bp ## importujemy moduł catalog, który będzie zawierał endpointy związane z katalogiem produktów
-    app.register_blueprint(commerce_bp) 
+    from .commerce import commerce_bp ## importujemy moduł commerce, który będzie zawierał endpointy związane z procesem sprzdażowym
+    app.register_blueprint(commerce_bp)
+    from .analytics import analytics_bp ## importujemy moduł catalog, który będzie zawierał endpointy związane z katalogiem produktów
+    app.register_blueprint(analytics_bp)
 
     with app.app_context():
        from . import models ## importujemy modele z pliku models.py, aby były dostępne w kontekście aplikacji

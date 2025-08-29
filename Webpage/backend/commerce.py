@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from backend import db
-from backend.models import DeliveryMethods, PaymentMethods, Carts, CartProducts, Products, Transactions, TransactionStatus, TransactionProducts, User, Wishlists
+from backend.models import DeliveryMethods, PaymentMethods, Carts, CartProducts, Products, Transactions, TransactionStatus, TransactionProducts, User, Wishlists, UserAddress
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from backend.utils import role_required
 from sqlalchemy import func
@@ -402,13 +402,17 @@ def closing_purchase():
 
         delivery_method = DeliveryMethods.query.filter_by(id=data.get('delivery_method_id'), is_active=True).first()
         payment_method = PaymentMethods.query.filter_by(id=data.get('payment_method_id'), is_active=True).first()
+        billing_address = UserAddress.query.get(data.get('billing_address_id'))
+        shipping_address = UserAddress.query.get(data.get('shipping_address_id'))
 
         # Tworzenie nowej transakcji
         new_transaction = Transactions(
             user_id=user_id,
             total_transaction_value=cart.total_products_cost + delivery_method.fee + payment_method.fee,
-            billing_address_id=data.get('billing_address_id'),
-            shipping_address_id=data.get('shipping_address_id'),
+            billing_address_id=billing_address.id,
+            billing_address_data=billing_address.to_json(),
+            shipping_address_id=shipping_address.id,
+            shipping_address_data=shipping_address.to_json(),
             delivery_method_id=delivery_method.id,
             payment_method_id=payment_method.id,
             delivery_deadline=DeliveryMethods.delivery_date(delivery_method),
@@ -537,9 +541,13 @@ def get_all_user_transactions():
 
         response_data = []
         for transakcja in transakcje:
-            data = transakcja.to_json_user_view()
             produkty = TransactionProducts.query.filter_by(transaction_id=transakcja.id).all()
-            data["producty"] = [p.to_json_user_view() for p in produkty]
+            if user.role != 'admin':
+                data = transakcja.to_json_user_view()
+                data["producty"] = [p.to_json_user_view() for p in produkty]
+            else:
+                data = transakcja.to_json()
+                data["producty"] = [p.to_json() for p in produkty]
             response_data.append(data)
 
         return jsonify({
