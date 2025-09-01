@@ -453,7 +453,7 @@ def modify_transaction_status(transaction_id):
     """-------------------------------Zmiana statusy transakcji-------------------------------"""
 
     try:
-        # tutaj należało by dodać możliwośc logowania zmian w bazie dancyh ze względu na audyty i zasady RODO. Na tę chwile pomijamy ze względów czasowych
+        # tutaj należało by dodać możliwośc tworzenia logów zmian w bazie dancyh ze względu na audyty i zasady RODO. Na tę chwile pomijamy ze względów czasowych
         data = request.get_json()
         new_status = data.get('status')
         new_notes = data.get('notes')

@@ -633,9 +633,58 @@ class Wishlists (db.Model):
     - ProductReviews: model przechowujący recenzje produktów
     """
 
-class InteractionType(enum.Enum):
-    View = 'View'
-    AddToCart = 'AddToCart'
-    Purchase = 'Purchase'
-    Review = 'Review'
 
+
+class UserProductInteractions (db.Model):
+    __tablename__ = 'user_product_interactions'
+    __table_args__ = ({'schema': 'analytics'})
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='SET NULL'), nullable=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    session_id = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "product_id": self.product_id,
+            "type": self.type,
+            "session_id": self.session_id,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }
+    
+
+class ProductReviews (db.Model):
+    __tablename__ = 'product_reviews'
+    __table_args__ = (
+        UniqueConstraint('product_id', 'user_id', name='product_reviews_product_id_user_id_unique'),
+        CheckConstraint('rating between 1.0 and 5.0', name='rating_value_check'),
+        {'schema': 'analytics'}
+        )
+
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='SET NULL'), nullable=True)
+    rating = db.Column(db.Numeric(2, 1), nullable=False)
+    review = db.Column(db.Text, nullable=True)
+    is_verified_purchase = db.Column(db.Boolean, default=False)
+    is_approved = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "product_id": self.product_id,
+            "user_id": self.user_id,
+            "rating": self.rating,
+            "review": self.review,
+            "is_verified_purchase": self.is_verified_purchase,
+            "is_approved": self.is_approved,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
