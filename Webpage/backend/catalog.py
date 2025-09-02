@@ -533,7 +533,7 @@ def get_full_attribute_and_product_connection_info(product_id):
     
     
 
-@catalog_bp.route('/delete_attribute_product_connection/<int:connection_id>', methods=['GET'])
+@catalog_bp.route('/delete_attribute_product_connection/<int:connection_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def delete_attribute_product_connection(connection_id):

@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from backend import db
 from backend.models import DeliveryMethods, PaymentMethods, Carts, CartProducts, Products, Transactions, TransactionStatus, TransactionProducts, User, Wishlists, UserAddress
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from backend.utils import role_required
+from backend.utils import role_required, str_date
 from sqlalchemy import func
 from decimal import Decimal
 
@@ -521,11 +521,11 @@ def get_all_user_transactions():
         if status:
             transakcje = transakcje.filter_by(status=status)
         if raw_date_from:
-            date_from = Transactions.str_date(raw_date_from)
+            date_from = str_date(raw_date_from)
             if date_from:       
                 transakcje = transakcje.filter(Transactions.updated_at >= date_from)
         if raw_date_to:
-            date_to = Transactions.str_date(raw_date_to)
+            date_to = str_date(raw_date_to)
             if date_to:    
                 date_to = date_to.replace(hour=23, minute=59, second=59)
                 transakcje = transakcje.filter(Transactions.updated_at <= date_to)

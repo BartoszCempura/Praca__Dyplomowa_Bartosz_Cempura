@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from backend import db
 from backend.models import UserProductInteractions, ProductReviews, Products
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from backend.utils import role_required
+from backend.utils import role_required, str_date
 
 analytics_bp = Blueprint('analytics', __name__, url_prefix='/api/analytics')
 
@@ -101,3 +101,219 @@ def add_product_review():
             db.session.rollback()
             print(f"[ERROR]: {str(e)}")
             return jsonify({'error': 'Internal server error'}), 500
+    
+
+@analytics_bp.route('/modify_product_review/<int:product_id>', methods=['PUT'])
+@jwt_required()
+def modify_product_review(product_id):
+
+    """-------------------------------Modyfikowanie recencji przez użytkownika-------------------------------"""
+
+    try:
+      
+        user_id = get_jwt_identity()
+        data = request.get_json()        
+
+        if not product_id:
+            return jsonify({'error': 'Brak id produktu'}), 400
+        
+        review_old = ProductReviews.query.filter(
+            ProductReviews.user_id == user_id,
+            ProductReviews.product_id == product_id
+        ).first()
+
+        if not review_old:
+            return jsonify({'message': 'Brak recenzji dla tego produktu'}), 404
+        
+        if 'rating' in data:
+            try:
+                rating = float(data['rating']) # bezpośredni dostęp do klucza. Brak oznacza KeyError
+            except (TypeError, ValueError):
+                return jsonify({'error': 'Ocena musi być liczbą'}), 400
+
+            if not (1.0 <= rating <= 5.0):
+                return jsonify({'error': 'Ocena musi mieć wartość z przedziału 1.0 do 5.0'}), 400
+            review_old.rating = rating
+
+
+        review = data.get('review')
+        if review:
+            review_old.review = review
+
+        db.session.commit()
+
+        return jsonify({"message": "Recenzja zmodyfikowana poprawnie"}), 200
+
+    except Exception as e:
+            db.session.rollback()
+            print(f"[ERROR]: {str(e)}")
+            return jsonify({'error': 'Internal server error'}), 500
+    
+
+    
+@analytics_bp.route('/delete_product_review/<int:product_id>', methods=['DELETE'])
+@jwt_required()
+def delete_product_review(product_id):
+
+    """-------------------------------Usuwanie recenzji przez użytkownika-------------------------------"""
+
+    try:
+
+        user_id = get_jwt_identity()
+
+        if not product_id:
+            return jsonify({'error': 'Brak id produktu'}), 400
+
+        review_for_delete = ProductReviews.query.filter(
+            ProductReviews.user_id == user_id,
+            ProductReviews.product_id == product_id
+        ).first()
+
+        if not review_for_delete:
+            return jsonify({'message': 'Brak recenzji dla tego produktu'}), 404
+
+        db.session.delete(review_for_delete)
+        db.session.commit()
+
+        return jsonify({"message": "Recenzja usunięta poprawnie"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
+@analytics_bp.route('/admin_set_verified_and_approved/<int:review_id>', methods=['PUT'])
+@jwt_required()
+@role_required('admin')
+def admin_set_verified_and_approved(review_id):
+
+    """-------------------------------Modyfikacja statusu review przez administratora-------------------------------"""
+
+    try:
+   
+        review = ProductReviews.query.filter_by(id=review_id).first()
+
+        if not review:
+            return jsonify({"error": "Brak recenzji"}), 404
+
+        data = request.get_json()
+
+        review.is_verified_purchase = data.get('is_verified_purchase', review.is_verified_purchase)
+        review.is_approved = data.get('is_approved', review.is_approved)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Recęzja zmodyfikowana poprawnie",
+            "review": review.to_json()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+    
+@analytics_bp.route('/admin_delete_product_review/<int:review_id>', methods=['DELETE'])
+@jwt_required()
+@role_required('admin')
+def admin_delete_product_review(review_id):
+
+    """-------------------------------Usuwanie recenzji przez administratora-------------------------------"""
+
+    try:
+
+        if not review_id:
+            return jsonify({'error': 'Brak id recenzji'}), 400
+
+        review_for_delete = ProductReviews.query.filter_by(id=review_id).first()
+
+        if not review_for_delete:
+            return jsonify({'message': 'Brak recenzji o tym id'}), 404
+
+        db.session.delete(review_for_delete)
+        db.session.commit()
+
+        return jsonify({"message": "Recenzja usunięta poprawnie"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+    
+@analytics_bp.route('/get_all_reviews', methods=['GET'])
+@jwt_required()
+@role_required('admin')
+def get_all_reviews():
+     
+    """-------------------------------Pobiera reviews i zwraca filtrowaną odpowiedź-------------------------------"""
+
+    try:
+
+        verified = request.args.get('verified')
+        approved = request.args.get('approved')
+        raw_date_from = request.args.get('date_from')
+        raw_date_to = request.args.get('date_to')
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('limit', 20, type=int)
+
+        all_reviews = ProductReviews.query
+
+        if verified is not None:
+            is_verified = verified.lower() == 'true'
+            all_reviews = all_reviews.filter_by(is_verified_purchase=is_verified)
+
+        if approved is not None:
+            is_approved = approved.lower() == 'true'
+            all_reviews = all_reviews.filter_by(is_approved=is_approved)
+        
+        if raw_date_from:
+            date_from = str_date(raw_date_from)
+            if date_from:
+                all_reviews = all_reviews.filter(ProductReviews.updated_at >= date_from)
+        if raw_date_to:
+            date_to = str_date(raw_date_to)
+            if date_to:
+                date_to = date_to.replace(hour=23, minute=59, second=59)
+                all_reviews = all_reviews.filter(ProductReviews.updated_at <= date_to)
+
+        pagination = all_reviews.order_by(ProductReviews.updated_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+
+        all_reviews = pagination.items
+
+        if not all_reviews:
+            return jsonify([]), 200
+        
+        response_data = []
+        for review in all_reviews:
+            data = review.to_json()
+            response_data.append(data)
+
+        return jsonify({
+            "reviews": response_data,
+            "total": pagination.total,
+            "page": pagination.page,
+            "pages": pagination.pages,
+            "has_next": pagination.has_next,
+            "has_prev": pagination.has_prev,
+            "next_page": pagination.next_num if pagination.has_next else None,
+            "prev_page": pagination.prev_num if pagination.has_prev else None
+        }), 200
+
+    except Exception as e:
+            print(f"[ERROR]: {str(e)}")
+            return jsonify({'error': 'Internal server error'}), 500
+
+
+
+@analytics_bp.route('/get_all_active_reviews', methods=['GET'])
+def get_all_active_reviews():
+     
+    """-------------------------------Pobiera wszystkie zatwierdzone reviews-------------------------------"""
+    
+    all_active_reviews = ProductReviews.query.filter_by(is_approved=True).all()
+    return jsonify([review.to_json_user_view() for review in all_active_reviews]), 200

@@ -572,12 +572,8 @@ class Transactions (db.Model):
             "delivery_method": self.delivery_method.name,
             "date_of_order": self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None
         }
-    @staticmethod
-    def str_date(date):
-        try:
-            return datetime.strptime(date, '%Y-%m-%d')
-        except ValueError:
-            return None
+
+
 
 class TransactionProducts (db.Model):
     __tablename__ = 'transaction_products'
@@ -676,6 +672,8 @@ class ProductReviews (db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+    user = db.relationship('User', foreign_keys=[user_id])
+
     def to_json(self):
         return {
             "id": self.id,
@@ -687,4 +685,11 @@ class ProductReviews (db.Model):
             "is_approved": self.is_approved,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def to_json_user_view(self):
+        return {
+            "user": self.user.login,
+            "rating": self.rating,
+            "review": self.review
         }
