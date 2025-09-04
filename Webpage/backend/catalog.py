@@ -11,18 +11,18 @@ catalog_bp = Blueprint('catalog', __name__, url_prefix='/api/catalog')
 ## ###################################################################### Kategorie ######################################################################
 
 
-@catalog_bp.route('/all_categories', methods=['GET'])
+@catalog_bp.route('/admin/categories', methods=['GET'])
 @jwt_required()
 @role_required('admin')
 def get_all_categories():
 
-    """-----------------------------Pobranie wszystkich kategorii-------------------------------"""
+    """-----------------------------Pobranie wszystkich kategorii przez administratora-------------------------------"""
 
     categories = Categories.query.all()
     return jsonify([category.to_json() for category in categories])
 
 
-@catalog_bp.route('/root_categories', methods=['GET']) # przy ładowaniu strony głównej pobieramy kategorie główne
+@catalog_bp.route('/categories', methods=['GET']) # przy ładowaniu strony głównej pobieramy kategorie główne
 def get_root_categories():
 
     """-------------------------------Pobranie kategorii głównych-------------------------------"""
@@ -34,7 +34,7 @@ def get_root_categories():
     return jsonify([category.to_json() for category in categories])
 
 
-@catalog_bp.route('/child_categories/<int:whose_child_id>', methods=['GET']) # pobieramy kategorie podrzędne dla danej kategorii głównej
+@catalog_bp.route('/categories/<int:whose_child_id>', methods=['GET']) # pobieramy kategorie podrzędne dla danej kategorii głównej
 def get_child_categories(whose_child_id):
 
     """-------------------------------Pobranie kategorii podrzędnych-------------------------------"""
@@ -47,12 +47,12 @@ def get_child_categories(whose_child_id):
     return jsonify([child.to_json() for child in children])
 
 
-@catalog_bp.route('/add_category', methods=['POST'])
+@catalog_bp.route('/admin/categories', methods=['POST'])
 @jwt_required()
 @role_required('admin')
 def add_category():
 
-    """-------------------------------Dodanie nowej kategorii-------------------------------"""
+    """-------------------------------Dodanie nowej kategorii przez administratora-------------------------------"""
 
     try:
         
@@ -80,12 +80,12 @@ def add_category():
             return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/delete_category/<int:category_id>', methods=['DELETE'])
+@catalog_bp.route('/admin/categories/<int:category_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def delete_category(category_id):
 
-    """-------------------------------Usunięcie kategorii-------------------------------"""
+    """-------------------------------Usunięcie kategorii przez administratora-------------------------------"""
 
     try:
 
@@ -112,12 +112,12 @@ def delete_category(category_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/modify_category/<int:category_id>', methods=['PUT'])
+@catalog_bp.route('/admin/categories/<int:category_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
 def modify_category(category_id):
 
-    """-------------------------------Modyfikacja kategorii-------------------------------"""
+    """-------------------------------Modyfikacja kategorii przez administratora-------------------------------"""
 
     try:
         # zastosowanie w przypadkach gdy użytkonik chce przypisac kategorii parent_id albo zmienić jej status na nieużywaną
@@ -148,12 +148,12 @@ def modify_category(category_id):
 ## ###################################################################### Atrybuty ######################################################################
 
 
-@catalog_bp.route('/add_atribute', methods=['POST'])
+@catalog_bp.route('/admin/attributes', methods=['POST'])
 @jwt_required()
 @role_required('admin')
 def add_attribute():
 
-    """-------------------------------Dodanie nowego atrybutu-------------------------------"""
+    """-------------------------------Dodanie nowego atrybutu przez administratora-------------------------------"""
 
     try:
 
@@ -178,12 +178,12 @@ def add_attribute():
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/delete_attribute/<int:attribute_id>', methods=['DELETE'])
+@catalog_bp.route('/admin/attributes/<int:attribute_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def delete_attribute(attribute_id):
 
-    """-------------------------------Usunięcie atrybutu-------------------------------"""
+    """-------------------------------Usunięcie atrybutu przez administratora-------------------------------"""
 
     try:
 
@@ -210,12 +210,12 @@ def delete_attribute(attribute_id):
         return jsonify({'error': 'Internal server error'}), 500
 
 
-@catalog_bp.route('/all_attributes', methods=['GET'])
-@jwt_required() ## ??? potrzebne??
+@catalog_bp.route('/admin/attributes', methods=['GET'])
+@jwt_required()
 @role_required('admin')
 def get_all_attributes():
 
-    """-----------------------------Pobranie wszystkich atrybutów-------------------------------"""
+    """-----------------------------Pobranie wszystkich atrybutów przez administratora-------------------------------"""
 
     attributes = Attributes.query.all()
     return jsonify([attribute.to_json() for attribute in attributes])
@@ -224,12 +224,12 @@ def get_all_attributes():
 ## ###################################################################### Produkty ######################################################################
 
 
-@catalog_bp.route('/add_product', methods=['POST'])
+@catalog_bp.route('/admin/products', methods=['POST'])
 @jwt_required()
 @role_required('admin')
 def add_product():
 
-    """-------------------------------Dodanie nowego produktu-------------------------------"""
+    """-------------------------------Dodanie nowego produktu przez administratora-------------------------------"""
 
     try:
 
@@ -267,12 +267,12 @@ def add_product():
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/delete_product/<int:product_id>', methods=['DELETE'])
+@catalog_bp.route('/admin/products/<int:product_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def delete_product(product_id):
 
-    """-------------------------------Usunięcie produktu-------------------------------"""
+    """-------------------------------Usunięcie produktu przez administratora-------------------------------"""
 
     try:
 
@@ -301,12 +301,12 @@ def delete_product(product_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/all_products', methods=['GET'])
+@catalog_bp.route('/admin/products', methods=['GET'])
 @jwt_required()
 @role_required('admin')
 def get_all_products():
 
-    """-----------------------------Pobranie wszystkich produktów-------------------------------"""
+    """-----------------------------Pobranie wszystkich produktów dla administratora-------------------------------"""
 
     products = Products.query.all()
     return jsonify([product.to_json() for product in products])
@@ -348,12 +348,12 @@ def get_products_by_category_slug(category_slug):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/modify_product/<int:product_id>', methods=['PUT'])
+@catalog_bp.route('/admin/products/<int:product_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
 def modify_product(product_id):
 
-    """-------------------------------Modyfikacja produktu-------------------------------"""
+    """-------------------------------Modyfikacja danych produktu przez administratora-------------------------------"""
 
     try:
 
@@ -396,10 +396,10 @@ def modify_product(product_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/search_products', methods=['GET'])
+@catalog_bp.route('/products', methods=['GET'])
 def search_products():
 
-    """-------------------------------Wyszukiwanie produktów-------------------------------"""
+    """-------------------------------Wyszukiwanie produktów po wartości argumentu search-------------------------------"""
 
     try:
 
@@ -435,12 +435,12 @@ def search_products():
 ## ###################################################################### Atrybuty produktów ######################################################################
 
 
-@catalog_bp.route('/connect_attribute_to_product', methods=['POST'])
+@catalog_bp.route('/admin/product-attributes', methods=['POST'])
 @jwt_required()
 @role_required('admin')
 def connect_attribute_to_product():
 
-    """-------------------------------Dodanie nowego atrybutu dla produktu-------------------------------"""
+    """-------------------------------Dodanie nowego atrybutu dla produktu przez administratora-------------------------------"""
 
     try:
 
@@ -484,10 +484,10 @@ def connect_attribute_to_product():
     
 
 
-@catalog_bp.route('/get_all_attributes_of_product/<int:product_id>', methods=['GET'])
+@catalog_bp.route('/product-attributes/<int:product_id>', methods=['GET'])
 def get_all_attributes_of_product(product_id):
 
-    """-------------------------------Pobranie wszystkich atrybutów produktu (tylko name + value)-------------------------------"""
+    """-------------------------------Pobranie name oraz value atrybutów dla danego produktu-------------------------------"""
 
     try:
         # endpoint używany do pobierania atrybutów produktu na stronie produktu
@@ -510,12 +510,12 @@ def get_all_attributes_of_product(product_id):
     
 
     
-@catalog_bp.route('/get_full_attribute_and_product_connection_info/<int:product_id>', methods=['GET'])
+@catalog_bp.route('/admin/product-attributes/<int:product_id>', methods=['GET'])
 @jwt_required()
 @role_required('admin')
 def get_full_attribute_and_product_connection_info(product_id):
 
-    """-------------------------------Pobranie wszystkich atrybutów produktu (tylko name + value)-------------------------------"""
+    """-------------------------------Pobranie pełnych danych atrybutu dla produktu prze administratora-------------------------------"""
 
     try:
         ## dla panelu administratora gdzie będą potrzebne wszystkie informacje o połączeniu atrybutu z produktem
@@ -533,7 +533,7 @@ def get_full_attribute_and_product_connection_info(product_id):
     
     
 
-@catalog_bp.route('/delete_attribute_product_connection/<int:connection_id>', methods=['DELETE'])
+@catalog_bp.route('/admin/product-attributes/<int:connection_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def delete_attribute_product_connection(connection_id):
@@ -573,7 +573,7 @@ def delete_attribute_product_connection(connection_id):
     
     
     
-@catalog_bp.route('/modify_connection_value/<int:ProductAttributes_id>', methods=['PUT'])
+@catalog_bp.route('/admin/product-attributes/<int:ProductAttributes_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
 def modify_connection_value(ProductAttributes_id):
@@ -607,12 +607,12 @@ def modify_connection_value(ProductAttributes_id):
 ## ###################################################################### wagi atrybutów ######################################################################
 
 
-@catalog_bp.route('/add_attribute_weight_for_category', methods=['POST'])
+@catalog_bp.route('/admin/attribute-weights', methods=['POST'])
 @jwt_required()
 @role_required('admin')
 def add_attribute_weight_for_category():
 
-    """-------------------------------Dodawanie wagi kategorii dla produktu-------------------------------"""  
+    """-------------------------------Dodawanie wagi kategorii dla produktu przez administratora-------------------------------"""  
 
     try:
         data = request.get_json()
@@ -658,12 +658,12 @@ def add_attribute_weight_for_category():
     
     
 
-@catalog_bp.route('/delete_attribute_category_weight/<int:AttributeWeights_id>', methods=['DELETE'])
+@catalog_bp.route('/admin/attribute-weights/<int:AttributeWeights_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def delete_attribute_category_weight(AttributeWeights_id):
 
-    """-------------------------------Usunięcie wagi dla kategorii-------------------------------"""
+    """-------------------------------Usunięcie wagi kategorii przez administratora-------------------------------"""
 
     try:
 
@@ -696,12 +696,12 @@ def delete_attribute_category_weight(AttributeWeights_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/modify_attribute_weight/<int:AttributeWeights_id>', methods=['PUT'])
+@catalog_bp.route('/admin/attribute-weights/<int:AttributeWeights_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
 def modify_attribute_weight(AttributeWeights_id):
 
-    """-------------------------------Modyfikacja wartości połączenia atrybutu z produktem-------------------------------"""  
+    """-------------------------------Modyfikacja wartości połączenia atrybutu z produktem przez administratora-------------------------------"""  
 
     try:
 
@@ -728,12 +728,12 @@ def modify_attribute_weight(AttributeWeights_id):
     
 
     
-@catalog_bp.route('/get_all_attribute_weights_for_category/<int:category_id>', methods=['GET'])
+@catalog_bp.route('/admin/attribute-weights/<int:category_id>', methods=['GET'])
 @jwt_required()
 @role_required('admin')
 def get_attribute_weights_for_category(category_id):
 
-    """-------------------------------Zwraca wszystkie atrybuty dla wybranej kategorii-------------------------------"""  
+    """-------------------------------Zwraca wszystkie atrybuty dla wybranej kategorii dla administratora-------------------------------"""  
 
     try:
 
@@ -755,12 +755,12 @@ def get_attribute_weights_for_category(category_id):
 ## ###################################################################### Akcesoria dla produktu ######################################################################
 
 
-@catalog_bp.route('/add_product_accessory_relation', methods=['POST'])
+@catalog_bp.route('/admin/product-accessories', methods=['POST'])
 @jwt_required()
 @role_required('admin')
 def add_product_accessory_relation():
 
-    """-------------------------------Dodawanie relacji między akcesorium a produktem-------------------------------"""
+    """-------------------------------Dodawanie relacji między akcesorium a produktem przez administratora-------------------------------"""
 
     try:
 
@@ -807,12 +807,12 @@ def add_product_accessory_relation():
     
     
 
-@catalog_bp.route('/delete_product_accessory_relation/<int:relation_id>', methods=['DELETE'])
+@catalog_bp.route('/admin/product-accessories/<int:relation_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def delete_product_accessory_relation(relation_id):
 
-    """-------------------------------Usunięcie relacji akcesorium dla produktu-------------------------------"""
+    """-------------------------------Usunięcie relacji akcesorium z produktem przez administratora-------------------------------"""
 
 
     try:
@@ -845,12 +845,12 @@ def delete_product_accessory_relation(relation_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/modify_relation_weight/<int:relation_id>', methods=['PUT'])
+@catalog_bp.route('/admin/product-accessories/<int:relation_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
 def modify_relation_weight(relation_id):
 
-    """-------------------------------Modyfikacja wartości wagi dla relacji akcesorium produkt-------------------------------"""  
+    """-------------------------------Modyfikacja wartości wagi dla relacji akcesorium produkt przez administratora-------------------------------"""  
 
     try:
 
@@ -877,12 +877,12 @@ def modify_relation_weight(relation_id):
     
 
     
-@catalog_bp.route('/get_all_accessorys_for_product/<int:product_id>', methods=['GET'])
+@catalog_bp.route('/admin/product-accessories/<int:product_id>', methods=['GET'])
 @jwt_required()
 @role_required('admin')
 def get_all_accessorys_for_product(product_id):
 
-    """-------------------------------Zwraca wszystkie akcesoria w relacji z produktem-------------------------------"""  
+    """-------------------------------Zwraca wszystkie akcesoria w relacji z produktem dla administratora-------------------------------"""  
 
     try:
 
@@ -905,12 +905,12 @@ def get_all_accessorys_for_product(product_id):
 ## ###################################################################### Promocje ######################################################################
 
 
-@catalog_bp.route('/add_promotion', methods=['POST'])
+@catalog_bp.route('/admin/promotions', methods=['POST'])
 @jwt_required()
 @role_required('admin')
 def add_promotion():
 
-    """-------------------------------Dodawanie promocji-------------------------------"""
+    """-------------------------------Dodawanie promocji przez administratora-------------------------------"""
 
     try:
 
@@ -952,12 +952,12 @@ def add_promotion():
     
     
 
-@catalog_bp.route('/delete_promotion/<int:promotion_id>', methods=['DELETE'])
+@catalog_bp.route('/admin/promotions/<int:promotion_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def delete_promotion(promotion_id):
 
-    """-------------------------------Usunięcie danej promocji-------------------------------"""
+    """-------------------------------Usunięcie danej promocji przez administratora-------------------------------"""
 
     try:
 
@@ -984,12 +984,12 @@ def delete_promotion(promotion_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/modify_promotion/<int:promotion_id>', methods=['PUT'])
+@catalog_bp.route('/admin/promotions/<int:promotion_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
 def modify_promotion(promotion_id):
 
-    """-------------------------------Modyfikacja opisu danej promocji-------------------------------"""  
+    """-------------------------------Modyfikacja zasad, danych danej promocji przez administratora-------------------------------"""  
 
     try:
 
@@ -1019,10 +1019,12 @@ def modify_promotion(promotion_id):
     
 
     
-@catalog_bp.route('/get_all_promotions', methods=['GET'])
+@catalog_bp.route('/admin/promotions', methods=['GET'])
+@jwt_required()
+@role_required('admin')
 def get_all_promotions():
 
-    """-------------------------------Zwraca wszystkie promocje-------------------------------"""  
+    """-------------------------------Zwraca wszystkie promocje dla administratora-------------------------------"""  
 
     promotions = Promotions.query.all()
     return jsonify([promotion.to_json() for promotion in promotions]), 200
@@ -1031,25 +1033,25 @@ def get_all_promotions():
 
 # react będzie przechowywał w usestate listę produktów które następnie będą przekazywane do endpoint dodającego promocje to bazy danych
 
-@catalog_bp.route('/add_products_to_promotion', methods=['POST'])
+@catalog_bp.route('/admin/product-promotions/<int:promotion_id>', methods=['POST'])
 @jwt_required()
 @role_required('admin')
-def add_products_to_promotion():
+def add_products_to_promotion(promotion_id):
 
-    """-------------------------------Przypisywanie produktów do promocji-------------------------------"""
+    """-------------------------------Przypisywanie produktów do promocji przez administratora-------------------------------"""
 
     try:
         data = request.get_json()
-        product_ids = data.get('product_ids') # przekazujemy do endpoint listę produktów 
+        products_ids = data.get('product_ids') # przekazujemy do endpoint listę produktów 
 
-        if not data.get('promotion_id') or not product_ids:
+        if not promotion_id or not products_ids:
             return jsonify({'error': 'promotion_id and product_ids are required'}), 400
 
-        if not Promotions.query.get(data.get('promotion_id')):
+        if not Promotions.query.get(promotion_id):
             return jsonify({'error': 'Promotion not found'}), 404
 
         added = []
-        for product_id in product_ids:
+        for product_id in products_ids:
             product = Products.query.get(product_id)
             if not product:
                 continue  # sprawdzamy czy dany produkt istnieje, jak nie to go pomijamy
@@ -1059,7 +1061,7 @@ def add_products_to_promotion():
             if not exists:
                 promotion_for_product = ProductPromotions()
                 promotion_for_product.product_id = product_id
-                promotion_for_product.promotion_id = data.get('promotion_id')
+                promotion_for_product.promotion_id = promotion_id
                 db.session.add(promotion_for_product)
                 added.append(product_id)
 
@@ -1094,10 +1096,12 @@ def get_all_products_in_promotion(promotion_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/remove_product_from_promotion/<int:product_id>', methods=['DELETE'])
+@catalog_bp.route('/admin/product-promotions/<int:product_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def remove_product_from_promotion(product_id):
+
+    """-------------------------------Usunięcie produktu z promocji przez administratora-------------------------------"""
      
 
     try:
@@ -1117,7 +1121,7 @@ def remove_product_from_promotion(product_id):
 
         return jsonify({
             "message": "Product removed from promotion",
-            "Product": removed.to_json()
+            "Product": removed
         }), 200
     
     except Exception as e:

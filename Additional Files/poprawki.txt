@@ -13,5 +13,7 @@ Zastanów się czy zmodyfikować coś w metodach zwracania danych dla użytkowni
 
 
 
-
+Poprawić diagram ERD - wprowadzałem zmiany od ostatniego czasu. 
+Kontynuacja poprawiania URI API od commerce
+wygenerowanie dokumentacji api zapomocą OpenAPI albo Swagger
 

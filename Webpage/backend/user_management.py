@@ -10,10 +10,10 @@ user_management_bp = Blueprint('user_management', __name__, url_prefix='/api/use
 
 ## ###################################################################### Użytkownicy ######################################################################
 
-@user_management_bp.route('/register', methods=['POST'])
+@user_management_bp.route('/user', methods=['POST'])
 def register():
 
-    """-------------------------------Tworzenie nowego użytkownika-------------------------------"""
+    """-------------------------------Tworzenie konta nowego użytkownika-------------------------------"""
 
     try:
         data = request.get_json()
@@ -66,11 +66,11 @@ def register():
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@user_management_bp.route('/change_password', methods=['POST'])
+@user_management_bp.route('/user', methods=['PUT'])
 @jwt_required()
 def change_password():
 
-    """-------------------------------Zmiana hasła użytkownika-------------------------------"""
+    """-------------------------------Zmiana hasła przez użytkownika-------------------------------"""
 
     # można dodać jeszce możliwośc zmiany pozostałych danych użytkownika, ale to już nie jest priorytetem
     data = request.get_json()
@@ -92,7 +92,7 @@ def change_password():
     return jsonify({'message': 'Password changed successfully'}), 200
 
 
-@user_management_bp.route('/me', methods=['GET'])
+@user_management_bp.route('/user', methods=['GET'])
 @jwt_required()
 def get_current_user():
 
@@ -113,7 +113,7 @@ def get_current_user():
     
 
 
-@user_management_bp.route('/delete', methods=['DELETE'])
+@user_management_bp.route('/user', methods=['DELETE'])
 @jwt_required()
 def delete_user():
 
@@ -155,9 +155,12 @@ def delete_user():
     
 ## ###################################################################### Adresy dostawy ######################################################################
 
-@user_management_bp.route('/register_address', methods=['POST'])
+@user_management_bp.route('/addresses', methods=['POST'])
 @jwt_required()
 def register_address():
+
+    """-------------------------------Rejestracja nowego adresu-------------------------------"""
+
     try:
         current_user_id = get_jwt_identity()
         data = request.get_json()
@@ -214,7 +217,7 @@ def register_address():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
     
 
-@user_management_bp.route('/my_all_addresses', methods=['GET'])
+@user_management_bp.route('/addresses', methods=['GET'])
 @jwt_required()
 def get_all_addresses():
 
@@ -235,19 +238,18 @@ def get_all_addresses():
 
     
 
-@user_management_bp.route('/delete_address', methods=['DELETE'])
+@user_management_bp.route('/addresses/<int:address_id>', methods=['DELETE'])
 @jwt_required()
-def delete_address():
+def delete_address(address_id):
 
-    """-------------------------------Usunięcie adresu użytkownika-------------------------------"""
+    """-------------------------------Usunięcie adresu użytkownika przez użytkownika-------------------------------"""
 
     try:
 
-        data = request.get_json()
         current_user_id = get_jwt_identity()
 
         address = UserAddress.query.filter(
-            UserAddress.id == data.get('id'),
+            UserAddress.id == address_id,
             UserAddress.user_id == current_user_id
         ).first() # po stronie frontend numer ID adresu musi być przekazany do przycisku x
 
@@ -268,7 +270,7 @@ def delete_address():
 ###################################################### endpointy dla administaratora ###########################################################
 
 
-@user_management_bp.route('/delete/<int:user_id>', methods=['DELETE'])
+@user_management_bp.route('/admin/user/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def delete_user_by_id(user_id):
@@ -300,12 +302,12 @@ def delete_user_by_id(user_id):
         return jsonify({'error': 'Internal server error'}), 500
     
     
-@user_management_bp.route('/all_users', methods=['GET'])
+@user_management_bp.route('/admin/user', methods=['GET'])
 @jwt_required()
 @role_required('admin')
 def get_all_users():
 
-    """-------------------------------Pobranie wszystkich użytkowników-------------------------------"""
+    """-------------------------------Pobranie wszystkich użytkowników przez administratora-------------------------------"""
 
     try:
         users = User.query.all()        
