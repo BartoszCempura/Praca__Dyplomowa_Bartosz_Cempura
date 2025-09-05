@@ -10,12 +10,12 @@ commerce_bp = Blueprint('commerce', __name__, url_prefix='/api/commerce')
 
 ## ###################################################################### Metody dostawy ######################################################################
 
-@commerce_bp.route('/add_delivery_method', methods=['POST'])
+@commerce_bp.route('/admin/delivery-methods', methods=['POST'])
 @jwt_required()
 @role_required('admin')
 def add_delivery_method():
 
-    """-------------------------------Dodanie metody dostawy-------------------------------"""
+    """-------------------------------Dodanie metody dostawy przez administratora-------------------------------"""
 
     try:
         
@@ -48,22 +48,22 @@ def add_delivery_method():
     
 
     
-@commerce_bp.route('/get_all_delivery_methods', methods=['GET'])
+@commerce_bp.route('/admin/delivery-methods', methods=['GET'])
 @jwt_required()
 @role_required('admin')
 def get_all_delivery_methods():
      
-    """-------------------------------Pobiera wszystkie wprowadzone Delivery methods-------------------------------"""
+    """-------------------------------Pobiera wszystkie wprowadzone Delivery methods dla administratora-------------------------------"""
 
     all_delivery_methods = DeliveryMethods.query.all()
     return jsonify([method.to_json() for method in all_delivery_methods]), 200
 
 
 
-@commerce_bp.route('/get_all_active_delivery_methods', methods=['GET'])
+@commerce_bp.route('/delivery-methods', methods=['GET'])
 def get_all_active_delivery_methods():
 
-    """-------------------------------Pobiera aktywne Delivery methods-------------------------------"""
+    """-------------------------------Pobiera aktywne Delivery methods dla procesu sprzedażowego-------------------------------"""
 
     active_methods = DeliveryMethods.query.filter_by(is_active=True).all()
 
@@ -71,12 +71,12 @@ def get_all_active_delivery_methods():
 
 
 
-@commerce_bp.route('/modify_delivery_method/<int:delivery_id>', methods=['PUT'])
+@commerce_bp.route('/admin/delivery-methods/<int:delivery_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
 def modify_delivery_method(delivery_id):
 
-    """-------------------------------modyfikujemy delivery method-------------------------------"""
+    """-------------------------------modyfikujemy delivery method przez administratora-------------------------------"""
 
     try:
 
@@ -109,12 +109,12 @@ def modify_delivery_method(delivery_id):
 ## ###################################################################### Metody płatnośic ######################################################################
 
 
-@commerce_bp.route('/add_payment_method', methods=['POST'])
+@commerce_bp.route('/admin/payment-methods', methods=['POST'])
 @jwt_required()
 @role_required('admin')
 def add_payment_method():
 
-    """-------------------------------Dodanie metody płatności-------------------------------"""
+    """-------------------------------Dodanie metody płatności przez administratora-------------------------------"""
 
     try:
         
@@ -147,22 +147,22 @@ def add_payment_method():
     
 
     
-@commerce_bp.route('/get_all_payment_methods', methods=['GET'])
+@commerce_bp.route('/admin/payment-methods', methods=['GET'])
 @jwt_required()
 @role_required('admin')
 def get_all_payment_methods():
-     
-    """-------------------------------Pobiera wszystkie wprowadzone payment methods-------------------------------"""
+
+    """-------------------------------Pobiera wszystkie wprowadzone payment methods dla administratora-------------------------------"""
 
     all_payment_methods = PaymentMethods.query.all()
     return jsonify([method.to_json() for method in all_payment_methods]), 200
 
 
 
-@commerce_bp.route('/get_all_active_payment_methods', methods=['GET'])
+@commerce_bp.route('/payment-methods', methods=['GET'])
 def get_all_active_payment_methods():
 
-    """-------------------------------Pobiera aktywne payment methods-------------------------------"""
+    """-------------------------------Pobiera aktywne payment methods dla procesu zakupowego-------------------------------"""
 
     active_methods = PaymentMethods.query.filter_by(is_active=True).all()
 
@@ -170,12 +170,12 @@ def get_all_active_payment_methods():
 
 
 
-@commerce_bp.route('/modify_payment_method/<int:payment_id>', methods=['PUT'])
+@commerce_bp.route('/admin/payment-methods/<int:payment_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
 def modify_payment_method(payment_id):
 
-    """-------------------------------Modyfikujemy payment method-------------------------------"""
+    """-------------------------------Modyfikujemy payment method przez administratora------------------------------"""
 
     try:
 
@@ -208,7 +208,7 @@ def modify_payment_method(payment_id):
 
 ## ###################################################################### Koszyk i produkty w koszyku ######################################################################
 
-@commerce_bp.route('/add_product_to_cart', methods=['POST'])
+@commerce_bp.route('/carts', methods=['POST'])
 @jwt_required()
 def add_product_to_cart():
 
@@ -280,11 +280,11 @@ def add_product_to_cart():
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@commerce_bp.route('/remove_product_from_cart', methods=['PUT'])
+@commerce_bp.route('/carts', methods=['PUT'])
 @jwt_required()
 def remove_product_from_cart():
 
-    """---------------------usówanie produktu do koszyka użytkownika---------------------"""
+    """---------------------usówanie produktu z koszyka użytkownika---------------------"""
 
     try:
         user_id = get_jwt_identity()
@@ -344,7 +344,7 @@ def remove_product_from_cart():
     
 
     
-@commerce_bp.route('/get_cart', methods=['GET'])
+@commerce_bp.route('/carts', methods=['GET'])
 @jwt_required()
 def get_cart():
 
@@ -378,7 +378,7 @@ def get_cart():
 ## ###################################################################### Transakcje i produkty w nich ######################################################################
 
 
-@commerce_bp.route('/closing_purchase', methods=['POST'])
+@commerce_bp.route('/transactions', methods=['POST'])
 @jwt_required()
 def closing_purchase():
 
@@ -445,12 +445,12 @@ def closing_purchase():
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@commerce_bp.route('/update_transaction_status/<int:transaction_id>', methods=['PUT'])
+@commerce_bp.route('/admin/transactions/<int:transaction_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
 def modify_transaction_status(transaction_id):
 
-    """-------------------------------Zmiana statusy transakcji-------------------------------"""
+    """-------------------------------Zmiana statusy transakcji przez administratora-------------------------------"""
 
     try:
         # tutaj należało by dodać możliwośc tworzenia logów zmian w bazie dancyh ze względu na audyty i zasady RODO. Na tę chwile pomijamy ze względów czasowych
@@ -499,7 +499,7 @@ def modify_transaction_status(transaction_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@commerce_bp.route('/get_all_user_transactions', methods=['GET'])
+@commerce_bp.route('/transactions', methods=['GET'])
 @jwt_required()
 def get_all_user_transactions():
 
@@ -570,11 +570,11 @@ def get_all_user_transactions():
 ## ###################################################################### Whishlist ######################################################################
 
 
-@commerce_bp.route('/add_to_whishlist', methods=['POST'])
+@commerce_bp.route('/wishlists', methods=['POST'])
 @jwt_required()
 def add_to_whishlist():
 
-    """-------------------------------Dodawanie produktu do listy ulubionych-------------------------------"""
+    """-------------------------------Dodawanie produktu do listy ulubionych przez użytkownika-------------------------------"""
 
     user_id = get_jwt_identity()
     data = request.get_json()
@@ -603,11 +603,11 @@ def add_to_whishlist():
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@commerce_bp.route('/remove_from_whishlist/<int:product_id>', methods=['DELETE'])
+@commerce_bp.route('/wishlists/<int:product_id>', methods=['DELETE'])
 @jwt_required()
 def remove_from_whishlist(product_id):
 
-    """-------------------------------Usuwanie produktu z listy ulubionych-------------------------------"""
+    """-------------------------------Usuwanie produktu z listy ulubionych przez użytkownika-------------------------------"""
 
     user_id = get_jwt_identity()
 
@@ -628,11 +628,11 @@ def remove_from_whishlist(product_id):
         return jsonify({'error': 'Internal server error'}), 500
 
 
-@commerce_bp.route('/get_wishlist', methods=['GET'])
+@commerce_bp.route('/wishlists', methods=['GET'])
 @jwt_required()
 def get_wishlist():
 
-    """-------------------------------Pobieramy listę wszystkich ulubionych produktów-------------------------------"""
+    """-------------------------------Pobieramy listę wszystkich ulubionych produktów użytkownika-------------------------------"""
 
     user_id = get_jwt_identity()
 

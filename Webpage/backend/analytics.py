@@ -9,7 +9,7 @@ analytics_bp = Blueprint('analytics', __name__, url_prefix='/api/analytics')
 
 ## ###################################################################### Interakcje z produktami ######################################################################
 
-@analytics_bp.route('/add_product_interaction', methods=['POST'])
+@analytics_bp.route('/user-product-interactions', methods=['POST'])
 @jwt_required(optional=True)
 def add_product_interaction():
 
@@ -56,11 +56,11 @@ def add_product_interaction():
 
 ## ###################################################################### Review ######################################################################
 
-@analytics_bp.route('/add_product_review', methods=['POST'])
+@analytics_bp.route('/product-reviews', methods=['POST'])
 @jwt_required()
 def add_product_review():
 
-    """-------------------------------Dodawanie recenzji produktu-------------------------------"""
+    """-------------------------------Dodawanie recenzji produktu przez użytkownika-------------------------------"""
 
     try:
       
@@ -103,7 +103,7 @@ def add_product_review():
             return jsonify({'error': 'Internal server error'}), 500
     
 
-@analytics_bp.route('/modify_product_review/<int:product_id>', methods=['PUT'])
+@analytics_bp.route('/product-reviews/<int:product_id>', methods=['PUT'])
 @jwt_required()
 def modify_product_review(product_id):
 
@@ -149,9 +149,8 @@ def modify_product_review(product_id):
             print(f"[ERROR]: {str(e)}")
             return jsonify({'error': 'Internal server error'}), 500
     
-
-    
-@analytics_bp.route('/delete_product_review/<int:product_id>', methods=['DELETE'])
+  
+@analytics_bp.route('/product-reviews/<int:product_id>', methods=['DELETE'])
 @jwt_required()
 def delete_product_review(product_id):
 
@@ -183,7 +182,7 @@ def delete_product_review(product_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@analytics_bp.route('/admin_set_verified_and_approved/<int:review_id>', methods=['PUT'])
+@analytics_bp.route('/admin/product-reviews/<int:review_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
 def admin_set_verified_and_approved(review_id):
@@ -215,7 +214,7 @@ def admin_set_verified_and_approved(review_id):
         return jsonify({'error': 'Internal server error'}), 500
 
     
-@analytics_bp.route('/admin_delete_product_review/<int:review_id>', methods=['DELETE'])
+@analytics_bp.route('/admin/product-reviews/<int:review_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
 def admin_delete_product_review(review_id):
@@ -243,12 +242,12 @@ def admin_delete_product_review(review_id):
         return jsonify({'error': 'Internal server error'}), 500
     
     
-@analytics_bp.route('/get_all_reviews', methods=['GET'])
+@analytics_bp.route('/admin/product-reviews', methods=['GET'])
 @jwt_required()
 @role_required('admin')
 def get_all_reviews():
      
-    """-------------------------------Pobiera reviews i zwraca filtrowaną odpowiedź-------------------------------"""
+    """-------------------------------Pobiera reviews i zwraca filtrowaną odpowiedź dla administratora-------------------------------"""
 
     try:
 
@@ -309,8 +308,7 @@ def get_all_reviews():
             return jsonify({'error': 'Internal server error'}), 500
 
 
-
-@analytics_bp.route('/get_all_active_reviews', methods=['GET'])
+@analytics_bp.route('/product-reviews', methods=['GET'])
 def get_all_active_reviews():
      
     """-------------------------------Pobiera wszystkie zatwierdzone reviews-------------------------------"""
