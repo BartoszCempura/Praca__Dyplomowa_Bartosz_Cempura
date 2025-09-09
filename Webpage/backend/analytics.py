@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from datetime import datetime, timezone, timedelta
 from backend import db
 from backend.models import UserProductInteractions, ProductReviews, Products
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -13,13 +14,13 @@ analytics_bp = Blueprint('analytics', __name__, url_prefix='/api/analytics')
 @jwt_required(optional=True)
 def add_product_interaction():
 
-    """-------------------------------Dodawanie informacji o interakcji z produktem-------------------------------"""
+    """-------------------------------Dodawanie informacji o interakcji z produktem (cicho w tle).-------------------------------"""
+
+    ## jeżeli użytkownik zalogowany to sprawdzam czy jest jakaś interakcja z przed max 30 minut. Jak nie ma to tworze session_id = None (baza wygeneruje UUID)
+    ## jeżeli użytkownik niezalogowany to biorę session_id z frontendu (jeżeli nie ma to ignoruje interakcję)
+    ## session_id generowane w fontendzie przez funkcje Javascript i przechowywane w localStorage
 
     try:
-
-## endpoint nie ma zwracać żadnych informacji tylko działać cicho w tle. 
-## działą również dla niezalogowanych użytkowników 
-      
         user_id = get_jwt_identity()
         data = request.get_json()
 
@@ -28,13 +29,38 @@ def add_product_interaction():
 
         interaction_type = data.get('type')
         product_id = data.get('product_id')
-        session_id = data.get('session_id')
 
-        if not product_id or not interaction_type or not session_id:
+        # Wymagane minimum
+        if not product_id or not interaction_type:
             return '', 204
-        
+
         if interaction_type not in ['View', 'AddToCart', 'Purchase', 'Review', 'AddToWishlist']:
             return '', 204
+
+        # Brak zalogowanego usera i brak session_id → ignorujemy
+        if not user_id and not data.get('session_id'):
+            return '', 204
+
+        session_id = None
+
+        if user_id:
+            # Zalogowany użytkownik → sprawdzanie ostatniej sesji
+            date_for_new_session = datetime.now(timezone.utc) - timedelta(minutes=30)
+            last_interaction = (
+                UserProductInteractions.query
+                .filter(
+                    UserProductInteractions.user_id == user_id,
+                    UserProductInteractions.created_at > date_for_new_session
+                )
+                .order_by(UserProductInteractions.created_at.desc())
+                .first()
+            )
+            if last_interaction:
+                session_id = last_interaction.session_id
+            # jeśli brak wcześniejszej sesji → session_id = None → baza wygeneruje UUID
+        else:
+            # Anonimowy → bierzemy session_id od frontendu
+            session_id = data.get('session_id')
 
         new_interaction = UserProductInteractions(
             user_id=user_id,
@@ -46,12 +72,12 @@ def add_product_interaction():
         db.session.add(new_interaction)
         db.session.commit()
 
-        return '', 204 
+        return '', 204
 
     except Exception as e:
-            db.session.rollback()
-            print(f"[ERROR]: {str(e)}")
-            return jsonify({'error': 'Internal server error'}), 500
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 ## ###################################################################### Review ######################################################################
