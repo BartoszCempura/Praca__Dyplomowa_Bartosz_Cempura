@@ -56,6 +56,8 @@ def create_app():
     app.register_blueprint(commerce_bp)
     from .analytics import analytics_bp ## importujemy moduł catalog, który będzie zawierał endpointy związane z katalogiem produktów
     app.register_blueprint(analytics_bp)
+    from .algorithms import algorithms_bp ## importujemy moduł algorithms, który będzie zawierał endpointy algorytmów podpowiadających produkty
+    app.register_blueprint(algorithms_bp)
 
     with app.app_context():
        from . import models ## importujemy modele z pliku models.py, aby były dostępne w kontekście aplikacji

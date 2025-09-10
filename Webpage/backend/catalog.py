@@ -507,8 +507,38 @@ def get_all_attributes_of_product(product_id):
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-    
 
+    
+@catalog_bp.route('/products/<int:product_id>', methods=['GET'])
+def get_product_details(product_id):
+
+    """-------------------------------Pobranie pełnych danych produktu wraz z atrybutami i ceną z rabatem-------------------------------"""
+
+    try:
+        product = Products.query.get(product_id)
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+
+        # Pobieramy atrybuty
+        attributes = db.session.query(
+            Attributes.name,
+            ProductAttributes.value
+        ).join(
+            Attributes, ProductAttributes.attribute_id == Attributes.id
+        ).filter(
+            ProductAttributes.product_id == product_id
+        ).all()
+
+        return jsonify({
+            "product": product.to_json(),
+            "attributes": [{"name": name, "value": value} for name, value in attributes],
+            "price_including_promotion": str(product.price_including_promotion())  # z rabatem
+        }), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
     
 @catalog_bp.route('/admin/product-attributes/<int:product_id>', methods=['GET'])
 @jwt_required()
@@ -1029,7 +1059,7 @@ def get_all_promotions():
     promotions = Promotions.query.all()
     return jsonify([promotion.to_json() for promotion in promotions]), 200
 
-## ###################################################################### Przypisywanie produktówdo promocji ######################################################################
+## ###################################################################### Przypisywanie produktów do promocji ######################################################################
 
 # react będzie przechowywał w usestate listę produktów które następnie będą przekazywane do endpoint dodającego promocje to bazy danych
 
