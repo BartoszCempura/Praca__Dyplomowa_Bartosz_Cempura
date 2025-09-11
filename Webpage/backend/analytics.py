@@ -37,15 +37,14 @@ def add_product_interaction():
         if interaction_type not in ['View', 'AddToCart', 'Purchase', 'Review', 'AddToWishlist']:
             return '', 204
 
-        # Brak zalogowanego usera i brak session_id → ignorujemy
+        # Brak zalogowanego usera i brak session_id z frontendu skutkuje zignorowaniem interakcji
         if not user_id and not data.get('session_id'):
             return '', 204
 
         session_id = None
 
         if user_id:
-            # Zalogowany użytkownik → sprawdzanie ostatniej sesji
-            date_for_new_session = datetime.now(timezone.utc) - timedelta(minutes=30)
+            date_for_new_session = datetime.now(timezone.utc) - timedelta(minutes=30) # 30 minut brakuinterakcji ze strony użytkownika z jakimkolwiek produktem skutkuje nową sesją
             last_interaction = (
                 UserProductInteractions.query
                 .filter(
@@ -56,10 +55,11 @@ def add_product_interaction():
                 .first()
             )
             if last_interaction:
+                # jeżeli wykryjemy w bazie że jest session id jeszcze aktualny to go przepisujemy
+                # ponieważ session_id jest na starcie None to baza będzie tworzyć nowy UUID jako defaultowe zachowanie
                 session_id = last_interaction.session_id
-            # jeśli brak wcześniejszej sesji → session_id = None → baza wygeneruje UUID
         else:
-            # Anonimowy → bierzemy session_id od frontendu
+            # jeżeli użytkownik nie jest zalogowany to pobieram session_id z frontendu
             session_id = data.get('session_id')
 
         new_interaction = UserProductInteractions(
