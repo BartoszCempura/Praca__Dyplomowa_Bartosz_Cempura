@@ -910,7 +910,7 @@ def modify_relation_weight(relation_id):
 @catalog_bp.route('/admin/product-accessories/<int:product_id>', methods=['GET'])
 @jwt_required()
 @role_required('admin')
-def get_all_accessorys_for_product(product_id):
+def get_all_accessories_for_product(product_id):
 
     """-------------------------------Zwraca wszystkie akcesoria w relacji z produktem dla administratora-------------------------------"""  
 
@@ -922,7 +922,7 @@ def get_all_accessorys_for_product(product_id):
         results = ProductAccessories.query.filter_by(product_id=product_id).all()
 
         if not results:
-            return jsonify({'error': 'There are no accessorys for this product'}), 404
+            return jsonify({'error': 'There are no accessories for this product'}), 404
 
         return jsonify([result.to_json() for result in results]), 200
 

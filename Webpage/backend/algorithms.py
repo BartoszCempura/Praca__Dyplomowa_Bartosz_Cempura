@@ -1,13 +1,15 @@
 from flask import Blueprint, jsonify
-from backend import db
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_jwt_extended import jwt_required
 from backend.utils import role_required
-from backend.models import Products, UserProductInteractions
+from backend.models import Products, UserProductInteractions, ProductAccessories
 from sqlalchemy import func, desc, desc, case
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal
+
 
 algorithms_bp = Blueprint('algorithms', __name__, url_prefix='/api/algorithms')
+
+
+## ############################################################### Popular Products Algorithm ######################################################################
 
 
 @algorithms_bp.route('/top-products', methods=['GET'])
@@ -118,3 +120,40 @@ def get_top_products_for_admin():
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+    
+## ############################################################### Accessory Recommendation  ######################################################################
+
+@algorithms_bp.route('/product-accessories/<int:product_id>', methods=['GET'])
+def get_top_accessories_for_product(product_id):
+
+    """-------------------------------Zwraca 5 akcesoriów o najwyższej wadze dla produktu-------------------------------"""
+
+    try:
+        if not Products.query.get(product_id):
+            return jsonify({"error": "Brak produktu o tym ID"}), 400
+
+        accessories = (
+            ProductAccessories.query
+            .filter_by(product_id=product_id)
+            .order_by(ProductAccessories.weight.desc())
+            .limit(5)
+            .all()
+        )
+
+        if not accessories:
+            return '', 204
+
+        # Pobierz dane produktów-akcesoriów
+        result = []
+        for accessory in accessories:
+            accessory_product = Products.query.get(accessory.accessory_product_id)
+            if accessory_product:
+                result.append({"product": accessory_product.to_json_user_view()})
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+
