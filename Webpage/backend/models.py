@@ -322,7 +322,7 @@ class ProductAccessories(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
     accessory_product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
-    weight = db.Column(Numeric(3, 2), nullable=False, default=1.00)
+    weight = db.Column(Numeric(3, 2), nullable=False, default=0.50)
 
     def to_json(self):
         return {

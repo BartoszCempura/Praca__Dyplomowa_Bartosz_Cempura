@@ -9,6 +9,8 @@ Zastanów się czy zmodyfikować coś w metodach zwracania danych dla użytkowni
 
 "delivery_deadline": "Tue, 02 Sep 2025 00:00:00 GMT", dla transakcji nie pokazuje końca dnia. Może to być problematyczne. Rozwiąż jutro
 
+ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również komputer z akcesoriów ????
+
 
 
 
@@ -17,5 +19,5 @@ Zastanów się czy zmodyfikować coś w metodach zwracania danych dla użytkowni
 
 wygenerowanie dokumentacji api zapomocą postman
 
-Zweryfikuj działąnie algorytmu top-products. Zrozum i przerób tak aby kod był zgodny z resztą twojego programu
+
 
