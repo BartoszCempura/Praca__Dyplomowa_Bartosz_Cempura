@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
 from backend.utils import role_required
-from backend.models import Products, UserProductInteractions, ProductAccessories
+from backend.models import Products, UserProductInteractions, ProductAccessories, ProductRecommendations
 from sqlalchemy import func, desc, desc, case
 from datetime import datetime, timedelta, timezone
 
@@ -157,3 +157,37 @@ def get_top_accessories_for_product(product_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
+## ############################################################### Recommends similar products based on attributes/features  ######################################################################
+
+@algorithms_bp.route('/products-similar/<int:product_id>', methods=['GET'])
+def get_similar_products(product_id):
+
+    """-------------------------------Zwraca 5 produktów podobnych do przeglądanego-------------------------------"""
+
+    try:
+        if not Products.query.get(product_id):
+            return jsonify({"error": "Brak produktu o tym ID"}), 400
+
+        recommendations = (
+            ProductRecommendations.query
+            .filter_by(product_id=product_id)
+            .order_by(ProductRecommendations.score.desc())
+            .limit(5)
+            .all()
+        )
+
+        if not recommendations:
+            return '', 204
+
+        # Pobierz dane produktów-akcesoriów
+        result = []
+        for recommendation in recommendations:
+            recommended_product = Products.query.get(recommendation.recommended_product_id)
+            if recommended_product:
+                result.append({"product": recommended_product.to_json_user_view()})
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500

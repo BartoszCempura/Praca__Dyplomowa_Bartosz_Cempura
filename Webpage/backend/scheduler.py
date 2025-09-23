@@ -38,7 +38,9 @@ def clear_expired_carts():
             raise
 
 def update_accesory_weight():
+
     """-------------------------------Job aktualizowania wagi akcesorium na bazie sprzedaży z okresu 30 dni-------------------------------"""
+
     app = scheduler.app
     
     with app.app_context():
@@ -100,6 +102,87 @@ def update_accesory_weight():
             print(f"Error in update_accesory_weight job: {str(e)}")
             raise
 
+def calculate_product_similarity():
+
+    """-------------------------------Job wykonujący obliczanie podobieństwa produktów dla systemu rekomendacji-------------------------------"""
+
+    app = scheduler.app
+    
+    with app.app_context():
+        try:
+            from . import db
+            from .models import ProductRecommendations, AttributeWeights, ProductAttributes, Attributes, Products, Categories
+            from collections import defaultdict
+            
+            print("calculate_product_similarity job started")
+            # Pobieramy wszystkie potrzebne dane z bazy
+            complete_data = (
+                db.session.query(
+                    ProductAttributes.product_id,
+                    Products.category_id,
+                    ProductAttributes.attribute_id,
+                    ProductAttributes.value,
+                    AttributeWeights.weight
+                )
+                .join(Products, Products.id == ProductAttributes.product_id)
+                .join(
+                    AttributeWeights,
+                    (AttributeWeights.attribute_id == ProductAttributes.attribute_id) &
+                    (AttributeWeights.category_id == Products.category_id)
+                )
+                .all()
+            )
+            # Organizujemy dane w słowniki dla łatwiejszego dostępu
+            product_attributes = defaultdict(list) # pod danym product_id trzymamy listę atrybutów
+            categories_of_products = {} # przypisuje do product_id category_id
+            for product_id, category_id, attribute_id, value, weight in complete_data:
+                product_attributes[product_id].append({
+                    "attribute_id": attribute_id,
+                    "value": value,
+                    "weight": float(weight)
+                })
+                categories_of_products[product_id] = category_id
+
+            db.session.query(ProductRecommendations).delete() # Usuwamy stare rekomendacje
+
+            product_ids = list(product_attributes.keys()) # Lista wszystkich product_id do porównania
+            recommendations = [] # Lista do przechowywania nowych rekomendacji
+            for single_product_id in product_ids:
+                category = categories_of_products[single_product_id]
+
+                for compare_product_id in product_ids:
+                    if single_product_id == compare_product_id: # nie porównujemy produktu z samym sobą
+                        continue
+                    if categories_of_products[compare_product_id] != category: # porównujemy tylko produkty z tej samej kategorii
+                        continue
+
+                    score = 0.0
+                    attributes_of_product_a = product_attributes[single_product_id]
+                    attributes_of_product_b = product_attributes[compare_product_id]
+
+                    for a_attribute in attributes_of_product_a:
+                        for b_attribute in attributes_of_product_b:
+                            if a_attribute["attribute_id"] == b_attribute["attribute_id"] and a_attribute["value"] == b_attribute["value"]: # atrybut musi być ten sam i mieć tę samą wartość
+                                score += a_attribute["weight"] # wtedy dodajemy wagę atrybutu do wyniku
+
+                    if score > 0:
+                        recommendations.append(
+                            ProductRecommendations(
+                                product_id=single_product_id,
+                                recommended_product_id=compare_product_id,
+                                score=score
+                            )
+                        )
+
+            db.session.bulk_save_objects(recommendations) # Zapisujemy nowe rekomendacje do bazy ale za jednym razem wszystkie a nie pojedynczo w pętli
+            db.session.commit()
+            print("Product similarity calculated successfully.")
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error in calculate_product_similarity job: {str(e)}")
+            raise
+
 
 def should_run_scheduler():
 
@@ -153,6 +236,17 @@ def init_scheduler(app):
             func=update_accesory_weight,
             trigger='interval',   # 'interval' zamiast 'cron', bo chodzi o odstęp czasu
             days=30,              # co 30 dni
+            replace_existing=True,
+            max_instances=1
+        )
+
+    if not scheduler.get_job('calculate_product_similarity_job'):
+        scheduler.add_job(
+            id='calculate_product_similarity_job',
+            func=calculate_product_similarity,
+            trigger='cron',
+            hour=1,
+            minute=0,
             replace_existing=True,
             max_instances=1
         )

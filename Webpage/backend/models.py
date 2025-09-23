@@ -696,3 +696,24 @@ class ProductReviews (db.Model):
             "rating": self.rating,
             "review": self.review
         }
+
+class ProductRecommendations(db.Model):
+    __tablename__ = 'product_recommendations'
+    __table_args__ = (
+        UniqueConstraint('product_id', 'recommended_product_id', name='product_recommendations_unique'),
+        Index('index_id_product_id', 'product_id'),
+        {'schema': 'analytics'}
+    )
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
+    recommended_product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
+    score = db.Column(db.Numeric(4, 2), nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "product_id": self.product_id,
+            "recommended_product_id": self.recommended_product_id,
+            "score": float(self.score)
+        }
