@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required
-from backend.utils import role_required
-from backend.models import Products, UserProductInteractions, ProductAccessories, ProductRecommendations
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from backend.models import User, Products, UserProductInteractions, ProductAccessories, ProductRecommendations
 from sqlalchemy import func, desc, desc, case
 from datetime import datetime, timedelta, timezone
 
@@ -13,24 +12,28 @@ algorithms_bp = Blueprint('algorithms', __name__, url_prefix='/api/algorithms')
 
 
 @algorithms_bp.route('/top-products', methods=['GET'])
+@jwt_required(optional=True)
 def get_top_products():
 
     """-------------------------------Pobranie produktów cieszących się największą popularnością-------------------------------"""
 
     try:
+        user_id = get_jwt_identity()
+        if user_id:
+            user = User.query.get(user_id)
+        else:
+            user = None
         # Jaka data była 7 dni temuj
         one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
 
         # przypisanie wartości wagi dla interakcji z produktem
         weighted_score = func.sum(
             case(
-                [
-                    (UserProductInteractions.type == 'View', 1),
-                    (UserProductInteractions.type == 'AddToCart', 3),
-                    (UserProductInteractions.type == 'Purchase', 5),
-                    (UserProductInteractions.type == 'Review', 2),
-                    (UserProductInteractions.type == 'AddToWishlist', 2)
-                ],
+                (UserProductInteractions.type == 'View', 1),
+                (UserProductInteractions.type == 'AddToCart', 3),
+                (UserProductInteractions.type == 'Purchase', 5),
+                (UserProductInteractions.type == 'Review', 2),
+                (UserProductInteractions.type == 'AddToWishlist', 2),
                 else_=0
             )
         )
@@ -57,10 +60,16 @@ def get_top_products():
         # można zoptymalizowac tak aby proces wykonywany był w jednym zapytaniu do bazy danych
         # ale w tym przypadku jest to czytelniejsze i w kontekście projektu nie ma potrzeby na taką optymalizację
         top_products = []
-        for product_id, _ in product_scores:
+        for product_id, score in product_scores:
             product = Products.query.get(product_id)
             if product:
-                top_products.append({"product": product.to_json_user_view()})
+                if user and user.role == 'admin':
+                    top_products.append({
+                        "product": product.to_json(),
+                        "popularity_score": score
+                    })
+                else:
+                    top_products.append({"product": product.to_json_user_view()})
 
         return jsonify(top_products), 200
 
@@ -68,58 +77,6 @@ def get_top_products():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-
-
-@algorithms_bp.route('/admin/top-products', methods=['GET'])
-@jwt_required()
-@role_required('admin')
-def get_top_products_for_admin():
-
-    """-------------------------------Pobranie produktów cieszących się największą popularnością przez administratora-------------------------------"""
-
-    try:
-
-        one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
-
-        weighted_score = func.sum(
-            case(
-                [
-                    (UserProductInteractions.type == 'View', 1),
-                    (UserProductInteractions.type == 'AddToCart', 3),
-                    (UserProductInteractions.type == 'Purchase', 5),
-                    (UserProductInteractions.type == 'Review', 2),
-                    (UserProductInteractions.type == 'AddToWishlist', 2)
-                ],
-                else_=0
-            )
-        )
-
-        product_scores = (
-            UserProductInteractions.query.with_entities(
-                UserProductInteractions.product_id,
-                weighted_score
-            )
-            .filter(UserProductInteractions.created_at >= one_week_ago)
-            .group_by(UserProductInteractions.product_id)
-            .order_by(desc(weighted_score))
-            .limit(10)
-            .all()
-        )
-        # Pobieranie danych o produkcie wraz z wartością score dla administratora
-        top_products = []
-        for product_id, score in product_scores:
-            product = Products.query.get(product_id)
-            if product:
-                top_products.append({
-                    "product": product.to_json(),
-                    "popularity_score": score
-                })
-
-        return jsonify(top_products), 200
-
-    except Exception as e:
-        print(f"[ERROR]: {str(e)}")
-        return jsonify({'error': 'Internal server error'}), 500
     
 ## ############################################################### Accessory Recommendation  ######################################################################
 
