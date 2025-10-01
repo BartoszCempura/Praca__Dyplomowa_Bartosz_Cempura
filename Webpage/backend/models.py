@@ -649,6 +649,7 @@ class UserProductInteractions (db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='SET NULL'), nullable=True)
+    anonymous_id = db.Column(db.String(36), nullable=True)
     product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
     type = db.Column(db.String(50), nullable=False)
     session_id = db.Column(UUID(as_uuid=True), nullable=False, server_default=func.gen_random_uuid())
