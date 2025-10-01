@@ -310,7 +310,7 @@ def get_all_products():
 
     products = Products.query.all()
     return jsonify([product.to_json() for product in products])
-
+# tutaj warto było by dodać paginacje
 
 
 @catalog_bp.route('/products/<string:category_slug>', methods=['GET'])
@@ -364,20 +364,22 @@ def modify_product(product_id):
 
         data = request.get_json()
 
-        category = data.get('category_id') # jeżeli podano id kategorii to sprawdzamy czy jest poprawne
+        category = data.get('category_id', product.category_id) # jeżeli podano id kategorii to sprawdzamy czy jest poprawne
 
         if category is not None:
             if not Categories.validate_category_id(category):
                 return jsonify({"error": "Invalid category"}), 400
             product.category_id = category
         
-        new_name = data.get('name') # jeżeli podano nazwe to sprawdzamy czy jest unikalna
+        new_name = data.get('name', product.name) # jeżeli podano nazwe to sprawdzamy czy jest unikalna
         
         if new_name and new_name != product.name:
             if Products.query.filter_by(name=new_name).first():
                 return jsonify({"error": "Product name must be unique"}), 400
             product.name = new_name
 
+        product.category_id = category
+        product.name = new_name
         product.description = data.get('description', product.description)
         product.image = data.get('image', product.image)
         product.quantity = data.get('quantity', product.quantity)
@@ -483,11 +485,13 @@ def connect_attribute_to_product():
         return jsonify({'error': 'Internal server error'}), 500
     
 
+"""
+# postman: http://127.0.0.1:5000/api/catalog/product-attributes/2 metoda GET
 
 @catalog_bp.route('/product-attributes/<int:product_id>', methods=['GET'])
 def get_all_attributes_of_product(product_id):
 
-    """-------------------------------Pobranie name oraz value atrybutów dla danego produktu-------------------------------"""
+    #-------------------------------Pobranie name oraz value atrybutów dla danego produktu-------------------------------
 
     try:
         # endpoint używany do pobierania atrybutów produktu na stronie produktu
@@ -507,7 +511,7 @@ def get_all_attributes_of_product(product_id):
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-
+"""
     
 @catalog_bp.route('/products/<int:product_id>', methods=['GET'])
 def get_product_details(product_id):
@@ -796,7 +800,7 @@ def add_product_accessory_relation():
 
         data = request.get_json()
 
-        required_fields = ['product_id', 'accessory_product_id', 'weight']
+        required_fields = ['product_id', 'accessory_product_id']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'error': f'{field} is required'}), 400
@@ -1133,7 +1137,6 @@ def remove_product_from_promotion(product_id):
 
     """-------------------------------Usunięcie produktu z promocji przez administratora-------------------------------"""
      
-
     try:
 
         products = ProductPromotions.query.filter_by(product_id=product_id).first()
@@ -1157,3 +1160,5 @@ def remove_product_from_promotion(product_id):
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+
+# można by zmodyfikować ten endpoint tak aby pozwalał na usunięcie wielu produktów z promocji na raz

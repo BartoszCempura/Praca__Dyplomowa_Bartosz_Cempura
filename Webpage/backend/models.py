@@ -487,13 +487,22 @@ class CartProducts (db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     unit_price_with_discount = db.Column(Numeric(10, 2), nullable=False)
-    
 
+    product = db.relationship('Products', foreign_keys=[product_id])
+    
     def to_json(self):
         return {
             "id": self.id,
             "cart_id": self.cart_id,
             "product_id": self.product_id,
+            "quantity": self.quantity,
+            "unit_price_with_discount": self.unit_price_with_discount
+        }
+    
+    def to_json_user_view(self):
+        return {
+            "name": self.product.name,
+            "image": self.product.image,
             "quantity": self.quantity,
             "unit_price_with_discount": self.unit_price_with_discount
         }

@@ -16,11 +16,13 @@ def add_product_interaction():
 
     """-------------------------------Dodawanie informacji o interakcji z produktem (cicho w tle).-------------------------------"""
 
-    ## jeżeli użytkownik zalogowany to sprawdzam czy jest jakaś interakcja z przed max 30 minut. Jak nie ma to tworze session_id = None (baza wygeneruje UUID)
-    ## jeżeli użytkownik niezalogowany to biorę session_id z frontendu (jeżeli nie ma to ignoruje interakcję)
-    ## session_id generowane w fontendzie przez funkcje Javascript i przechowywane w localStorage
-
     try:
+
+
+    ## jeżeli użytkownik zalogowany to sprawdzam czy jest jakaś interakcja z przed max 30 minut. Jak nie ma to tworze session_id = None (baza wygeneruje UUID)
+    ## jeżeli użytkownik niezalogowany to biorę anonymous_id z frontendu który posłuży do identyfikacji użytkownika bez jego logowania(jeżeli nie ma to ignoruje interakcję)
+    ## anonymous_id generowane w fontendzie przez funkcje Javascript i przechowywane w localStorage
+
         user_id = get_jwt_identity()
         data = request.get_json()
 
@@ -29,6 +31,7 @@ def add_product_interaction():
 
         interaction_type = data.get('type')
         product_id = data.get('product_id')
+        anonymous_id = data.get('anonymous_id')
 
         # Wymagane minimum
         if not product_id or not interaction_type:
@@ -37,14 +40,11 @@ def add_product_interaction():
         if interaction_type not in ['View', 'AddToCart', 'Purchase', 'Review', 'AddToWishlist']:
             return '', 204
 
-        # Brak zalogowanego usera i brak session_id z frontendu skutkuje zignorowaniem interakcji
-        if not user_id and not data.get('session_id'):
-            return '', 204
-
         session_id = None
+        date_for_new_session = datetime.now(timezone.utc) - timedelta(minutes=30)
 
         if user_id:
-            date_for_new_session = datetime.now(timezone.utc) - timedelta(minutes=30) # 30 minut brakuinterakcji ze strony użytkownika z jakimkolwiek produktem skutkuje nową sesją
+            # Zalogowany użytkownik
             last_interaction = (
                 UserProductInteractions.query
                 .filter(
@@ -55,15 +55,27 @@ def add_product_interaction():
                 .first()
             )
             if last_interaction:
-                # jeżeli wykryjemy w bazie że jest session id jeszcze aktualny to go przepisujemy
-                # ponieważ session_id jest na starcie None to baza będzie tworzyć nowy UUID jako defaultowe zachowanie
                 session_id = last_interaction.session_id
         else:
-            # jeżeli użytkownik nie jest zalogowany to pobieram session_id z frontendu
-            session_id = data.get('session_id')
+            # Użytkownik anonimowy
+            if not anonymous_id:
+                return '', 204  # nie mamy jak go śledzić
+
+            last_interaction = (
+                UserProductInteractions.query
+                .filter(
+                    UserProductInteractions.anonymous_id == anonymous_id,
+                    UserProductInteractions.created_at > date_for_new_session
+                )
+                .order_by(UserProductInteractions.created_at.desc())
+                .first()
+            )
+            if last_interaction:
+                session_id = last_interaction.session_id
 
         new_interaction = UserProductInteractions(
             user_id=user_id,
+            anonymous_id=anonymous_id if not user_id else None,
             product_id=product_id,
             type=interaction_type,
             session_id=session_id
@@ -78,6 +90,7 @@ def add_product_interaction():
         db.session.rollback()
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+
 
 
 ## ###################################################################### Review ######################################################################

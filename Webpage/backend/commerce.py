@@ -365,7 +365,7 @@ def get_cart():
 
         cart_data = {
             'total_products_cost': str(cart.total_products_cost),
-            'products': [product.to_json() for product in products_in_cart]
+            'products': [product.to_json_user_view() for product in products_in_cart]
         }
 
         return jsonify(cart_data), 200
