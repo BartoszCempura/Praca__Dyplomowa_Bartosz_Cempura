@@ -322,7 +322,7 @@ class ProductAccessories(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
     accessory_product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
-    weight = db.Column(Numeric(3, 2), nullable=False, default=0.50)
+    weight = db.Column(Numeric(3, 2), nullable=False, default=0.01)
 
     def to_json(self):
         return {
@@ -383,6 +383,8 @@ class ProductPromotions(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('catalog.products.id', ondelete='CASCADE'), nullable=False)
     promotion_id = db.Column(db.Integer, db.ForeignKey('catalog.promotions.id', ondelete='CASCADE'), nullable=False)
 
+    product = db.relationship('Products', foreign_keys=[product_id])
+
 
     def to_json(self):
         return {
@@ -390,6 +392,12 @@ class ProductPromotions(db.Model):
             "promotion_id": self.promotion_id 
         }
     
+    def to_json_user_view(self):
+        return {
+            "nazwa": self.product.name,
+            "cena": self.product.price_including_promotion()
+        }
+    # dodaj wgląd dla użytkownika. Ma zwracać tylko nazwe i cenę produktu uwzględniając promocje
 
 """____________________________________________________________________________________________________________________"""
 

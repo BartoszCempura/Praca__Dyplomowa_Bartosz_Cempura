@@ -25,8 +25,6 @@ def login():
         if not user or not user.check_password(data['password']):
             return jsonify({'error': 'Invalid credentials'}), 401
         
-        print(f"User ID: {user.id}, Type: {type(user.id)}")
-
         access_token = create_access_token(identity=str(user.id)) # Tworzymy token JWT dla użytkownika
         refresh_token = create_refresh_token(identity=str(user.id)) # Tworzymy token odświeżający dla użytkownika
 

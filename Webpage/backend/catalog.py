@@ -1123,7 +1123,7 @@ def get_all_products_in_promotion(promotion_id):
         if not products:
             return jsonify({'error': 'No products found for this promotion'}), 404
         
-        return jsonify([product.to_json() for product in products]), 200
+        return jsonify([product.to_json_user_view() for product in products]), 200
     
     except Exception as e:
         print(f"[ERROR]: {str(e)}")

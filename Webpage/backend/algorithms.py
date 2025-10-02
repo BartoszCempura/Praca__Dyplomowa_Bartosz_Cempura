@@ -136,7 +136,6 @@ def get_similar_products(product_id):
         if not recommendations:
             return '', 204
 
-        # Pobierz dane produktów-akcesoriów
         result = []
         for recommendation in recommendations:
             recommended_product = Products.query.get(recommendation.recommended_product_id)
