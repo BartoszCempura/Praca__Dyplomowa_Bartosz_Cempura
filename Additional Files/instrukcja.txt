@@ -1,5 +1,5 @@
 Tworze folder Backend
-w niem instaluje virtualne środowisko dla Flask:
+w nie instaluje virtualne środowisko dla Flask:
     python -m venv env
 Aktywacja virtualnego środowiska dla backend:
     Webpage\backend\env\Scripts\activate.bat
@@ -25,15 +25,22 @@ Wszystkie instalacje muszą zostać wykonane w środowisklu virtualnym:
     Sprawdzamy poprawnośc instalacji za pomocą:
         pip list
     Nastepnie zapisujemy dane o zainstalowanych wtycznkach i ich wersji do pliku (w celu odtworzenia instalacji na innym urządzeniu)
-        pip freeze > "../../Additional Files/requirements.txt" (dwa foldery wstecz)
+        pip freeze > "../../Additional Files/requirements.txt" (uruchaiamy w folderze Praca__Dyplomowa_Bartosz_Cempura)
 
 Dodajemy pliki do katalogu backend:
     __init__.py - 
     auth.py - 
     main.py - 
     models.py - 
+    oraz kolejne dedykowane dla każdego schematu bazy danych
+    sheduler.py - definicja zadań automatycznych (aby działało poprawnie importy wykonywane są wewnątrz definicji funkcji okresowych)
+    algorithms.py - zawiera endpointy dedykowane pobieraniu danych wygenerowanych w trakcie działąnia algorytmów
+
 Dodajemy plik do Website:
-    start_backend.py - uruchamianie serwera backend dla aplikacji 
+    run_backend_server.py - uruchamianie serwera backend dla aplikacji
+    set_keys.bat - ustawia zmienne przehowywujące dane konfiguracyjne flask
+    start_backend.bat - po uruchomieniu środowiska visual studio code pozwala na natychmiastowe uruchomienie środowiska backend w adekwatnej konfiguracji
+    start.bat - w razie błędu kompilacji jesteśmywyrzucani z flask do aktualnego katalogu - za wysokona call start_backend.bat
 
 Tworze folder Frontend
     Instalacj React na scuffolding Vite (musze mieć wcześniej zainstalowane w systemie node.js)
@@ -52,5 +59,20 @@ Tworze folder Frontend
         npm run dev
     
     Wszystkie dodatki i nowe klasy powinny teraz działąć. Podkreślenie @plugin "daisyui"; jest błędem Visual Studio Code
+
+    instalujemy axios npm install axios
+
+Usówamy niepotrzebne pliki z folderu Scripts
+
+W pliku vite.config.js dodaje konfiguracje proxy aby nie pisać pełnej ścieżki włącznie z adresem serwera tylko sam adres do endpoint
+ server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false, 
+      },
+    },
+  },
 
 
