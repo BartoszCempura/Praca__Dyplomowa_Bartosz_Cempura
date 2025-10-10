@@ -248,7 +248,17 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
         return {
             "name": self.name,
             "image": self.image,
-            "unit_price": self.unit_price
+            "unit_price": str(self.unit_price),
+            "price_including_promotion": str(self.price_including_promotion())
+        }
+    
+    def to_json_description_view(self):
+        return {
+            "category_name": self.category.name,
+            "name": self.name,
+            "description": self.description,
+            "image": self.image,
+            "price_including_promotion": str(self.price_including_promotion())
         }
 
     def price_including_promotion(self):

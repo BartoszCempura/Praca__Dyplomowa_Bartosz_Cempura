@@ -448,36 +448,47 @@ def connect_attribute_to_product():
 
         data = request.get_json()
 
-        required_fields = ['product_id', 'attribute_id', 'value']
+        required_fields = ['product_id', 'attributes']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'error': f'{field} is required'}), 400
 
         if not Products.query.get(data.get('product_id')):
             return jsonify({"error": "Invalid product"}), 400
-
-        if not Attributes.query.get(data.get('attribute_id')):
-            return jsonify({"error": "Invalid attribute"}), 400
         
-        existing = ProductAttributes.query.filter(
-            ProductAttributes.product_id==data.get('product_id'),
-            ProductAttributes.attribute_id==data.get('attribute_id')
-        ).first()
+        attributes_data = data.get('attributes', [])
 
-        if existing:
-            return jsonify({'error': 'Attribute already connected to product'}), 400
+        created_connections = []
 
-        new_attribute = ProductAttributes(
-            product_id=data.get('product_id'),
-            attribute_id=data.get('attribute_id'),
-            value=data.get('value')
-        )
-        db.session.add(new_attribute)
+        for attribute in attributes_data:
+            attribute_id = attribute.get('attribute_id')
+            value = attribute.get('value')
+
+            if not attribute_id or not value:
+                return jsonify({"error": "Attribute id and value are required"}), 400
+
+            if not Attributes.query.get(attribute_id):
+                return jsonify({"error": f"Invalid attribute {attribute_id}"}), 400
+            
+            existing = ProductAttributes.query.filter(
+                ProductAttributes.product_id==data.get('product_id'),
+                ProductAttributes.attribute_id==attribute_id
+            ).first()
+
+            if existing:
+                return jsonify({'error': 'Attribute already connected to product'}), 400
+
+            new_attribute = ProductAttributes(
+                product_id=data.get('product_id'),
+                attribute_id=attribute_id,
+                value=value
+            )
+            db.session.add(new_attribute)
+            created_connections.append(new_attribute)
+
         db.session.commit()
 
-        return jsonify({'message': 'Product attribute created successfully',
-                        'attribute': new_attribute.to_json()
-                        }), 201
+        return jsonify({'message': f'Successfully added {len(created_connections)} attributes to product'}), 201
 
     except Exception as e:
         db.session.rollback()
@@ -534,9 +545,8 @@ def get_product_details(product_id):
         ).all()
 
         return jsonify({
-            "product": product.to_json(),
-            "attributes": [{"name": name, "value": value} for name, value in attributes],
-            "price_including_promotion": str(product.price_including_promotion())  # z rabatem
+            "product": product.to_json_description_view(), # nie wiem czy nie będzie tutaj trzeba dać prostrzego wglądu, bez kategorii , updated at itd
+            "attributes": [{"name": name, "value": value} for name, value in attributes]
         }), 200
 
     except Exception as e:
