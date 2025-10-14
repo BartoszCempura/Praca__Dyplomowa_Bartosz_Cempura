@@ -333,7 +333,7 @@ def get_products_by_category_slug(category_slug):
         )
 
         return jsonify({
-            "products": [product.to_json() for product in pagination.items],
+            "products": [product.to_json_user_view() for product in pagination.items],
             "total": pagination.total,
             "page": pagination.page,
             "pages": pagination.pages,

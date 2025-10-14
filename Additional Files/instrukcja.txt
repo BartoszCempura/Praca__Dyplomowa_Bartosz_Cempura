@@ -48,6 +48,7 @@ Tworze folder Frontend
         npm create vite@latest frontend -- --template react
         cd frontend
         npm install
+        npm install react-router-dom
     Instalacja Tailwind css wraz z Vite plugin oraz kolekcji klas daisyUI
         npm install tailwindcss@latest @tailwindcss/vite@latest daisyui@latest
 
