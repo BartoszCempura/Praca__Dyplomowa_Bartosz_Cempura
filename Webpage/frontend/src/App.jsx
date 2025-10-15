@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import reactLogo from './assets/LOGO.svg'
 import './App.css'
 import {Navbar, Menu, Products} from "./components/"
 import axios from 'axios'
@@ -11,13 +10,13 @@ function App() {
       <Navbar />
       <Menu />
       <Routes>
-        <Route path="/:categorySlug" element={<ProductsFromUrl />} />
+        <Route path="/:categorySlug" element={<ProductsBasedOnURL />} />
       </Routes>
     </>
   );
 }
 
-function ProductsFromUrl() {
+function ProductsBasedOnURL() {
   const { categorySlug } = useParams();
   return <Products categorySlug={categorySlug} />;
 }

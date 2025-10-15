@@ -19,7 +19,7 @@ function Menu() {
 
         setCategories(categoriesWithTheirChildren);
       } catch (err) {
-        console.error("Unable to get Categories:", err);
+        console.error("Unable to get categories:", err);
       }
     };
 
@@ -27,36 +27,33 @@ function Menu() {
   }, []);
 
   return (
-    <div className="flex lg:justify-center bg-base-100 shadow-sm">
-        <ul className="menu lg:menu-horizontal rounded-box">
+    <div className="flex lg:justify-center bg-base-100 shadow-md">
+      <ul className="menu lg:menu-horizontal rounded-box">
         {categories.map((category) => (
             <li key={category.id}>
+            {category.children.length > 0 ? (
             <details>
-                <summary className="px-8">{category.name}</summary>
-                <ul>
-                {category.children.length > 0 ? (
-                    category.children.map((child) => (
-                    <li key={child.id}>
-                        <Link
-                            to={`/${child.slug}`} // updates URL
-                            onClick={() => setSelectedCategorySlug(child.slug)} // still updates state
-                        >
-                            {child.name}
-                        </Link>
-                    </li>
-                    ))
-                ) : (
-                    <li>
-                    <span className="italic text-gray-400">No subcategories</span>
-                    </li>
-                )}
-                </ul>
+              <summary className="px-8">{category.name}</summary>
+              <ul className="relative z-50">
+                {category.children.map((child) => (
+                  <li key={child.id}>
+                    <Link to={`/${child.slug}`} onClick={() => setSelectedCategorySlug(child.slug)}>
+                      {child.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </details>
-            </li>
+            ) : (
+              <Link to={`/${category.slug}`} onClick={() => setSelectedCategorySlug(category.slug)}>
+                {category.name}
+              </Link>
+            )}
+          </li>
         ))}
-        </ul>
-    </div>
-  );
+      </ul>
+  </div>
+);
 }
 
 export default Menu;
