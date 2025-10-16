@@ -1,4 +1,16 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 function Navbar() {
+  const [query, setQuery] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (query.trim()) {
+      navigate(`/search?search=${encodeURIComponent(query.trim())}`);
+    }
+  };
   return (
     <div className="navbar bg-base-200 grid grid-cols-3 items-center px-8 py-4">
       <div className="flex justify-start">
@@ -9,7 +21,15 @@ function Navbar() {
       </div>
 
       <div className="flex justify-center">
-          <input type="text" placeholder="Search" className="input input-bordered w-24 md:w-80" />
+        <form onSubmit={handleSearch}>
+          <input
+            type="text"
+            placeholder="Szukaj produktu..."
+            className="input input-bordered w-24 md:w-80"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </form>
       </div>
 
       <div className="justify-end flex gap-8">

@@ -1,5 +1,5 @@
 import './App.css'
-import {Navbar, Menu, Products, Home, ProductDetails, Footer} from "./components/"
+import {Navbar, Menu, PrintProducts, SearchProducts, Home, ProductDetails, Footer} from "./components/"
 import { Routes, Route, useParams } from "react-router-dom";
 
 function App() {
@@ -11,6 +11,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/:categorySlug" element={<ProductsBasedOnURL />} />
         <Route path="/:categorySlug/:productSlug" element={<ProductDetails />} />
+        <Route path="/search" element={<SearchProducts />} />
       </Routes>
       <Footer />
     </>
@@ -19,7 +20,7 @@ function App() {
 
 function ProductsBasedOnURL() {
   const { categorySlug } = useParams();
-  return <Products categorySlug={categorySlug} />;
+  return <PrintProducts categorySlug={categorySlug} />;
 }
 
 export default App;

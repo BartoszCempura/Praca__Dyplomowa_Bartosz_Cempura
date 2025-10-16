@@ -419,7 +419,7 @@ def search_products():
         products = pagination.items
 
         return jsonify({
-            "products": [product.to_json() for product in products],
+            "products": [product.to_json_user_view() for product in products],
             "total": pagination.total,
             "page": pagination.page,
             "pages": pagination.pages,

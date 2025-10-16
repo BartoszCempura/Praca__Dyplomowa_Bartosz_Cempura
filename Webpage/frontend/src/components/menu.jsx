@@ -50,6 +50,7 @@ function Menu() {
             </ul>
           </>
         ) : (
+          // Kategoria bez podkategorii
           <Link to={`/${category.slug}`} onClick={() => setSelectedCategorySlug(category.slug)} className="btn btn-ghost m-2">
             {category.name}
           </Link>
@@ -58,8 +59,6 @@ function Menu() {
     ))}
   </div>
 );
-
-
 }
 
 export default Menu;

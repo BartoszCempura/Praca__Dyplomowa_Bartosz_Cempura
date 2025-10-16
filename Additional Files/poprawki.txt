@@ -17,7 +17,7 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-wygenerowanie dokumentacji api zapomocą postman
+Musze sprawdzić jak działa search i co jest do czego. Narazie układ tego mi się nie podoba
 
 
 

@@ -21,7 +21,7 @@ function Product({categorySlug, name, slug, image, unit_price, price_including_p
   );
 }
 
-function Products({ categorySlug }) {
+function PrintProducts({ categorySlug }) {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
@@ -48,4 +48,4 @@ function Products({ categorySlug }) {
   );
 }
 
-export default Products;
+export default PrintProducts;

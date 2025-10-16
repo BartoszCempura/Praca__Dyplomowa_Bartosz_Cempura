@@ -3,18 +3,14 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 function ProductDetails() {
-  const { categorySlug, productSlug } = useParams(); // categorySlug też możesz użyć jeśli chcesz breadcrumb
+  const { productSlug } = useParams(); 
   const [product, setProduct] = useState(null);
   const [attributes, setAttributes] = useState([]);
 
   useEffect(() => {
     const getProduct = async () => {
       try {
-        const response = await axios.get(
-          `/api/catalog/products/details/${productSlug}`
-        );
-
-        // Rozpakowujemy obiekt z API
+        const response = await axios.get(`/api/catalog/products/details/${productSlug}`);
         setProduct(response.data.product);
         setAttributes(response.data.attributes);
       } catch (err) {
@@ -25,7 +21,7 @@ function ProductDetails() {
     getProduct();
   }, [productSlug]);
 
-  if (!product)
+  if (!product) // potrzebne aby React nie starał się załadować danych przed ich wczytaniem z API
     return <div className="flex justify-center py-12">Loading...</div>;
 
   return (
