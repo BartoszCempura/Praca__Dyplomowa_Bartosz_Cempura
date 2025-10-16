@@ -38,7 +38,7 @@ function Products({ categorySlug }) {
   }, [categorySlug]);
 
   return (
-    <div className="flex flex-wrap justify-center gap-6 mt-6">
+    <div className="flex flex-wrap justify-center gap-6 mt-10">
       {products.length > 0 ? (
         products.map((p) => <Product key={p.id} categorySlug={categorySlug} {...p} />)
       ) : (

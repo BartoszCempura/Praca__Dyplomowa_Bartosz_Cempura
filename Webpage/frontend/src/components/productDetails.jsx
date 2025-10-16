@@ -29,19 +29,15 @@ function ProductDetails() {
     return <div className="flex justify-center py-12">Loading...</div>;
 
   return (
-    <div className="hero bg-base-200 min-h-screen py-12">
-      <div className="hero-content flex-col lg:flex-row gap-12">
+    <div className="hero bg-base-100 min-h-screen py-12">
+      <div className="hero-content flex-col lg:flex-row items-start gap-12">
         {/* Obraz produktu */}
-        <img
-          src={product.image}
-          alt={product.name}
-          className="max-w-sm rounded-lg shadow-2xl"
-        />
+        <img src={product.image} alt={product.name} className="max-w-sm rounded-lg shadow-2xl"/>
 
         {/* Dane produktu */}
         <div className="lg:ml-8 flex-1">
           <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
-          <p className="text-lg text-gray-700 mb-6">{product.description}</p>
+          <p className="text-lg mb-6">{product.description}</p>
           <p className="text-2xl font-semibold mb-6">
             {product.price_including_promotion} PLN
           </p>

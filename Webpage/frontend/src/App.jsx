@@ -1,5 +1,5 @@
 import './App.css'
-import {Navbar, Menu, Products, Home, ProductDetails} from "./components/"
+import {Navbar, Menu, Products, Home, ProductDetails, Footer} from "./components/"
 import { Routes, Route, useParams } from "react-router-dom";
 
 function App() {
@@ -12,6 +12,7 @@ function App() {
         <Route path="/:categorySlug" element={<ProductsBasedOnURL />} />
         <Route path="/:categorySlug/:productSlug" element={<ProductDetails />} />
       </Routes>
+      <Footer />
     </>
   );
 }

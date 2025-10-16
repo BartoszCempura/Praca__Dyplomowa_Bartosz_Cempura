@@ -27,7 +27,7 @@ function Menu() {
   }, []);
 
  return (
-  <div className="flex lg:justify-center bg-base-100 shadow-md">
+  <div className="flex lg:justify-center bg-base-200 shadow-sm">
     {categories.map((category) => (
       <div key={category.id} className="dropdown dropdown-hover">
         {/* Warunek if/else czy kategoria ma podkategorie */}

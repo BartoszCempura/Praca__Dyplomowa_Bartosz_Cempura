@@ -1,6 +1,6 @@
 function Navbar() {
   return (
-    <div className="navbar bg-base-100 grid grid-cols-3 items-center px-8 py-4">
+    <div className="navbar bg-base-200 grid grid-cols-3 items-center px-8 py-4">
       <div className="flex justify-start">
         <div className="flex items-center">
             <img src="/LOGO.svg" className="h-20 mr-2" alt="TechTown Logo" />
