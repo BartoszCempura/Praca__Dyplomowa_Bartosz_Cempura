@@ -220,6 +220,7 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     category_id = db.Column(db.Integer, db.ForeignKey('catalog.categories.id'), nullable=False)
     name = db.Column(db.String(255), nullable=False, unique=True)
+    slug = db.Column(db.String(255), nullable=False, unique=True)
     description = db.Column(db.Text, nullable=False)
     image = db.Column(db.String(255), nullable=False)  # URL do zdjęcia produktu
     quantity = db.Column(db.Integer, nullable=False, default=0)  # Ilość dostępna w magazynie
@@ -229,6 +230,15 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     category = db.relationship('Categories', foreign_keys=[category_id])
+
+    def __init__(self, name, category_id, description, image, quantity=0, unit_price=0):
+        self.name = name
+        self.slug = slugify(name)
+        self.category_id = category_id
+        self.description = description
+        self.image = image
+        self.quantity = quantity
+        self.unit_price = unit_price
 
     def to_json(self):
         return {
@@ -247,6 +257,7 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
     def to_json_user_view(self):
         return {
             "name": self.name,
+            "slug": self.slug,
             "image": self.image,
             "unit_price": str(self.unit_price),
             "price_including_promotion": str(self.price_including_promotion())

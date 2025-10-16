@@ -4,7 +4,7 @@ function Navbar() {
       <div className="flex justify-start">
         <div className="flex items-center">
             <img src="/LOGO.svg" className="h-20 mr-2" alt="TechTown Logo" />
-            <a className="btn btn-ghost text-xl hidden sm:inline-flex">TechTown</a>
+            <a href="http://localhost:5173/" className="btn btn-ghost text-xl hidden sm:inline-flex">TechTown</a>
         </div>
       </div>
 

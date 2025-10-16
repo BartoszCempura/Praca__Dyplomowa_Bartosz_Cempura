@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react'
 import './App.css'
-import {Navbar, Menu, Products} from "./components/"
-import axios from 'axios'
+import {Navbar, Menu, Products, Home, ProductDetails} from "./components/"
 import { Routes, Route, useParams } from "react-router-dom";
 
 function App() {
@@ -10,7 +8,9 @@ function App() {
       <Navbar />
       <Menu />
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/:categorySlug" element={<ProductsBasedOnURL />} />
+        <Route path="/:categorySlug/:productSlug" element={<ProductDetails />} />
       </Routes>
     </>
   );

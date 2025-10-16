@@ -26,34 +26,40 @@ function Menu() {
     getCategories();
   }, []);
 
-  return (
-    <div className="flex lg:justify-center bg-base-100 shadow-md">
-      <ul className="menu lg:menu-horizontal rounded-box">
-        {categories.map((category) => (
-            <li key={category.id}>
-            {category.children.length > 0 ? (
-            <details>
-              <summary className="px-8">{category.name}</summary>
-              <ul className="relative z-50">
-                {category.children.map((child) => (
-                  <li key={child.id}>
-                    <Link to={`/${child.slug}`} onClick={() => setSelectedCategorySlug(child.slug)}>
-                      {child.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </details>
-            ) : (
-              <Link to={`/${category.slug}`} onClick={() => setSelectedCategorySlug(category.slug)}>
-                {category.name}
-              </Link>
-            )}
-          </li>
-        ))}
-      </ul>
+ return (
+  <div className="flex lg:justify-center bg-base-100 shadow-md">
+    {categories.map((category) => (
+      <div key={category.id} className="dropdown dropdown-hover">
+        {/* Warunek if/else czy kategoria ma podkategorie */}
+        {category.children.length > 0 ? (
+          <>
+            {/* Przycisk rozwijający menu */}
+            <div tabIndex={0} role="button" className="btn btn-ghost m-2">
+              {category.name}
+            </div>
+
+            {/* Dropdown z podkategoriami */}
+            <ul tabIndex={-1} className="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-sm left-0">
+              {category.children.map((child) => (
+                <li key={child.id}>
+                  <Link to={`/${child.slug}`} onClick={() => setSelectedCategorySlug(child.slug)}>
+                    {child.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <Link to={`/${category.slug}`} onClick={() => setSelectedCategorySlug(category.slug)} className="btn btn-ghost m-2">
+            {category.name}
+          </Link>
+        )}
+      </div>
+    ))}
   </div>
 );
+
+
 }
 
 export default Menu;

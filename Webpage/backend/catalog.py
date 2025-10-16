@@ -524,16 +524,16 @@ def get_all_attributes_of_product(product_id):
         return jsonify({'error': 'Internal server error'}), 500
 """
     
-@catalog_bp.route('/products/<int:product_id>', methods=['GET'])
-def get_product_details(product_id):
+@catalog_bp.route('/products/details/<string:slug>', methods=['GET'])
+def get_product_details(slug):
 
     """-------------------------------Pobranie pełnych danych produktu wraz z atrybutami i ceną z rabatem-------------------------------"""
 
     try:
-        product = Products.query.get(product_id)
+        product = Products.query.filter_by(slug=slug).first()
         if not product:
             return jsonify({'error': 'Product not found'}), 404
-
+        
         # Pobieramy atrybuty
         attributes = db.session.query(
             Attributes.name,
@@ -541,7 +541,7 @@ def get_product_details(product_id):
         ).join(
             Attributes, ProductAttributes.attribute_id == Attributes.id
         ).filter(
-            ProductAttributes.product_id == product_id
+            ProductAttributes.product_id == product.id
         ).all()
 
         return jsonify({

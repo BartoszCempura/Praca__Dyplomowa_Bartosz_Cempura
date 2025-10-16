@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
-function Product({ name, image, unit_price, price_including_promotion }) {
+function Product({categorySlug, name, slug, image, unit_price, price_including_promotion }) {
   return (
     <div className="card card-side bg-base-100 shadow-md w-100 grid grid-cols-2">
       <figure>
-        <img src={image} alt={name}/>
+        <Link to={`/${categorySlug}/${slug}`}><img src={image} alt={name}/></Link>
       </figure>
       <div className="card-body flex flex-col justify-between">
-        <h2 className="card-title">{name}</h2>
+        <Link to={`/${categorySlug}/${slug}`}><h2 className="card-title">{name}</h2></Link>
           <span className="font-normal">
             ${price_including_promotion || unit_price}
           </span>
@@ -39,7 +40,7 @@ function Products({ categorySlug }) {
   return (
     <div className="flex flex-wrap justify-center gap-6 mt-6">
       {products.length > 0 ? (
-        products.map((p) => <Product key={p.id} {...p} />)
+        products.map((p) => <Product key={p.id} categorySlug={categorySlug} {...p} />)
       ) : (
         <span className="text-gray-400 italic">No products found</span>
       )}

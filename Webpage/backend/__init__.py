@@ -8,7 +8,6 @@ from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from backend.scheduler import init_scheduler
 
-
 db = SQLAlchemy()
 jwt = JWTManager() 
 

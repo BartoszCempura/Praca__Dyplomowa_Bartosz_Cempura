@@ -77,3 +77,5 @@ W pliku vite.config.js dodaje konfiguracje proxy aby nie pisać pełnej ścieżk
   },
 
 
+musze zrobić z nazwy produktu slug i wtedy będe mógł go używać w URL
+modyfikowałem endpoint product_details - zamiast product is dałem name
