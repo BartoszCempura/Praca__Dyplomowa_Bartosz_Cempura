@@ -27,7 +27,8 @@ function Menu() {
   }, []);
 
  return (
-  <div className="flex lg:justify-center bg-base-200 shadow-sm">
+  <div className="flex justify-center bg-base-200 shadow-sm relative z-40"> 
+  {/* Warto by było dodac skłądanie menu do jednej ikony dla lepszej responsywności */}
     {categories.map((category) => (
       <div key={category.id} className="dropdown dropdown-hover">
         {/* Warunek if/else czy kategoria ma podkategorie */}

@@ -17,7 +17,12 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-Musze sprawdzić jak działa search i co jest do czego. Narazie układ tego mi się nie podoba
+Musze dodać do sytuacji gdzie jest bak wyników dla wyszukiwania produktów tabelke z bestsellerami oraz zachęcenie do kontaktu z infolinią
+
+Trzeba dodac na głównej stronie carusel i utworzyć jakiś grid na top product 
+Dla wyników search warto by dodać filtrowanie po atrybutach
+
+Następnym krokiem będzie dodanie logowania się użytkownika 
 
 
 
