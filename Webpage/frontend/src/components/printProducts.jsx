@@ -19,13 +19,20 @@ function PrintProducts({ categorySlug }) {
     getProducts();
   }, [categorySlug]);
 
-  return (
-    <div className="flex flex-wrap justify-center gap-6 mt-10">
-      {products.length > 0 ? (
-        products.map((p) => <ProductCard key={p.id} categorySlug={categorySlug} {...p} />)
-      ) : (
-        <span className="text-gray-400 italic">No products found</span>
-      )}
+  return products.length > 0 ? (
+    <div className="grid grid-cols-[1fr_4fr] gap-6">
+      <aside className="bg-base-200 p-4">
+        <h2 className="font-bold mb-2">Filtry</h2>
+      </aside>
+      <div className="flex flex-wrap justify-center gap-6 my-10">
+        {products.map((p) => (
+          <ProductCard key={p.id} categorySlug={categorySlug} {...p} />
+        ))}
+      </div>
+    </div>
+  ) : (
+    <div className="flex justify-center items-center my-10">
+      <span className="text-gray-400 italic text-lg">No products found</span>
     </div>
   );
 }

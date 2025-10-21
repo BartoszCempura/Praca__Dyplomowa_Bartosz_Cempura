@@ -24,7 +24,7 @@ function SearchProducts() {
   }, [searchValue]);
 
   return (
-    <div className="flex flex-col items-center mt-8">
+    <div className="flex flex-col items-center my-10">
         <h2 className="text-2xl font-bold mb-8">
           Wyniki wyszukiwania dla: <span className="text-primary">{searchValue} ({products.length})</span>
         </h2>
@@ -32,7 +32,19 @@ function SearchProducts() {
         {products.length > 0 ? (
           products.map((p) => <ProductCard key={p.slug} {...p} />)
         ) : (
-          <span className="text-gray-400 italic">Brak wyników</span>
+          <div className="flex flex-col items-center gap-4">
+            <div>
+              <ul className="list-disc pl-5">
+                <li>Sprawdź czy nie ma literówek</li>
+                <li>Użyj ogólniejszych słów</li>
+                <li>Skróć tekst</li>
+              </ul>
+            </div>
+
+            <div className="bg-base-100 p-4 text-center shadow-md">
+              <h1 className="text-4xl font-bold">Top produkty tego miesiąca</h1>
+            </div>
+          </div>
         )}
       </div>
     </div>
