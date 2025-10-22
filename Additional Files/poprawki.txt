@@ -17,10 +17,14 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-
-Dla wyników search warto by dodać filtrowanie po atrybutach
+Zobacz jak działa endpoint:  get_products_by_category_slug oraz get_all_attributes_for_category. ZObacz jak działa teraz element reakt PrintProducts. 
+Wykonaj poprawki kodu aby pasował do reszty - po zaznaczeniu danej kategorii nie jest wykonywane obliczenie ile produktów zostało jeszcze do odfuiltrowania i brak przycisku wyczyśc filtry
 
 Następnym krokiem będzie dodanie logowania się użytkownika 
+
+Dodanie paru produktów (do 6) w kategoriach,uzupełnienie danych
+
+Dodanie dodawania do koszyka 
 
 
 

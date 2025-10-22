@@ -303,6 +303,8 @@ class ProductAttributes(db.Model): # model reprezentujący atrybut w bazie danyc
     attribute_id = db.Column(db.Integer, db.ForeignKey('catalog.attributes.id', ondelete='CASCADE'), nullable=False)
     value = db.Column(db.String(255), nullable=False)
 
+    attribute = db.relationship('Attributes', foreign_keys=[attribute_id])
+
     def to_json(self):
         return {
             "id": self.id,

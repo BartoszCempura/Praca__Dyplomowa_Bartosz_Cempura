@@ -220,6 +220,48 @@ def get_all_attributes():
     attributes = Attributes.query.all()
     return jsonify([attribute.to_json() for attribute in attributes])
 
+
+@catalog_bp.route('/attributes/<string:category_slug>', methods=['GET'])
+def get_all_attributes_for_category(category_slug):
+    
+    """-----------------------------Pobranie wszystkich atrybutów i ich wartości (z liczbą wystąpień) dla danej kategorii-----------------------------"""
+
+    # 1️⃣ Znajdź kategorię
+    category = Categories.query.filter_by(slug=category_slug).first()
+    if not category:
+        return jsonify({"error": "Category not found"}), 404
+
+    # 2️⃣ Pobierz ID produktów z danej kategorii (podzapytanie)
+    product_ids = (
+        Products.query
+        .with_entities(Products.id)
+        .filter(Products.category_id == category.id)
+        .subquery()
+    )
+
+    # 3️⃣ Pobierz atrybuty i ich wartości wraz z liczbą wystąpień
+    attributes_data = (
+        Attributes.query
+        .join(ProductAttributes, ProductAttributes.attribute_id == Attributes.id)
+        .with_entities(
+            Attributes.name.label("attribute_name"),
+            ProductAttributes.value.label("value"),
+            func.count(ProductAttributes.product_id).label("count")
+        )
+        .filter(ProductAttributes.product_id.in_(product_ids))
+        .group_by(Attributes.name, ProductAttributes.value)
+        .order_by(Attributes.name)
+        .all()
+    )
+
+    # 4️⃣ Zbuduj wynik JSON
+    result = {}
+    for attr_name, value, count in attributes_data:
+        result.setdefault(attr_name, {})[value] = count
+
+    return jsonify(result)
+
+
     
 ## ###################################################################### Produkty ######################################################################
 
@@ -312,26 +354,47 @@ def get_all_products():
     return jsonify([product.to_json() for product in products])
 # tutaj warto było by dodać paginacje
 
-
 @catalog_bp.route('/products/<string:category_slug>', methods=['GET'])
 def get_products_by_category_slug(category_slug):
-
-    """-------------------------------Pobieranie produktów po slug kategorii z paginacją-------------------------------"""
+    """Pobieranie produktów po slug kategorii z paginacją i filtrami atrybutów"""
 
     try:
-        # endpoint używany do wyświelania produktów w danej kategorii na stronie głównej
-        # slug jest unikalnym identyfikatorem kategorii, który jest używany w URL
+        # 🔹 1️⃣ Parametry paginacji
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('limit', 20, type=int)
 
+        # 🔹 2️⃣ Znajdź kategorię
         category = Categories.query.filter_by(slug=category_slug, isused=True).first()
         if not category:
             return jsonify({"error": "Category not found"}), 404
 
-        pagination = Products.query.filter_by(category_id=category.id).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        # 🔹 3️⃣ Bazowe zapytanie o produkty
+        query = Products.query.filter_by(category_id=category.id)
 
+        # 🔹 4️⃣ Pobierz wszystkie parametry GET (filtry)
+        filters = {key: value for key, value in request.args.items() if key not in ["page", "limit"]}
+
+        # 🔹 5️⃣ Jeśli są filtry — zastosuj je
+        # Każdy filtr (np. color=red, size=42) musi znaleźć odpowiedni atrybut i produkt
+        if filters:
+            for attr_name, attr_value in filters.items():
+                subq = (
+                    ProductAttributes.query
+                    .join(Attributes, ProductAttributes.attribute_id == Attributes.id)
+                    .with_entities(ProductAttributes.product_id)
+                    .filter(
+                        Attributes.name == attr_name,
+                        ProductAttributes.value == attr_value
+                    )
+                    .subquery()
+                )
+                # tylko produkty, które mają ten atrybut
+                query = query.filter(Products.id.in_(subq))
+
+        # 🔹 6️⃣ Paginacja
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        # 🔹 7️⃣ Zwróć wynik
         return jsonify({
             "products": [product.to_json_user_view() for product in pagination.items],
             "total": pagination.total,
@@ -340,12 +403,14 @@ def get_products_by_category_slug(category_slug):
             "has_next": pagination.has_next,
             "has_prev": pagination.has_prev,
             "next_page": pagination.next_num if pagination.has_next else None,
-            "prev_page": pagination.prev_num if pagination.has_prev else None
+            "prev_page": pagination.prev_num if pagination.has_prev else None,
+            "filters_applied": filters
         }), 200
 
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+
     
 
 @catalog_bp.route('/admin/products/<int:product_id>', methods=['PUT'])
