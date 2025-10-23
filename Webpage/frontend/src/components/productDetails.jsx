@@ -14,7 +14,7 @@ function ProductDetails() {
         setProduct(response.data.product);
         setAttributes(response.data.attributes);
       } catch (err) {
-        console.error("Unable to get product:", err);
+        console.error("Ups nie udało się pobrać danych o produkcie:", err);
       }
     };
 

@@ -8,18 +8,18 @@ function Menu() {
   useEffect(() => {
     const getCategories = async () => {
       try {
-        const rootCategories = (await axios.get("/api/catalog/categories")).data; // przetwarzam dane response na json
+        const rootResponse = (await axios.get("/api/catalog/categories")).data; // przetwarzam dane response na json
 
         const categoriesWithTheirChildren = await Promise.all( //promise jest szybsze bo wykonuje wszystko na raz
-          rootCategories.map(async (rootCategory) => {
-            const childCategories = await axios.get(`/api/catalog/categories/${rootCategory.id}`);
-            return { ...rootCategory, children: childCategories.data }; // spread operator (...) kopiuje wszystkie wlasciwosci rootCategory i dodaje nowe children
+          rootResponse.map(async (rootCategory) => {
+            const childResponse = await axios.get(`/api/catalog/categories/${rootCategory.id}`);
+            return { ...rootCategory, children: childResponse.data }; // spread operator (...) kopiuje wszystkie wlasciwosci rootCategory i dodaje nowe children
           })
         );
 
         setCategories(categoriesWithTheirChildren);
       } catch (err) {
-        console.error("Unable to get categories:", err);
+        console.error("Ups nie udało się pobrać kategorii:", err);
       }
     };
 

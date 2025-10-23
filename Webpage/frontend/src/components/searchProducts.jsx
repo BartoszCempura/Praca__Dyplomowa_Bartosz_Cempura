@@ -14,7 +14,7 @@ function SearchProducts() {
         const response = await axios.get(`/api/catalog/products?search=${searchValue}`);
         setProducts(response.data.products);
       } catch (err) {
-        console.error("Error fetching search results:", err);
+        console.error("Ups nie udało się pobrać produktów:", err);
       }
     };
 
