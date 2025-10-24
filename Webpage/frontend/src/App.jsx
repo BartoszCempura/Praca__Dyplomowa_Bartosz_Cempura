@@ -1,5 +1,5 @@
 import './App.css'
-import {Navbar, Menu, PrintProducts, SearchProducts, Home, ProductDetails, Footer} from "./components/"
+import {Navbar, Menu, PrintProducts, SearchProducts, Home, ProductDetails, Footer, LoginPage} from "./components/"
 import { Routes, Route, useParams } from "react-router-dom";
 
 function App() {
@@ -8,6 +8,7 @@ function App() {
       <Navbar />
       <Menu />
       <Routes>
+         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<Home />} />
         <Route path="/:categorySlug" element={<ProductsBasedOnURL />} />
         <Route path="/:categorySlug/:productSlug" element={<ProductDetails />} />
