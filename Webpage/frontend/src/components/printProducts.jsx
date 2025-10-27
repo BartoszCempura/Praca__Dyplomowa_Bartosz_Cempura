@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import ProductCard from "./productCard";
+import api from "../api/tokenHandler";
 
 function PrintProducts({ categorySlug }) {
   const [products, setProducts] = useState([]);
@@ -12,7 +13,7 @@ function PrintProducts({ categorySlug }) {
   useEffect(() => {
     const fetchAttributes = async () => {
       try {
-        const response = await axios.get(`/api/catalog/attributes/${categorySlug}`);
+        const response = await api.get(`/catalog/attributes/${categorySlug}`);
         setAttributes(response.data);
       } catch (err) {
         console.error("Ups nie udało się pobrać atrybutów:", err);
@@ -26,8 +27,8 @@ function PrintProducts({ categorySlug }) {
     const fetchProducts = async () => {
       try {
         const queryString = searchParams.toString();
-        const url = `/api/catalog/products/${categorySlug}?${queryString}`;
-        const response = await axios.get(url);
+        const url = `/catalog/products/${categorySlug}?${queryString}`;
+        const response = await api.get(url);
         setProducts(response.data.products);
       } catch (err) {
         console.error("Ups nie udało się pobrać produktów:", err);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
+import api from "../api/tokenHandler";
 
 function Menu() {
   const [categories, setCategories] = useState([]);
@@ -8,11 +8,11 @@ function Menu() {
   useEffect(() => {
     const getCategories = async () => {
       try {
-        const rootResponse = (await axios.get("/api/catalog/categories")).data; // przetwarzam dane response na json
+        const rootResponse = (await api.get("/catalog/categories")).data; // przetwarzam dane response na json
 
         const categoriesWithTheirChildren = await Promise.all( //promise jest szybsze bo wykonuje wszystko na raz
           rootResponse.map(async (rootCategory) => {
-            const childResponse = await axios.get(`/api/catalog/categories/${rootCategory.id}`);
+            const childResponse = await api.get(`/catalog/categories/${rootCategory.id}`);
             return { ...rootCategory, children: childResponse.data }; // spread operator (...) kopiuje wszystkie wlasciwosci rootCategory i dodaje nowe children
           })
         );

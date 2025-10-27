@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import ProductCard from "./productCard";
-import axios from "axios";
+import api from "../api/tokenHandler";
 
 function SearchProducts() {
   const [searchParams] = useSearchParams();
@@ -11,7 +11,7 @@ function SearchProducts() {
   useEffect(() => {
     const fetchSearchResults = async () => {
       try {
-        const response = await axios.get(`/api/catalog/products?search=${searchValue}`);
+        const response = await api.get(`/catalog/products?search=${searchValue}`);
         setProducts(response.data.products);
       } catch (err) {
         console.error("Ups nie udało się pobrać produktów:", err);

@@ -18,10 +18,10 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-Logowanie działą ale mam brich jakiś bezpieczeństwa
+jak wygaśnie refresh to aplikacja wpada mi w pętle jeżeli wywołam profile. Może to być wina samego profile ale może też być tokenHandlera. Musze sprawdzeić co powoduje i poprawić.
 
-dodano pliki loginPage , tokenHandler - do odświerzania tokenó , navbarUserMenu - do określenia co ma się wyświetlać po zalogowaniu, zmodyfikowałem index.js bo tam mamy pole dla okna logowania
-zobac zkod, zrozum, zrefaktoruj. Strona nie odświerza się automatycznie po logowaniu przez co nie zmienia się navbarUserMenu. Może warto dodać z DaisyUI znacznikże jesteśmy zalogowani
+Tzeba dodac odświerzanie menu użytkownika po zalogowaniu i jak token wygasa aby było wylogowanie. Narazie endpoint próbóje załadować dane w nieskońcozność zmiany czasu z 15 min i 30 dni w __init__.przyszłość
+zmiany w navbarUserMenu.jsx - dodano funkcje dla profile i dodano jakieś wyświetlanie danych w konsoli
 
 Dodanie paru produktów (do 6) w kategoriach,uzupełnienie danych
 

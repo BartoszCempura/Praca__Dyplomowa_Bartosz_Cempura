@@ -35,8 +35,8 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False ## wyłączamy sygnały z SQLAlchemy, takie jak model modified - lepsza wydajność
     app.config['JWT_TOKEN_LOCATION'] = ['headers'] ## ustawiamy lokalizację tokenów JWT - access w nagłówkach a refresh w ciasteczkach http
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=15)
-    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=10)
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(minutes=1)
 
 
     db.init_app(app) ## inicjalizujemy bazę danych z aplikacją Flask

@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/tokenHandler";
 
 function ProductDetails() {
   const { productSlug } = useParams(); 
@@ -10,7 +10,7 @@ function ProductDetails() {
   useEffect(() => {
     const getProduct = async () => {
       try {
-        const response = await axios.get(`/api/catalog/products/details/${productSlug}`);
+        const response = await api.get(`/catalog/products/details/${productSlug}`);
         setProduct(response.data.product);
         setAttributes(response.data.attributes);
       } catch (err) {

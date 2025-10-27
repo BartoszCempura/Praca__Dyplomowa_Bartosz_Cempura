@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/tokenHandler";
 
 function NavbarUserMenu() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,9 +17,19 @@ function NavbarUserMenu() {
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
     setIsLoggedIn(false);
     navigate("/login");
+  };
+
+  const handleClick = async () => {
+    try {
+      const res = await api.get("/user_management/user"); // wywołanie endpointu chronionego @jwt_required()
+      setUser(res.data);
+      console.log("Dane użytkownika:", res.data);
+    } catch (err) {
+      console.error("Błąd pobierania danych użytkownika:", err);
+      alert(err.response?.data?.error || "Nie udało się pobrać danych użytkownika");
+    }
   };
 
   return (
@@ -33,7 +45,7 @@ function NavbarUserMenu() {
 
       {isLoggedIn ? (
         <ul tabIndex={-1} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-          <li><a>Profile</a></li>
+          <li><a onClick={handleClick} style={{ cursor: "pointer" }}>Profile</a></li>
           <li><a>Settings</a></li>
           <li><a onClick={handleLogout} className="cursor-pointer">Logout</a></li>
         </ul>
@@ -42,6 +54,12 @@ function NavbarUserMenu() {
           <li><a>Utwórz konto</a></li>
           <li><a onClick={handleLogin} className="cursor-pointer">Zaloguj</a></li>
         </ul>
+      )}
+      {user && (
+        <div className="mt-2 p-2 bg-base-200 rounded">
+          <p>{user.first_name} {user.last_name}</p>
+          <p>{user.email}</p>
+        </div>
       )}
     </div>
   );
