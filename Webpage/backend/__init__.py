@@ -34,14 +34,18 @@ def create_app():
     app.config['JWT_SECRET_KEY'] = jwt_secret_key
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False ## wyłączamy sygnały z SQLAlchemy, takie jak model modified - lepsza wydajność
-    app.config['JWT_TOKEN_LOCATION'] = ['headers'] ## ustawiamy lokalizację tokenów JWT - access w nagłówkach a refresh w ciasteczkach http
+    app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies'] ## ustawiamy lokalizację tokenów JWT - access w nagłówkach a refresh w ciasteczkach http
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=10)
-    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(minutes=1)
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(minutes=10)
+    app.config['JWT_COOKIE_SECURE'] = False ## ustawiamy ciasteczka JWT jako secure - będą przesyłane tylko przez HTTPS - False na czas developmentu
+    app.config['JWT_COOKIE_SAMESITE'] = 'Lax' ## ustawiamy ciasteczka JWT jako samesite strict - będą przesyłane tylko w kontekście tej samej domeny - Lax na czas developmentu
+    app.config['JWT_REFRESH_COOKIE_PATH'] = '/' ## ustawiamy ścieżkę ciasteczka refresh JWT
+    app.config['JWT_COOKIE_CSRF_PROTECT'] = False ## włączamy ochronę CSRF dla ciasteczek JWT
 
 
     db.init_app(app) ## inicjalizujemy bazę danych z aplikacją Flask
     jwt.init_app(app) ## inicjalizujemy JWTManager z aplikacją Flask
-    CORS(app) ## włączamy CORS, aby aplikacja mogła obsługiwać żądania z innych domen
+    CORS(app, supports_credentials=True) ## włączamy CORS, aby aplikacja mogła obsługiwać żądania z innych domen
 
     from .auth import auth_bp ## importujemy moduł auth, który będzie zawierał endpointy związane z logowaniem i uwierzytelnianiem
     app.register_blueprint(auth_bp) 

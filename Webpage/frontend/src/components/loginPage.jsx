@@ -12,10 +12,10 @@ const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await api.post("/auth/login", { login, password });
+      const response = await api.post("/auth/login", { login, password }, { withCredentials: true });
 
-      localStorage.setItem("access_token", response.data.access_token);
-      localStorage.setItem("refresh_token", response.data.refresh_token);
+
+      sessionStorage.setItem("access_token", response.data.access_token);
 
       navigate("/"); // przekierowanie po zalogowaniu
     } catch (err) {

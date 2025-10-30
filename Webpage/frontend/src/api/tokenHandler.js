@@ -1,47 +1,50 @@
 import api from "./axios";
 
-// request interceptor
+// request interceptor — dodaje access token z sessionStorage
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
+    const token = sessionStorage.getItem("access_token");
+    // NIE dodawaj Authorization dla /auth/refresh (ani /login itd.)
+    if (
+      token &&
+      !config.url.endsWith("/auth/refresh") &&
+      !config.url.endsWith("/auth/login")
+    ) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
-
-// response interceptor
+// response interceptor — obsługuje odnowienie tokenu, jeśli access token wygasł
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  (response) => response,  // po prostu zwraca response, jeśli jest OK
+  async (error) => {        // to jest funkcja wywoływana przy błędzie
+    const originalRequest = error.config; // zachowujemy info o pierwotnym requestcie
+
+    // jeśli status 401 (Unauthorized) i nie próbowaliśmy jeszcze odświeżyć tokenu
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const refreshToken = localStorage.getItem("refresh_token");
-      if (!refreshToken) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        window.location.href = "/login";
-        return Promise.reject(error);
-      }
+
       try {
-        const res = await api.post("/auth/refresh", {}, {
-          headers: { Authorization: `Bearer ${refreshToken}` },
-        });
-        localStorage.setItem("access_token", res.data.access_token);
+        const res = await api.post("/auth/refresh", {}, { withCredentials: true });
+        sessionStorage.setItem("access_token", res.data.access_token);
+
+        // ustawiamy nowy access token w headers oryginalnego requestu
         originalRequest.headers.Authorization = `Bearer ${res.data.access_token}`;
+
+        // powtarzamy pierwotne żądanie z nowym tokenem
         return api(originalRequest);
       } catch (refreshError) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        sessionStorage.removeItem("access_token");
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }
-    return Promise.reject(error);
+
+    return Promise.reject(error); // dla innych błędów po prostu odrzucamy promise
   }
 );
+
 
 export default api;

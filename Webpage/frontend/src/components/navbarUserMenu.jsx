@@ -8,15 +8,23 @@ function NavbarUserMenu() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = sessionStorage.getItem("access_token");
     if (token) setIsLoggedIn(true);
   }, []);
 
   const handleLogin = () => navigate("/login");
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+  const handleLogout = async () => {
+    try {
+      // ✅ Wylogowanie backendowe — usunięcie refresh cookie (jeśli masz taki endpoint)
+      await api.post("/auth/logout", {}, { withCredentials: true });
+    } catch (err) {
+      console.warn("Nie udało się wylogować po stronie backendu:", err);
+    }
+
+    // ✅ Usuwamy access token z sessionStorage
+    sessionStorage.removeItem("access_token");
+
     setIsLoggedIn(false);
     navigate("/login");
   };
@@ -28,7 +36,7 @@ function NavbarUserMenu() {
       console.log("Dane użytkownika:", res.data);
     } catch (err) {
       console.error("Błąd pobierania danych użytkownika:", err);
-      alert(err.response?.data?.error || "Nie udało się pobrać danych użytkownika");
+      //alert(err.response?.data?.error || "Nie udało się pobrać danych użytkownika");
     }
   };
 
@@ -54,12 +62,6 @@ function NavbarUserMenu() {
           <li><a>Utwórz konto</a></li>
           <li><a onClick={handleLogin} className="cursor-pointer">Zaloguj</a></li>
         </ul>
-      )}
-      {user && (
-        <div className="mt-2 p-2 bg-base-200 rounded">
-          <p>{user.first_name} {user.last_name}</p>
-          <p>{user.email}</p>
-        </div>
       )}
     </div>
   );
