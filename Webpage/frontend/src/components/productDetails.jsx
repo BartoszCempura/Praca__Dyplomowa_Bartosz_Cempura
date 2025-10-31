@@ -37,7 +37,7 @@ function ProductDetails() {
           <p className="text-2xl font-semibold mb-6">
             {product.price_including_promotion} PLN
           </p>
-          <button className="btn btn-primary mb-6">Dodaj do koszyka</button>
+          <button className="btn btn-custom mb-6">Dodaj do koszyka</button>
 
           {/* Atrybuty */}
           {attributes.length > 0 && (

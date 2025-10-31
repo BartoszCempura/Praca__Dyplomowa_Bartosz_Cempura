@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import api from "../api/tokenHandler";
 
@@ -9,18 +8,18 @@ function LoginPage() {
   const navigate = useNavigate();
 
 const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // submit nie przeładowuje strony
 
     try {
+
       const response = await api.post("/auth/login", { login, password }, { withCredentials: true });
-
-
       sessionStorage.setItem("access_token", response.data.access_token);
+      window.dispatchEvent(new Event("loginChange")); // powiadamiam navbarUserMenu o zmianie stanu logowania
+      navigate("/");
 
-      navigate("/"); // przekierowanie po zalogowaniu
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Nieprawidłowy login lub hasło");
+      alert(err.response?.data?.error || "Something went wrong");
     }
   };
 
@@ -34,7 +33,8 @@ const handleSubmit = async (e) => {
 
         <input type="password" placeholder="Hasło" className="input input-bordered w-full" value={password} onChange={(e) => setPassword(e.target.value)}/>
 
-        <button type="submit" className="btn btn-primary w-full">Zaloguj</button>
+        <button type="submit" className="btn btn-custom w-full">Zaloguj</button>
+
       </form>
     </div>
   );

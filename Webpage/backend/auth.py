@@ -1,5 +1,4 @@
 ## tutaj będziemy endpointy powiązane z logowaniemi uywierzytelnianiem
-## trzeba sprawdzić jak to będzie działało z tokenami
 from flask import Blueprint, request, jsonify
 from backend import db
 from backend.models import User
@@ -17,23 +16,22 @@ def login():
         data = request.get_json()
         
         if not data.get('login') or not data.get('password'):
-            return jsonify({'error': 'Login and password are required'}), 400
+            return jsonify({'error': 'Podaj login i hasło'}), 400
         
-        # Find user by login
         user = User.query.filter_by(login=data['login']).first()
-        
+        if not user :
+            return jsonify({'error': 'Brak użytkownika o tym loginie'}), 401
+               
         if not user or not user.check_password(data['password']):
-            return jsonify({'error': 'Invalid credentials'}), 401
-        
+            return jsonify({'error': 'Hasło jest niepoprawne'}), 401
+
         access_token = create_access_token(identity=str(user.id)) # Tworzymy token JWT dla użytkownika
         refresh_token = create_refresh_token(identity=str(user.id)) # Tworzymy token odświeżający dla użytkownika
 
         response = jsonify({
-            'message': 'Login successful',
-            'access_token': access_token,
+            'access_token': access_token
         })
-        set_refresh_cookies(response, refresh_token)
-        print("✅ refresh cookie ustawione")
+        set_refresh_cookies(response, refresh_token) # tworzymy cookie z tokenem odświeżającym
         return response, 200
         
     except Exception as e:
@@ -42,13 +40,13 @@ def login():
     
     
 @auth_bp.route("/refresh", methods=["POST"])
-@jwt_required(refresh=True)
+@jwt_required(refresh=True)  # musi być refresh w nagłówku
 def refresh():
+
+    """-------------------------------Odświeżanie tokenu JWT-------------------------------"""
+
     identity = get_jwt_identity()
-    print("Refresh cookie received, identity:", identity)
-    if not identity:
-        print("JWT error - no identity!")
-    access_token = create_access_token(identity=identity)
+    access_token = create_access_token(identity=identity) # Tworzymy nowy token dostępu
     return jsonify(access_token=access_token), 200
 
 
@@ -56,18 +54,16 @@ def refresh():
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
 
-    """-------------------------------Potwierdzenie czy token jest wystawiony na konto użytkownika-------------------------------"""
+    """-------------------------------Przy Logout usuwamy cookie z refresh tokenem-------------------------------"""
 
     try:
-        # Frontend usówa token z sessionStorage
-        response = jsonify({'message': 'Logout successful'})
-        unset_jwt_cookies(response)  # Usuwamy ciasteczka z refresh tokenem
-        
+        response = jsonify({})
+        unset_jwt_cookies(response)  # Usuwamy ciasteczka z refresh tokenem      
         return response, 200
           
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
-        return jsonify({'error': 'Logout failed'}), 500
+        return jsonify({'error': 'Internal server error'}), 500
     
     
 

@@ -18,7 +18,7 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-jak wygaśnie refresh to aplikacja wpada mi w pętle jeżeli wywołam profile. Może to być wina samego profile ale może też być tokenHandlera. Musze sprawdzeić co powoduje i poprawić.
+tokenHandler do przejrzenia
 
 Tzeba dodac odświerzanie menu użytkownika po zalogowaniu i jak token wygasa aby było wylogowanie. Narazie endpoint próbóje załadować dane w nieskońcozność zmiany czasu z 15 min i 30 dni w __init__.przyszłość
 zmiany w navbarUserMenu.jsx - dodano funkcje dla profile i dodano jakieś wyświetlanie danych w konsoli

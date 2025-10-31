@@ -12,7 +12,7 @@ function ProductCard({ name, slug, image, unit_price, price_including_promotion 
           ${price_including_promotion || unit_price}
         </span>
         <div className="card-actions">
-          <button className="btn btn-primary">Dodaj do koszyka</button>
+          <button className="btn btn-custom">Dodaj do koszyka</button>
         </div>
       </div>
     </div>

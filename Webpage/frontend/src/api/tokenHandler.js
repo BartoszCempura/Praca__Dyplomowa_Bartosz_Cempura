@@ -22,6 +22,10 @@ api.interceptors.response.use(
   async (error) => {        // to jest funkcja wywoływana przy błędzie
     const originalRequest = error.config; // zachowujemy info o pierwotnym requestcie
 
+    if (originalRequest.url.includes("/auth/login") || originalRequest.url.includes("/auth/refresh")) {
+      return Promise.reject(error);
+    }
+
     // jeśli status 401 (Unauthorized) i nie próbowaliśmy jeszcze odświeżyć tokenu
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
