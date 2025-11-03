@@ -1,5 +1,5 @@
 import './App.css'
-import {Navbar, Menu, PrintProducts, SearchProducts, Home, ProductDetails, Footer, LoginPage} from "./components/"
+import {Navbar, Menu, PrintProducts, SearchProducts, Home, ProductDetails, Footer, LoginPage, UserProfile, UserCreateAccount} from "./components/"
 import { Routes, Route, useParams } from "react-router-dom";
 
 function App() {
@@ -8,7 +8,9 @@ function App() {
       <Navbar />
       <Menu />
       <Routes>
-         <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<UserCreateAccount />} />
+        <Route path="/user" element={<UserProfile />} />
         <Route path="/" element={<Home />} />
         <Route path="/:categorySlug" element={<ProductsBasedOnURL />} />
         <Route path="/:categorySlug/:productSlug" element={<ProductDetails />} />

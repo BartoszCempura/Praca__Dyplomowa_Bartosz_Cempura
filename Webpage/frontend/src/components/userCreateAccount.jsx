@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/tokenHandler";
 
-function LoginPage() {
+function UserCreateAccount() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -15,10 +15,8 @@ const handleSubmit = async (e) => {
 
     try {
 
-      const response = await api.post("/auth/login", { login, password }, { withCredentials: true });
-      sessionStorage.setItem("access_token", response.data.access_token);
-      window.dispatchEvent(new Event("loginChange")); // powiadamiam navbarUserMenu o zmianie stanu logowania
-      navigate("/");
+      const response = await api.get("/user_management/user");
+
 
     setMessage(response.data.message);
     setMessageType("success");
@@ -55,4 +53,4 @@ const handleSubmit = async (e) => {
   </div>
   );
 }
-export default LoginPage;
+export default UserCreateAccount;

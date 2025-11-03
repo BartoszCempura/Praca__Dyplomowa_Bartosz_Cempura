@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import axios from "axios";
 import ProductCard from "./productCard";
 import api from "../api/tokenHandler";
 

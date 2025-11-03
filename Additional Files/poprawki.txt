@@ -18,10 +18,7 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-tokenHandler do przejrzenia
-
-Tzeba dodac odświerzanie menu użytkownika po zalogowaniu i jak token wygasa aby było wylogowanie. Narazie endpoint próbóje załadować dane w nieskońcozność zmiany czasu z 15 min i 30 dni w __init__.przyszłość
-zmiany w navbarUserMenu.jsx - dodano funkcje dla profile i dodano jakieś wyświetlanie danych w konsoli
+tokenHandler do przejrzenia. Dodaj pomarańczową poświate jak najeżdzasz na przyciski navbar
 
 Dodanie paru produktów (do 6) w kategoriach,uzupełnienie danych
 

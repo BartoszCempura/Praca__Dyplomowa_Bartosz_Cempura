@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 function ProductCard({ name, slug, image, unit_price, price_including_promotion }) {
   return (
-    <div className="card card-side bg-base-100 shadow-md hover:shadow-md hover:shadow-black/40 transition-shadow duration-100 w-100 grid grid-cols-2">
+    <div className="card card-side bg-base-200 shadow-md hover:shadow-md hover:shadow-black/40 transition-shadow duration-100 w-100 grid grid-cols-2 border-1 border-gray-900">
       <figure>
         <Link to={`/product/${slug}`}><img src={image} alt={name} className="object-cover w-full h-full"/></Link>
       </figure>

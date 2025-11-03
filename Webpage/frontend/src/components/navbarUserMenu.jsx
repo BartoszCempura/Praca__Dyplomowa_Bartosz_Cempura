@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/tokenHandler";
-import avatarImg from '../assets/AVATAR.png';
 
 function NavbarUserMenu() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -21,6 +20,7 @@ useEffect(() => {
 }, []);
   
   const handleLogin = () => navigate("/login");
+  const handleRegister = () => navigate("/register");
 
   const handleLogout = async () => {
     try {
@@ -34,15 +34,8 @@ useEffect(() => {
     navigate("/login");
   };
 
-  const handleClick = async () => {
-    try {
-      const res = await api.get("/user_management/user"); // endpoint chroniony @jwt_required()
-      setUser(res.data);
-      console.log("Dane użytkownika:", res.data);
-    } catch (err) {
-      console.error("Błąd pobierania danych użytkownika:", err);
-    }
-  };
+
+const handleProfile = () => navigate("/user");
 
   return (
     <div className="dropdown dropdown-end">
@@ -76,13 +69,13 @@ useEffect(() => {
       {/*Menu*/}
       {isLoggedIn ? (
         <ul tabIndex={-1} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-          <li><a onClick={handleClick} style={{ cursor: "pointer" }}>Profile</a></li>
-          <li><a>Settings</a></li>
+          <li><a onClick={handleProfile} style={{ cursor: "pointer" }}>Profile</a></li>
+          <li><a>Settings (brak implementacji)</a></li>
           <li><a onClick={handleLogout} className="cursor-pointer">Logout</a></li>
         </ul>
       ) : (
         <ul tabIndex={-1} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-          <li><a>Utwórz konto</a></li>
+          <li><a onClick={handleRegister} className="cursor-pointer">Utwórz konto</a></li>
           <li><a onClick={handleLogin} className="cursor-pointer">Zaloguj</a></li>
         </ul>
       )}

@@ -81,15 +81,18 @@ def change_password():
         return jsonify({'error': 'User not found'}), 404
  
     if not data.get('old_password') or not data.get('new_password'):
-        return jsonify({'error': 'Old password and new password are required'}), 400
+        return jsonify({'error': 'Oba pola są wymagane'}), 400
 
     if not user.check_password(data['old_password']):
-        return jsonify({'error': 'Invalid old password'}), 401
+        return jsonify({'error': 'Stare hasło jest nieprawidłowe'}), 401
+       
+    if data.get('old_password') == data.get('new_password'):
+        return jsonify({'error': 'Nowe hasło musi różnić się od starego hasła'}), 400
 
     user.set_password(data['new_password'])
     db.session.commit()
 
-    return jsonify({'message': 'Password changed successfully'}), 200
+    return jsonify({'message': 'Hasło zostało zmienione pomyślnie'}), 200
 
 
 @user_management_bp.route('/user', methods=['GET'])

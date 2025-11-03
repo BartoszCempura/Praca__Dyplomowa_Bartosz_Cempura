@@ -7,3 +7,5 @@ export { default as Footer } from "./footer";
 export { default as ProductDetails } from "./productDetails";
 export { default as SearchProducts } from "./searchProducts";
 export { default as LoginPage } from "./loginPage";
+export { default as UserProfile } from "./userProfile";
+export { default as UserCreateAccount } from "./userCreateAccount";
