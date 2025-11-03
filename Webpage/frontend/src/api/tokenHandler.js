@@ -8,7 +8,8 @@ api.interceptors.request.use(
     if (
       token &&
       !config.url.endsWith("/auth/refresh") &&
-      !config.url.endsWith("/auth/login")
+      !config.url.endsWith("/auth/login") &&
+      !config.url.endsWith("/auth/register")
     ) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -22,7 +23,11 @@ api.interceptors.response.use(
   async (error) => {        // to jest funkcja wywoływana przy błędzie
     const originalRequest = error.config; // zachowujemy info o pierwotnym requestcie
 
-    if (originalRequest.url.includes("/auth/login") || originalRequest.url.includes("/auth/refresh")) {
+    if (
+      originalRequest.url.includes("/auth/login") ||
+      originalRequest.url.includes("/auth/refresh") ||
+      originalRequest.url.includes("/user_management/user")
+    ) {
       return Promise.reject(error);
     }
 
