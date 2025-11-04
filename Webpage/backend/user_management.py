@@ -22,26 +22,26 @@ def register():
         required_fields = ['login', 'password', 'first_name', 'last_name', 'email', 'phone_number']
         for field in required_fields:
             if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+                return jsonify({'error': f'Pole {field} jest wymagane'}), 400
 
         # Sprawdzenie formatu email
         if not User.validate_email(data['email']):
-            return jsonify({'error': 'Invalid email format'}), 400
+            return jsonify({'error': 'Nieprawidłowy format adresu email'}), 400
 
         # Sprawdzenie formatu numeru telefonu
         if not User.validate_phone(data['phone_number']):
-            return jsonify({'error': 'Invalid phone number format'}), 400
+            return jsonify({'error': 'Nieprawidłowy format numeru telefonu'}), 400
 
         # Sprawdzenie czy login, email lub numer telefonu są już w bazie danych
         if User.query.filter_by(login=data['login']).first(): # automatycznie połaczone do modelu. Zapytanie do bazy na bazie modelu User
-            return jsonify({'error': 'Login already exists'}), 409
-        
+            return jsonify({'error': 'Login już istnieje'}), 409
+
         if User.query.filter_by(email=data['email']).first():
-            return jsonify({'error': 'Email already exists'}), 409
-        
+            return jsonify({'error': 'Email już istnieje'}), 409
+
         if User.query.filter_by(phone_number=data['phone_number']).first():
-            return jsonify({'error': 'Phone number already exists'}), 409
-        
+            return jsonify({'error': 'Numer telefonu już istnieje'}), 409
+
         # do zmiennej przypisujemy obiekt User z danymi z requesta
         user = User(
             login=data['login'],
@@ -56,8 +56,7 @@ def register():
         db.session.commit()
         
         return jsonify({
-            'message': 'User created successfully',
-            'user': user.to_json()
+            'message': f'Konto użytkownika "{user.login}" zostało utworzone pomyślnie.'
         }), 201
         
     except Exception as e:
@@ -147,8 +146,7 @@ def delete_user():
         db.session.commit()
         
         return jsonify({
-            'message': 'User deleted successfully',
-            'deleted_user': user_info
+            'message': f'User {user_info} deleted successfully'
         }), 200
         
     except Exception as e:

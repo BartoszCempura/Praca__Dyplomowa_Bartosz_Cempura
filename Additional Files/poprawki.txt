@@ -16,7 +16,7 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-
+Popraw form login tak jak form tworzenia konta. Po wylogowaniu nie zmienia się status menu user
 
 tokenHandler do przejrzenia. Dodaj pomarańczową poświate jak najeżdzasz na przyciski navbar
 

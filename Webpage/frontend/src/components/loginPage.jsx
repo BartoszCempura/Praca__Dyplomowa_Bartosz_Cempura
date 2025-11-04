@@ -47,7 +47,7 @@ const handleSubmit = async (e) => {
         </form>
 
         {message && (
-        <p className={` ${messageType === 'success' ? 'text-green-600' : ''} ${messageType === 'error' ? 'text-red-600' : ''}`}>
+        <p className={`mt-4 text-center text-sm ${messageType === 'success' ? 'text-green-600' : ''} ${messageType === 'error' ? 'text-red-600' : ''}`}>
             {message}
         </p>
           )}

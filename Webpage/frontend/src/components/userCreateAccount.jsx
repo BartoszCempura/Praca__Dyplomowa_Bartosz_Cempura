@@ -37,7 +37,6 @@ const handleSubmit = async (e) => {
         phone_number: phoneNumber
       });
 
-    if (response.status === 200) {
       setMessage(response.data.message);
       setMessageType("success");
       setLogin(""); //czyszcze pola
@@ -49,7 +48,6 @@ const handleSubmit = async (e) => {
       setPhoneNumber("");
       e.target.reset(); //aby nie pozostawała czerwona ramka ro zmianie hasła
       setTimeout(() => navigate("/login"), 3000);
-      }
     } catch (err) {
     console.error(err);
     setMessageType("error");
@@ -59,22 +57,31 @@ const handleSubmit = async (e) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center bg-base-100 py-40">
-      <div className="card w-96 bg-base-200 shadow-md shadow-black/40 p-6 space-y-4 mb-6 border border-gray-900">
-        <h2 className="text-2xl font-bold text-center mb-6">Zarejestruj konto</h2>
-        <form onSubmit={handleSubmit} className="cflex flex-col">    
-          <input type="text" placeholder="Login" className="input validator w-full mb-4" value={login} onChange={(e) => setLogin(e.target.value)}/>
-          <input type="password" placeholder="Hasło" className="input validator w-full mb-4" value={password} onChange={(e) => setPassword(e.target.value)}/>
-          <input type="password" placeholder="Potwierdź hasło" className="input validator w-full mb-4" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
-          <input type="email" placeholder="Email" className="input validator w-full mb-4" value={email} onChange={(e) => setEmail(e.target.value)}/>
-          <input type="text" placeholder="Imię" className="input validator w-full mb-4" value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
-          <input type="text" placeholder="Nazwisko" className="input validator w-full mb-4" value={lastName} onChange={(e) => setLastName(e.target.value)}/>
-          <input type="text" placeholder="Numer telefonu" className="input validator w-full mb-4" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)}/>
+    <div className="flex items-center justify-center bg-base-100 py-20">
+      <div className="card w-96 bg-base-200 shadow-md shadow-black/40 p-6 border border-gray-900">
+        <h2 className="text-2xl font-bold text-center">Zarejestruj konto</h2>
+        <form onSubmit={handleSubmit}>
+          <fieldset className="fieldset">
+            <label className="label text-sm">Login:</label> 
+            <input type="text" placeholder="np. Adrian123" className="input validator w-full mb-4" value={login} onChange={(e) => setLogin(e.target.value)}/>
+            <label className="label text-sm">Hasło:</label>
+            <input type="password" placeholder="Hasło" className="input validator w-full mb-2" minLength={8} pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" value={password} onChange={(e) => setPassword(e.target.value)}/>
+            <input type="password" placeholder="Potwierdź hasło" className="input validator w-full" minLength={8} pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
+            <p className="label mt-2 mb-4">Hasło: min. 8 znaków, 1 duża litera, 1 mała litera, 1 cyfra</p>
+            <label className="label text-sm">Email:</label>
+            <input type="email" placeholder="np. jan.kowalski@example.com" className="input validator w-full mb-4" value={email} onChange={(e) => setEmail(e.target.value)}/>
+            <label className="label text-sm">Imię:</label>
+            <input type="text" placeholder="Imię" className="input validator w-full mb-4" value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
+            <label className="label text-sm">Nazwisko:</label>
+            <input type="text" placeholder="Nazwisko" className="input validator w-full mb-4" value={lastName} onChange={(e) => setLastName(e.target.value)}/>
+            <label className="label text-sm">Numer telefonu:</label>
+            <input type="text" placeholder="xxx xxx xxx" className="input validator w-full mb-6" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)}/>
+          </fieldset>
           <button type="submit" className="btn btn-custom w-full">Zarejestruj</button>
         </form>
 
         {message && (
-        <p className={` ${messageType === 'success' ? 'text-green-600' : ''} ${messageType === 'error' ? 'text-red-600' : ''}`}>
+        <p className={`mt-4 text-center ${messageType === 'success' ? 'text-green-600' : ''} ${messageType === 'error' ? 'text-red-600' : ''}`}>
             {message}
         </p>
           )}
