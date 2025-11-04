@@ -18,11 +18,11 @@ def login():
         if not data.get('login') or not data.get('password'):
             return jsonify({'error': 'Podaj login i hasło'}), 400
         
-        user = User.query.filter_by(login=data['login']).first()
+        user = User.query.filter_by(login=data.get('login')).first()
         if not user :
             return jsonify({'error': 'Brak użytkownika o tym loginie'}), 401
-               
-        if not user or not user.check_password(data['password']):
+
+        if not user or not user.check_password(data.get('password')):
             return jsonify({'error': 'Hasło jest niepoprawne'}), 401
 
         access_token = create_access_token(identity=str(user.id)) # Tworzymy token JWT dla użytkownika

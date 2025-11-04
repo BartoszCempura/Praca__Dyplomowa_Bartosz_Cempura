@@ -40,14 +40,16 @@ const handleSubmit = async (e) => {
     <div className="flex flex-col items-center justify-center bg-base-100 py-40">
       <div className="card w-96 bg-base-200 shadow-md shadow-black/40 p-6 space-y-4 mb-6 border border-gray-900">
         <h2 className="text-2xl font-bold text-center mb-6">Zaloguj się</h2>
-        <form onSubmit={handleSubmit} className="cflex flex-col">    
-          <input type="text" placeholder="Login" className="input validator w-full mb-4" value={login} onChange={(e) => setLogin(e.target.value)}/>
-          <input type="password" placeholder="Hasło" className="input validator w-full mb-4" value={password} onChange={(e) => setPassword(e.target.value)}/>
-          <button type="submit" className="btn btn-custom w-full">Zaloguj</button>
+        <form onSubmit={handleSubmit}>
+          <fieldset className="fieldset">    
+            <input type="text" placeholder="Login" className="input validator w-full mb-4" value={login} onChange={(e) => setLogin(e.target.value)}/>
+            <input type="password" placeholder="Hasło" className="input validator w-full mb-4" value={password} onChange={(e) => setPassword(e.target.value)}/>
+            <button type="submit" className="btn btn-custom w-full">Zaloguj</button>
+          </fieldset>
         </form>
 
         {message && (
-        <p className={`mt-4 text-center text-sm ${messageType === 'success' ? 'text-green-600' : ''} ${messageType === 'error' ? 'text-red-600' : ''}`}>
+        <p className={`text-center text-sm ${messageType === 'success' ? 'text-green-600' : ''} ${messageType === 'error' ? 'text-red-600' : ''}`}>
             {message}
         </p>
           )}

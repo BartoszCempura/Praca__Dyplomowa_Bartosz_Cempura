@@ -1,10 +1,8 @@
 import api from "./axios";
 
-// request interceptor — dodaje access token z sessionStorage
 api.interceptors.request.use(
   (config) => {
     const token = sessionStorage.getItem("access_token");
-    // NIE dodawaj Authorization dla /auth/refresh (ani /login itd.)
     if (
       token &&
       !config.url.endsWith("/auth/refresh") &&
@@ -17,43 +15,45 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-// response interceptor — obsługuje odnowienie tokenu, jeśli access token wygasł
+
 api.interceptors.response.use(
-  (response) => response,  // po prostu zwraca response, jeśli jest OK
-  async (error) => {        // to jest funkcja wywoływana przy błędzie
-    const originalRequest = error.config; // zachowujemy info o pierwotnym requestcie
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
     if (
       originalRequest.url.includes("/auth/login") ||
-      originalRequest.url.includes("/auth/refresh") ||
-      originalRequest.url.includes("/user_management/user")
+      originalRequest.url.includes("/auth/refresh")
     ) {
       return Promise.reject(error);
     }
 
-    // jeśli status 401 (Unauthorized) i nie próbowaliśmy jeszcze odświeżyć tokenu
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
         const res = await api.post("/auth/refresh", {}, { withCredentials: true });
         sessionStorage.setItem("access_token", res.data.access_token);
-
-        // ustawiamy nowy access token w headers oryginalnego requestu
         originalRequest.headers.Authorization = `Bearer ${res.data.access_token}`;
-
-        // powtarzamy pierwotne żądanie z nowym tokenem
         return api(originalRequest);
       } catch (refreshError) {
+        try {
+          await api.post("/auth/logout", {}, { withCredentials: true });
+        } catch (logoutErr) {
+          console.warn("Błąd przy próbie wylogowania:", logoutErr);
+        }
+
         sessionStorage.removeItem("access_token");
-        window.location.href = "/login";
+        window.dispatchEvent(new Event("loginChange"));
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 100);
         return Promise.reject(refreshError);
       }
     }
 
-    return Promise.reject(error); // dla innych błędów po prostu odrzucamy promise
+    return Promise.reject(error);
   }
 );
-
 
 export default api;

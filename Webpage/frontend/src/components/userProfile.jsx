@@ -132,7 +132,7 @@ function UserProfile() {
           <p className="py-4">Czy na pewno chcesz usunąć swoje konto? Ta operacja jest nieodwracalna.</p>
 
           <form onSubmit={handleDeleteAccount}>
-            <input type="password" placeholder="Podaj hasło" className="input input-bordered w-full mb-4" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} required/>
+            <input type="password" placeholder="Podaj hasło" className="input input-bordered w-full" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} required/>
             <div className="modal-action">
               <button type="submit" className="btn btn-error">Usuń konto</button>
             </div>

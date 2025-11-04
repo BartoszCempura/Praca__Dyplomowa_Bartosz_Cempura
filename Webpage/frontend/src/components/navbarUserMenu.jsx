@@ -30,6 +30,7 @@ useEffect(() => {
       alert(err.response?.data?.error || "Something went wrong");
     }
     sessionStorage.removeItem("access_token");
+    window.dispatchEvent(new Event("loginChange"));
     setIsLoggedIn(false);
     navigate("/login");
   };

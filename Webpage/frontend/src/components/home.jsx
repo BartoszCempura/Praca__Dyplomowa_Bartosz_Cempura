@@ -42,7 +42,7 @@ function Home() {
 
       <div className="grid grid-cols-[30%_70%] items-center my-10 gap-4">
         <div className="bg-base-100 p-4 text-center shadow-md">
-          <h1 className="text-4xl font-bold">Best seller</h1>
+          <h1 className="text-4xl font-bold">Bestseller</h1>
         </div>
         <div className="bg-base-100 p-4 text-center shadow-md">
           <h1 className="text-4xl font-bold">Top produkty tego miesiąca</h1>

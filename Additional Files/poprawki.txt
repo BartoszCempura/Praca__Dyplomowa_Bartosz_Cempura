@@ -15,8 +15,7 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-
-Popraw form login tak jak form tworzenia konta. Po wylogowaniu nie zmienia się status menu user
+Zocza czy pomiędzy navbarUserMenu a navbar loginchange można ustawić tak samo albo moze chociaż tą samą nazwe dla obydwu
 
 tokenHandler do przejrzenia. Dodaj pomarańczową poświate jak najeżdzasz na przyciski navbar
 
