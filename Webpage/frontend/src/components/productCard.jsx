@@ -6,10 +6,9 @@ function ProductCard({ id, name, slug, image, unit_price, price_including_promot
     try {
       const response = await api.post("/commerce/carts", {
         product_id: id,
-        quantity: 1, // przycisk nie pozwala na dodanie więcej niż jedną sztuke
+        quantity: 1, // Dodajemy 1 sztukę produktu. Można to rozszerzyć o możliwość wyboru ilości.
       });
 
-      // 🔔 Można też wywołać event, żeby inne komponenty (np. navbar) się odświeżyły
       window.dispatchEvent(new Event("cartChange"));
     } catch (err) {
       console.error(err);

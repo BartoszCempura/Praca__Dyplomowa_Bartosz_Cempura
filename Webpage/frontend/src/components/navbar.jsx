@@ -23,7 +23,8 @@ function Navbar() {
         const data = response.data;
 
         if (data.products) {
-          setCartItems(data.products.length);
+          const totalItems = data.products.reduce((sum, p) => sum + (p.quantity || 0), 0); //sum zaczyna się od 0 a następnie dodajemy quantity każdego produktu
+          setCartItems(totalItems);
           setCartValue(parseFloat(data.total_products_cost) || 0); // total_products_cost jest konwertowany na string w endpoincie, więc parsujemy na float
         } else {
           // jak pusty koszyk to mamy wartość 0

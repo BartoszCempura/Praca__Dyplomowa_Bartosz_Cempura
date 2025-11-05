@@ -14,7 +14,13 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
+ZObacz czy w navbar nie musisz zmienić nazy dla handleLoginStatusChange - bo teraz obsługuje dwa hooki i nie za bardzo wiem jak to działa 
 
+Dodaj obsługe przycisków w szczegułach produktów
+
+Dodaj strone z wyświetlonymi produktami z koszyka
+
+Dodaj mozliwośc usówania produktu z koszyka - wraz z podaniem quantity
 
 tokenHandler do przejrzenia. Dodaj pomarańczową poświate jak najeżdzasz na przyciski navbar
 

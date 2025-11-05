@@ -266,6 +266,7 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
     
     def to_json_description_view(self):
         return {
+            "id": self.id,
             "category_name": self.category.name,
             "name": self.name,
             "description": self.description,
