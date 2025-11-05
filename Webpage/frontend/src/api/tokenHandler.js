@@ -44,7 +44,7 @@ api.interceptors.response.use(
         }
 
         sessionStorage.removeItem("access_token");
-        window.dispatchEvent(new Event("loginChange"));
+        window.dispatchEvent(new Event("loginStatusChange"));
         setTimeout(() => {
           window.location.href = "/login";
         }, 100);

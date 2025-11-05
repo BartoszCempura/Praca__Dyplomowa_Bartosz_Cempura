@@ -24,7 +24,7 @@ function Navbar() {
 
         if (data.products) {
           setCartItems(data.products.length);
-          setCartValue(parseFloat(data.total_products_cost) || 0); //total_products_cost jest konwertowany na string w endpoincie, więc parsujemy na float
+          setCartValue(parseFloat(data.total_products_cost) || 0); // total_products_cost jest konwertowany na string w endpoincie, więc parsujemy na float
         } else {
           // jak pusty koszyk to mamy wartość 0
           setCartItems(0);
@@ -36,7 +36,7 @@ function Navbar() {
           setCartItems(0);
           setCartValue(0);
         } else {
-          console.error("Błąd przy pobieraniu koszyka:", err);
+          console.error(err);
         }
       }
     };
@@ -47,7 +47,7 @@ function Navbar() {
     }
 
     // jak zostanie wyemitowany loginChange to zachodzą zmianyw elemencie
-    const handleLoginChange = () => {
+    const handleLoginStatusChange = () => {
       if (sessionStorage.getItem("access_token")) {
         fetchCart();
       } else {
@@ -56,8 +56,12 @@ function Navbar() {
       }
     };
 
-    window.addEventListener("loginChange", handleLoginChange);
-    return () => window.removeEventListener("loginChange", handleLoginChange);
+    window.addEventListener("loginStatusChange", handleLoginStatusChange);
+    window.addEventListener("cartChange", fetchCart);
+    return () => {
+      window.removeEventListener("loginStatusChange", handleLoginStatusChange);
+      window.removeEventListener("cartChange", fetchCart);
+    };
   }, []);
 
   return (

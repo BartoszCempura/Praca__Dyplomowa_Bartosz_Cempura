@@ -17,7 +17,7 @@ const handleSubmit = async (e) => {
 
       const response = await api.post("/auth/login", { login, password }, { withCredentials: true });
       sessionStorage.setItem("access_token", response.data.access_token);
-      window.dispatchEvent(new Event("loginChange")); // powiadamiam navbarUserMenu o zmianie stanu logowania
+      window.dispatchEvent(new Event("loginStatusChange")); // powiadamiam navbarUserMenu o zmianie stanu logowania
       navigate("/");
 
     setMessage(response.data.message);

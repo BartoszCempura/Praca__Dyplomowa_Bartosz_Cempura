@@ -4,21 +4,23 @@ import api from "../api/tokenHandler";
 
 function NavbarUserMenu() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
 useEffect(() => {
-  const checkLogin = () => {
-    const token = sessionStorage.getItem("access_token");
-    setIsLoggedIn(!!token);
+  const handleLoginStatusChange = () => {
+    if (sessionStorage.getItem("access_token")) {
+      setIsLoggedIn(true)
+    } else {
+      setIsLoggedIn(false)
+    }
   };
 
-  checkLogin(); // sprawdzam czy zalogowany
-  window.addEventListener("loginChange", checkLogin);
+  handleLoginStatusChange(); // pobranie początkowego stanu
+  window.addEventListener("loginStatusChange", handleLoginStatusChange);
 
-  return () => window.removeEventListener("loginChange", checkLogin); //sprzątanie
+  return () => window.removeEventListener("loginStatusChange", handleLoginStatusChange); //sprzątanie
 }, []);
-  
+ 
   const handleLogin = () => navigate("/login");
   const handleRegister = () => navigate("/register");
 
@@ -30,7 +32,7 @@ useEffect(() => {
       alert(err.response?.data?.error || "Something went wrong");
     }
     sessionStorage.removeItem("access_token");
-    window.dispatchEvent(new Event("loginChange"));
+    window.dispatchEvent(new Event("loginStatusChange"));
     setIsLoggedIn(false);
     navigate("/login");
   };
