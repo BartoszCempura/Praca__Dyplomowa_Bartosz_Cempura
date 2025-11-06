@@ -1,5 +1,5 @@
 import './App.css'
-import {Navbar, Menu, PrintProducts, SearchProducts, Home, ProductDetails, Footer, LoginPage, UserProfile, UserCreateAccount} from "./components/"
+import {Navbar, Menu, PrintProducts, SearchProducts, Home, ProductDetails, Footer, LoginPage, UserProfile, UserCreateAccount, Cart} from "./components/"
 import { Routes, Route, useParams } from "react-router-dom";
 
 function App() {
@@ -12,6 +12,7 @@ function App() {
         <Route path="/register" element={<UserCreateAccount />} />
         <Route path="/user" element={<UserProfile />} />
         <Route path="/" element={<Home />} />
+        <Route path="/cart" element={<Cart />} />
         <Route path="/:categorySlug" element={<ProductsBasedOnURL />} />
         <Route path="/:categorySlug/:productSlug" element={<ProductDetails />} />
         <Route path="/search" element={<SearchProducts />} />

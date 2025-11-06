@@ -13,12 +13,8 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
+quantity sie nie ładuje na widokkoszyka, nie ładuje się również cena produktu - problem może być powiązany z elementem productCard, modelem json_to_user_view albo cart.jsx
 
-ZObacz czy w navbar nie musisz zmienić nazy dla handleLoginStatusChange - bo teraz obsługuje dwa hooki i nie za bardzo wiem jak to działa 
-
-Dodaj obsługe przycisków w szczegułach produktów
-
-Dodaj strone z wyświetlonymi produktami z koszyka
 
 Dodaj mozliwośc usówania produktu z koszyka - wraz z podaniem quantity
 
@@ -26,7 +22,6 @@ tokenHandler do przejrzenia. Dodaj pomarańczową poświate jak najeżdzasz na p
 
 Dodanie paru produktów (do 6) w kategoriach,uzupełnienie danych
 
-Dodanie dodawania do koszyka 
 
 
 

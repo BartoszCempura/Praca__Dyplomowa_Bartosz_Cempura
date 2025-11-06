@@ -15,7 +15,7 @@ function PrintProducts({ categorySlug }) {
         const response = await api.get(`/catalog/attributes/${categorySlug}`);
         setAttributes(response.data);
       } catch (err) {
-        console.error("Ups nie udało się pobrać atrybutów:", err);
+        console.error(err);
       }
     };
     fetchAttributes();
@@ -30,7 +30,7 @@ function PrintProducts({ categorySlug }) {
         const response = await api.get(url);
         setProducts(response.data.products);
       } catch (err) {
-        console.error("Ups nie udało się pobrać produktów:", err);
+        console.error(err);
       }
     };
     fetchProducts();
@@ -97,10 +97,10 @@ const handleResetFilters = () => {
       </aside>
 
       {/* Produkty */}
-      <div className="flex flex-wrap justify-center gap-6 my-10">
+      <div className="flex flex-wrap justify-center gap-6 my-10 mr-5">
         {products.length > 0 ? (
           products.map(p => (
-            <ProductCard key={p.id} categorySlug={categorySlug} {...p} />
+            <ProductCard key={p.id} categorySlug={categorySlug} variant="catalog" {...p} />
           ))
         ) : (
           <span>

@@ -23,7 +23,13 @@ function Navbar() {
         const data = response.data;
 
         if (data.products) {
-          const totalItems = data.products.reduce((sum, p) => sum + (p.quantity || 0), 0); //sum zaczyna się od 0 a następnie dodajemy quantity każdego produktu
+          let totalItems = 0; // liczymy ilość przedmiotów w koszyku poprzez sume quantity z CartProducts
+
+          for (let i = 0; i < data.products.length; i++) {
+            const product = data.products[i];
+            totalItems += product.quantity || 0;
+          }
+
           setCartItems(totalItems);
           setCartValue(parseFloat(data.total_products_cost) || 0); // total_products_cost jest konwertowany na string w endpoincie, więc parsujemy na float
         } else {
@@ -56,12 +62,15 @@ function Navbar() {
         setCartValue(0);
       }
     };
+    // jak zostanie zaktualizowany koszyk zachodzą zmiany w elemencie
+    const handleCartChange = () => fetchCart();
 
     window.addEventListener("loginStatusChange", handleLoginStatusChange);
-    window.addEventListener("cartChange", fetchCart);
+    window.addEventListener("cartChange", handleCartChange);
+
     return () => {
       window.removeEventListener("loginStatusChange", handleLoginStatusChange);
-      window.removeEventListener("cartChange", fetchCart);
+      window.removeEventListener("cartChange", handleCartChange);
     };
   }, []);
 
@@ -106,7 +115,7 @@ function Navbar() {
               <span className="text-info mb-2">
                 Wartość: {cartValue.toFixed(2)} zł
               </span>
-              <div className="card-actions">
+              <div className="card-actions" onClick={() => navigate("/cart")}>
                 <button className="btn btn-custom btn-block">Zobacz koszyk</button>
               </div>
             </div>
