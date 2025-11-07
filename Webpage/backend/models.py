@@ -529,15 +529,17 @@ class CartProducts (db.Model):
             "cart_id": self.cart_id,
             "product_id": self.product_id,
             "quantity": self.quantity,
-            "unit_price_with_discount": self.unit_price_with_discount
+            "price_including_promotion": self.unit_price_with_discount # zmiana nazwy pola ze względu na spójnośc z frontendem - koszyk i katalog productCard
         }
     
     def to_json_user_view(self):
         return {
+            "product_id": self.product.id,
+            "slug": self.product.slug,
             "name": self.product.name,
             "image": self.product.image,
             "quantity": self.quantity,
-            "unit_price_with_discount": self.unit_price_with_discount
+            "price_including_promotion": self.unit_price_with_discount
         }
     
     @staticmethod

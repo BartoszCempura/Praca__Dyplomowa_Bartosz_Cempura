@@ -26,7 +26,7 @@ function ProductDetails() {
 
     const addToCart = async () => {
     try {
-      const response = await api.post("/commerce/carts", {
+      const response = await api.put("/commerce/carts", {
         product_id: product.id,
         quantity: 1, // Dodajemy 1 sztukę produktu. Można to rozszerzyć o możliwość wyboru ilości.
       });

@@ -208,83 +208,159 @@ def modify_payment_method(payment_id):
 
 ## ###################################################################### Koszyk i produkty w koszyku ######################################################################
 
+"""
 @commerce_bp.route('/carts', methods=['POST'])
 @jwt_required()
 def add_product_to_cart():
 
-    """---------------------Dodanie produktu do koszyka użytkownika---------------------"""
-## zastosowanie dla przycisku na liście produktów jako +1 oraz w samym koszyku przy + aby zwiększyć ilość lub pole textowe gdzie podaje ile
-## dla przycisku "do koszyka"
     try:
         user_id = get_jwt_identity()
         data = request.get_json()
-        quantity = data.get('quantity')
         product_id = data.get('product_id')
 
-        if not product_id or not quantity:
-            return jsonify({'error': 'Product ID and quantity are required'}), 400
-
-        if CartProducts.validate_quantity(data.get('quantity')) is None:
-            return jsonify({'error': 'Ilość musi być większa od 0'}), 400
+        if not product_id:
+            return jsonify({'error': 'ID produktu jest wymagane'}), 400
 
         product = Products.query.get(product_id)
         if not product:
-            return jsonify({'error': 'Product not found'}), 404
-        
-        if quantity > product.quantity:
-            return jsonify({'error': 'Not enough stock available'}), 400
+            return jsonify({'error': 'Nie znaleziono produktu'}), 404
 
+        if product.quantity <= 0:
+            return jsonify({'error': 'Wyczerpano zapas produktu'}), 400
+
+        # Znajdź lub utwórz koszyk użytkownika
         cart = Carts.query.filter_by(user_id=user_id).first()
         if not cart:
-            cart = Carts(
-                user_id=user_id
-            )
+            cart = Carts(user_id=user_id)
             db.session.add(cart)
             db.session.flush()  # potrzebne, by mieć cart.id
 
-        product_in_cart = CartProducts.query.filter(
-            CartProducts.cart_id == cart.id,
-            CartProducts.product_id == product_id
+        # Sprawdź, czy produkt jest już w koszyku
+        product_in_cart = CartProducts.query.filter_by(
+            cart_id=cart.id,
+            product_id=product_id
         ).first()
 
         price_with_discount = product.price_including_promotion()
 
         if product_in_cart:
-            product_in_cart.quantity += quantity
+            # Zwiększ ilość w koszyku o 1
+            product_in_cart.quantity += 1
         else:
+            # Dodaj nowy produkt do koszyka
             new_product_in_cart = CartProducts(
                 cart_id=cart.id,
                 product_id=product_id,
-                quantity=quantity,
+                quantity=1,
                 unit_price_with_discount=price_with_discount
             )
             db.session.add(new_product_in_cart)
 
-        product.quantity -= quantity
+        # Zmniejsz stan magazynowy o 1
+        product.quantity -= 1
 
-        # Aktualizujemy łączny koszt koszyka
+        # Przelicz koszt koszyka
         cart.total_products_cost = db.session.query(
             func.coalesce(
-            db.func.sum(CartProducts.quantity * CartProducts.unit_price_with_discount),
-            Decimal("0.00")
+                db.func.sum(CartProducts.quantity * CartProducts.unit_price_with_discount),
+                Decimal("0.00")
             )
         ).filter_by(cart_id=cart.id).scalar()
 
         db.session.commit()
 
-        return jsonify({'message': 'Product added to cart successfully'}), 201
+        return jsonify({'message': 'Produkt dodano do koszyka'}), 201
 
     except Exception as e:
         db.session.rollback()
         print(f"[ERROR]: {str(e)}")
-        return jsonify({'error': 'Internal server error'}), 500
-    
+        return jsonify({'error': 'Błąd serwera'}), 500
+
+"""
 
 @commerce_bp.route('/carts', methods=['PUT'])
 @jwt_required()
-def remove_product_from_cart():
+def add_product_to_cart():
 
-    """---------------------usówanie produktu z koszyka użytkownika---------------------"""
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        product_id = data.get('product_id')
+        quantity = data.get('quantity')  # np. +1, -1, +3, -2
+
+        if not product_id or quantity is None:
+            return jsonify({'error': 'ID produktu i ilość są wymagane'}), 400
+
+        product = Products.query.get(product_id)
+        if not product:
+            return jsonify({'error': 'Nie znaleziono produktu'}), 404
+
+        cart = Carts.query.filter_by(user_id=user_id).first()
+        if not cart:
+            cart = Carts(user_id=user_id)
+            db.session.add(cart)
+            db.session.flush()
+
+        product_in_cart = CartProducts.query.filter_by(
+            cart_id=cart.id,
+            product_id=product_id
+        ).first()
+
+        price_with_discount = product.price_including_promotion()
+
+        # 🔹 Jeżeli dodajemy (quantity > 0)
+        if quantity > 0:
+            if product.quantity < quantity:
+                return jsonify({'error': 'Brak wystarczającej ilości w magazynie'}), 400
+
+            if product_in_cart:
+                product_in_cart.quantity += quantity
+            else:
+                product_in_cart = CartProducts(
+                    cart_id=cart.id,
+                    product_id=product_id,
+                    quantity=quantity,
+                    unit_price_with_discount=price_with_discount
+                )
+                db.session.add(product_in_cart)
+
+            product.quantity -= quantity
+
+        # 🔹 Jeżeli odejmujemy (quantity < 0)
+        elif quantity < 0:
+            if not product_in_cart:
+                return jsonify({'error': 'Produkt nie znajduje się w koszyku'}), 400
+
+            new_quantity = product_in_cart.quantity + quantity  # quantity jest ujemne
+
+            if new_quantity <= 0:
+                db.session.delete(product_in_cart)
+            else:
+                product_in_cart.quantity = new_quantity
+
+            product.quantity -= quantity  # odejmujemy ujemną -> dodajemy do magazynu
+
+        # 🔹 Aktualizacja kosztu koszyka
+        cart.total_products_cost = db.session.query(
+            func.coalesce(
+                db.func.sum(CartProducts.quantity * CartProducts.unit_price_with_discount),
+                Decimal("0.00")
+            )
+        ).filter_by(cart_id=cart.id).scalar()
+
+        db.session.commit()
+
+        return jsonify({'message': 'Koszyk zaktualizowany pomyślnie'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': 'Błąd serwera'}), 500
+    
+"""
+@commerce_bp.route('/carts', methods=['PUT'])
+@jwt_required()
+def remove_product_from_cart():
 
     try:
         user_id = get_jwt_identity()
@@ -342,7 +418,7 @@ def remove_product_from_cart():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-
+"""
     
 @commerce_bp.route('/carts', methods=['GET'])
 @jwt_required()
@@ -357,7 +433,13 @@ def get_cart():
         if not cart:
             return jsonify({'error': 'Nie znaleziono koszyka'}), 404
 
-        products_in_cart = CartProducts.query.filter_by(cart_id=cart.id).all()
+        products_in_cart = (
+            CartProducts.query
+            .filter_by(cart_id=cart.id)
+            .order_by(CartProducts.id.asc())  # bez tego produkty zmieniają kolejnośc przy modyfikacji ich ilości w koszyku
+            .all()
+            )
+
 
         if not products_in_cart:
             return jsonify({'message': 'Koszyk jest pusty'}), 200

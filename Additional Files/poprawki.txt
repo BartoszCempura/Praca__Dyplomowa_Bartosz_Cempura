@@ -13,7 +13,7 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-quantity sie nie ładuje na widokkoszyka, nie ładuje się również cena produktu - problem może być powiązany z elementem productCard, modelem json_to_user_view albo cart.jsx
+zobacz kod add_product_to cart z commerce i get_cart. Zobacz też kod printProducts, productCard, cart
 
 
 Dodaj mozliwośc usówania produktu z koszyka - wraz z podaniem quantity
