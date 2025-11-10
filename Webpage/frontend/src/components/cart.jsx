@@ -7,20 +7,47 @@ function Cart() {
   const [cartValue, setCartValue] = useState(0);
 
   useEffect(() => {
-    const fetchCartProducts = async () => {
-      try {
-        const response = await api.get("/commerce/carts");
-        setProducts(response.data.products || []);
-        setCartValue(parseFloat(response.data.total_products_cost) || 0);
-      } catch (err) {
-        console.error("Błąd podczas pobierania koszyka:", err);
-      }
-    };
+  const fetchCartProducts = async () => {
+    try {
+      const response = await api.get("/commerce/carts");
+      const cartProducts = response.data.products || [];
+      setProducts(cartProducts);
+      
 
-    fetchCartProducts();
-    window.addEventListener("cartChange", fetchCartProducts);
-    return () => window.removeEventListener("cartChange", fetchCartProducts);
-  }, []);
+      if (cartProducts.length > 0) {
+        const stored = localStorage.getItem("tempCartQuantity");
+        const tempCartQuantity = stored ? JSON.parse(stored) : {};
+
+        // 2️⃣ Pobranie stanu magazynowego dla każdego produktu po product_id
+        await Promise.all(
+          cartProducts.map(async (p) => {
+            try {
+              const prodResp = await api.get(`catalog/products?product_id=${p.product_id}`);
+              const productData = prodResp.data;
+              const prev = tempCartQuantity[p.product_id] || {};
+              tempCartQuantity[p.product_id] = {
+                quantity_db: productData.quantity,
+                quantity_user: prev.quantity_user || 1,
+                price_including_promotion: productData.price_including_promotion,
+              };
+            } catch (err) {
+              console.error(err);
+            }
+          })
+        );
+
+        localStorage.setItem("tempCartQuantity", JSON.stringify(tempCartQuantity));
+      }
+
+    } catch (err) {
+      console.error("Błąd podczas pobierania koszyka:", err);
+    }
+  };
+
+  fetchCartProducts();
+  window.addEventListener("cartChange", fetchCartProducts);
+  return () => window.removeEventListener("cartChange", fetchCartProducts);
+}, []);
 
   return (
     <div className="grid grid-cols-[4fr_1fr] gap-6 items-start mx-28">

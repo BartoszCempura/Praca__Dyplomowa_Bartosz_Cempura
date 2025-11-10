@@ -350,6 +350,7 @@ def get_all_products():
     return jsonify([product.to_json() for product in products])
 # tutaj warto było by dodać paginacje
 
+
 @catalog_bp.route('/products/<string:category_slug>', methods=['GET'])
 def get_products_by_category_slug(category_slug):
 
@@ -454,33 +455,42 @@ def modify_product(product_id):
 @catalog_bp.route('/products', methods=['GET'])
 def search_products():
 
-    """-------------------------------Wyszukiwanie produktów po wartości argumentu search-------------------------------"""
+    """-------------------------------Pobranie produktu po product_id lub wyszukiwanie z paginacją po search-------------------------------"""
 
     try:
-
+        product_id = request.args.get('product_id', type=int)
         search_value = request.args.get('search', '', type=str)
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('limit', 20, type=int)
 
-        if search_value:
-            results = Products.query.filter(func.lower(Products.name).contains(search_value.lower())) # pobieramy nazwy produktów, zmniejszmay rozmiar liter i to samo robimy dla wyszukiwanego ciągu znaków
-            # następnie sprawdzamy czy nazwa produktu zawiera wyszukiwany ciąg znaków
+        if product_id:
+            # 🔹 Pobranie konkretnego produktu po ID
+            product = Products.query.get(product_id)
+            if not product:
+                return jsonify({"error": "Product not found"}), 404
+
+            return jsonify(product.to_json_user_view()), 200
+
         else:
-            results = Products.query # jeśli nie ma wartości wyszukiwania, zwracamy wszystkie produkty
+            # 🔹 Wyszukiwanie po frazie lub zwrócenie wszystkich produktów
+            if search_value:
+                query = Products.query.filter(func.lower(Products.name).contains(search_value.lower()))
+            else:
+                query = Products.query
 
-        pagination = results.paginate(page=page, per_page=per_page, error_out=False)
-        products = pagination.items
+            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+            products = pagination.items
 
-        return jsonify({
-            "products": [product.to_json_user_view() for product in products],
-            "total": pagination.total,
-            "page": pagination.page,
-            "pages": pagination.pages,
-            "has_next": pagination.has_next,
-            "has_prev": pagination.has_prev,
-            "next_page": pagination.next_num if pagination.has_next else None,
-            "prev_page": pagination.prev_num if pagination.has_prev else None
-        }), 200
+            return jsonify({
+                "products": [product.to_json_user_view() for product in products],
+                "total": pagination.total,
+                "page": pagination.page,
+                "pages": pagination.pages,
+                "has_next": pagination.has_next,
+                "has_prev": pagination.has_prev,
+                "next_page": pagination.next_num if pagination.has_next else None,
+                "prev_page": pagination.prev_num if pagination.has_prev else None
+            }), 200
 
     except Exception as e:
         print(f"[ERROR]: {str(e)}")

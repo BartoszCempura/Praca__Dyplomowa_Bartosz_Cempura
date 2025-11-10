@@ -13,14 +13,13 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-zobacz kod add_product_to cart z commerce i get_cart. Zobacz też kod printProducts, productCard, cart
+zobacz kod add_product_to cart z commerce i get_cart. Zobacz też kod printProducts, productCard. 
 
-
-Dodaj mozliwośc usówania produktu z koszyka - wraz z podaniem quantity
+Po zmianie modelu CartProducts i endpointów dodawania i pobierania nie działa search. Zobacz dlaczego - działa ale nie wyświetla karty !!!
 
 tokenHandler do przejrzenia. Dodaj pomarańczową poświate jak najeżdzasz na przyciski navbar
 
-Dodanie paru produktów (do 6) w kategoriach,uzupełnienie danych
+MAsz temp który przechowuje dane o stanie koszyka. Dodaj funkcje pozwalającą na zmiane ilości produktów w koszyku oraz na podstawie danych z tempCartQuantity oblicz wartośc koszyka
 
 
 

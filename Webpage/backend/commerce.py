@@ -647,7 +647,6 @@ def get_all_user_transactions():
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-    
 
 ## ###################################################################### Whishlist ######################################################################
 

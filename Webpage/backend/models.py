@@ -260,6 +260,7 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
             "name": self.name,
             "slug": self.slug,
             "image": self.image,
+            "quantity": self.quantity,
             "unit_price": str(self.unit_price),
             "price_including_promotion": str(self.price_including_promotion())
         }

@@ -4,7 +4,7 @@ import api from "../api/tokenHandler";
 function ProductCard({ id, name, slug, image, unit_price, price_including_promotion, variant, quantity }) {
 
   const addToCart = async (change) => {
-  try {
+  try {  
     const response = await api.put("/commerce/carts", {
       product_id: id,
       quantity: change, // <- zamiast "quantity"
