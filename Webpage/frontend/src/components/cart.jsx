@@ -18,25 +18,28 @@ function Cart() {
         const stored = localStorage.getItem("tempCartQuantity");
         const tempCartQuantity = stored ? JSON.parse(stored) : {};
 
-        // 2️⃣ Pobranie stanu magazynowego dla każdego produktu po product_id
         await Promise.all(
           cartProducts.map(async (p) => {
-            try {
-              const prodResp = await api.get(`catalog/products?product_id=${p.product_id}`);
-              const productData = prodResp.data;
-              const prev = tempCartQuantity[p.product_id] || {};
-              tempCartQuantity[p.product_id] = {
-                quantity_db: productData.quantity,
-                quantity_user: prev.quantity_user || 1,
-                price_including_promotion: productData.price_including_promotion,
-              };
-            } catch (err) {
-              console.error(err);
-            }
+            const prodResp = await api.get(`catalog/products?product_id=${p.product_id}`);
+            const productData = prodResp.data;
+            const prev = tempCartQuantity[p.product_id] || {};
+            tempCartQuantity[p.product_id] = {
+              quantity_db: productData.quantity,
+              quantity_user: prev.quantity_user || 1, // jeśli brak — start 1
+              price_including_promotion: productData.price_including_promotion,
+            };
           })
         );
 
-        localStorage.setItem("tempCartQuantity", JSON.stringify(tempCartQuantity));
+        localStorage.setItem("tempCartQuantity", JSON.stringify(tempCartQuantity))
+
+        const total = Object.values(tempCartQuantity).reduce((sum, item) => {
+          return sum + item.quantity_user * parseFloat(item.price_including_promotion);
+        }, 0);
+
+        setCartValue(total);
+      } else {
+        setCartValue(0);
       }
 
     } catch (err) {
@@ -51,7 +54,7 @@ function Cart() {
 
   return (
     <div className="grid grid-cols-[4fr_1fr] gap-6 items-start mx-28">
-      <div className="flex flex-col gap-4 my-10 w-full pr-18">
+      <div className="flex flex-col items-center gap-4 my-10 w-full pr-18">
         {products && products.length > 0 ? (
           products.map((p) => (
             <ProductCard
@@ -62,7 +65,7 @@ function Cart() {
             />
           ))
         ) : (
-          <span>Brak produktów w koszyku</span>
+          <span className="mt-15">Brak produktów w koszyku</span>
         )}
       </div>
 

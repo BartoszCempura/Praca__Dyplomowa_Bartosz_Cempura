@@ -30,7 +30,7 @@ function SearchProducts() {
         </h2>
       <div className="flex flex-wrap justify-center gap-4">
         {products.length > 0 ? (
-          products.map((p) => <ProductCard key={p.slug} {...p} />)
+          products.map((p) => <ProductCard key={p.slug} variant="catalog" {...p} />)
         ) : (
           <div className="flex flex-col items-center gap-4">
             <div>

@@ -19,6 +19,24 @@ function Navbar() {
   useEffect(() => {
     const fetchCart = async () => {
       try {
+
+        const stored = localStorage.getItem("tempCartQuantity");
+
+      // 🔹 SCENARIUSZ 1: mamy dane w localStorage → liczymy z nich
+      if (stored) {
+        const tempCart = JSON.parse(stored);
+        const values = Object.values(tempCart);
+
+        const totalItems = values.reduce((sum, item) => sum + (item.quantity_user || 0), 0);
+        const totalValue = values.reduce((sum, item) => {
+          return sum + (item.quantity_user || 0) * parseFloat(item.price_including_promotion || 0);
+        }, 0);
+
+        setCartItems(totalItems);
+        setCartValue(totalValue);
+        return; // zakończ — nie pobieraj z backendu
+      }
+      
         const response = await api.get("/commerce/carts");
         const data = response.data;
 
