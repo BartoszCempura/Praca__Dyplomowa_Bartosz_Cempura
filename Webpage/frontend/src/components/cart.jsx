@@ -58,7 +58,7 @@ function Cart() {
         {products && products.length > 0 ? (
           products.map((p) => (
             <ProductCard
-              key={p.id}          // id wpisu w koszyku
+              key={p.product_id}          // id wpisu w koszyku
               id={p.product_id}   // id produktu z katalogu (ważne!)
               variant="cart"
               {...p}

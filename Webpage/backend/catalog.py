@@ -22,7 +22,7 @@ def get_all_categories():
     return jsonify([category.to_json() for category in categories])
 
 
-@catalog_bp.route('/categories', methods=['GET']) # przy ładowaniu strony głównej pobieramy kategorie główne
+@catalog_bp.route('/categories', methods=['GET']) ## used - kategorie główne dla menu
 def get_root_categories():
 
     """-------------------------------Pobranie kategorii głównych-------------------------------"""
@@ -34,7 +34,7 @@ def get_root_categories():
     return jsonify([category.to_json() for category in categories])
 
 
-@catalog_bp.route('/categories/<int:whose_child_id>', methods=['GET']) # pobieramy kategorie podrzędne dla danej kategorii głównej
+@catalog_bp.route('/categories/<int:whose_child_id>', methods=['GET']) ## used - podkategorie 
 def get_child_categories(whose_child_id):
 
     """-------------------------------Pobranie kategorii podrzędnych-------------------------------"""
@@ -221,7 +221,7 @@ def get_all_attributes():
     return jsonify([attribute.to_json() for attribute in attributes])
 
 
-@catalog_bp.route('/attributes/<string:category_slug>', methods=['GET'])
+@catalog_bp.route('/attributes/<string:category_slug>', methods=['GET']) ## used - filtry printProducts
 def get_all_attributes_for_category(category_slug):
     
     """-----------------------------Pobranie wszystkich atrybutów i ich wartości (z liczbą wystąpień) dla danej kategorii-----------------------------"""
@@ -351,7 +351,7 @@ def get_all_products():
 # tutaj warto było by dodać paginacje
 
 
-@catalog_bp.route('/products/<string:category_slug>', methods=['GET'])
+@catalog_bp.route('/products/<string:category_slug>', methods=['GET']) ## used - pobiera produkty do printProducts
 def get_products_by_category_slug(category_slug):
 
     """-----------------------------Pobieranie produktów po slug kategorii z paginacją i filtrami atrybutów-----------------------------"""
@@ -452,7 +452,7 @@ def modify_product(product_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/products', methods=['GET'])
+@catalog_bp.route('/products', methods=['GET']) ## used - search dla printProducts
 def search_products():
 
     """-------------------------------Pobranie produktu po product_id lub wyszukiwanie z paginacją po search-------------------------------"""
@@ -587,7 +587,7 @@ def get_all_attributes_of_product(product_id):
         return jsonify({'error': 'Internal server error'}), 500
 """
     
-@catalog_bp.route('/products/details/<string:slug>', methods=['GET'])
+@catalog_bp.route('/products/details/<string:slug>', methods=['GET']) ## used - productDetails
 def get_product_details(slug):
 
     """-------------------------------Pobranie pełnych danych produktu wraz z atrybutami i ceną z rabatem-------------------------------"""

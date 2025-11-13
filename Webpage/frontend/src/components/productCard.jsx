@@ -5,49 +5,59 @@ import api from "../api/tokenHandler";
 function ProductCard({ id, name, slug, image, unit_price, price_including_promotion, variant, quantity }) {
   const [isInCart, setIsInCart] = useState(false);
 
+  {/* wykożystywane do deaktywacji p[rzycisków na bacie weryfikacji czy produkt znajduje sie już w koszyku*/}
   useEffect(() => {
     const checkIfInCart = async () => {
       try {
         const response = await api.get("/commerce/carts");
-        const products = response.data.products || [];
-        const exists = products.some((p) => p.product_id === id);
+        const products = response.data.products || []; // pobieramy elementy products, jak ich brak to inicjujemy pustą tablice dla uniknięcia błędów
+
+        let exists = false; // sprawdzamy czy produkt znajduje się juz w koszyku - wymagane dla mechanizmu wyłączania przycisku Dodaj do koszyka
+        for (let i = 0; i < products.length; i++) {
+          if (products[i].product_id === id) {
+            exists = true;
+            break;
+          }
+        } 
         setIsInCart(exists);
+
       } catch (err) {
-        console.error("Błąd sprawdzania koszyka:", err);
+        console.error(err);
       }
     };
 
     checkIfInCart();
-    // nasłuch na event z innych komponentów (np. po dodaniu/usupełnieniu)
-    window.addEventListener("cartChange", checkIfInCart);
+    
+    window.addEventListener("cartChange", checkIfInCart); // nasłuch na event z innych komponentów (np. po dodaniu/usupełnieniu)
     return () => window.removeEventListener("cartChange", checkIfInCart);
   }, [id]);
 
+
+  {/* funkcja zdejmująca produkty ze stanu oraz tworząca zmienną local storrage */}
   const addToCart = async (change) => {
   try {  
     await api.put("/commerce/carts", { product_id: id, quantity: change });
 
-    // 🔹 Aktualizacja localStorage
+    // pobieranie zmiennej z local storrage i zwracanie jako json
     const stored = localStorage.getItem("tempCartQuantity");
     const tempCart = stored ? JSON.parse(stored) : {};
 
     tempCart[id] = tempCart[id] || {};
-    const currentQty = tempCart[id].quantity_user || 0;
-    const newQty = currentQty + change;
+    const currentQuantity = tempCart[id].quantity_user || 0; // 0 to wartośc startowa zanim zostanie ustawiona rzeczywista wartość
+    const updatedQuantity = currentQuantity + change;
 
-    // 🔸 Zabezpieczenie: jeśli wynik byłby ujemny, pomijamy zapis
-    if (change < 0 && newQty < 0) {
-      console.warn(`❌ Pominięto zapis — ilość produktu ${id} byłaby ujemna.`);
+    // aby poprawnie działało usówanie produktów i zmienna nie dostawała -1 - newQuantity nie może być ujemne
+    if (change < 0 && updatedQuantity < 0) {
       return;
     }
 
-    tempCart[id].quantity_user = newQty;
+    // ustawiamy wartości pól 
+    tempCart[id].quantity_user = updatedQuantity;
     tempCart[id].price_including_promotion = price_including_promotion;
 
     localStorage.setItem("tempCartQuantity", JSON.stringify(tempCart));
 
-    // 🔹 Odświeżamy widok koszyka
-    window.dispatchEvent(new Event("cartChange"));
+    window.dispatchEvent(new Event("cartChange")); //odświerzenie widoku koszyka
   } catch (err) {
     console.error(err);
     if (err.response?.status === 401) {
@@ -59,11 +69,12 @@ function ProductCard({ id, name, slug, image, unit_price, price_including_promot
 };
 
 
+{/* zmienna pozwalająca na wyświetlanie aktualnej wartości pola quantity_user zmiennej w local storrage  */}
 const [localQuantity, setLocalQuantity] = useState(() => {
   const stored = localStorage.getItem("tempCartQuantity");
-  if (!stored) return 1;
+  if (!stored) return 1; // zabespieczenie przed załadowaniem zmiennej - jak tego brak mamy undefined i nie ładuje się element
   const tempCart = JSON.parse(stored);
-  return tempCart[id]?.quantity_user ?? 1; // jeśli istnieje w LS — weź wartość, jeśli nie — 1
+  return tempCart[id]?.quantity_user; // jeżeli mamy w local storrage zmienną to pobieramy wartośc jak nie to ustawiamy 1 z warunku
 });
 
 const updateLocalQuantity = (change) => {
@@ -72,7 +83,7 @@ const updateLocalQuantity = (change) => {
 
   const tempCart = JSON.parse(stored);
   const currentProduct = tempCart[id];
-  if (!currentProduct) return;
+  if (!currentProduct) return; // mozę zbędne ....
 
   let newQuantity = currentProduct.quantity_user + change; // mamy tutaj +1 ponieważ ze stanu jest zdejmowany 1 produkt i tym samym magazyn jest o 1 mniejszy
   if (change > 0 && newQuantity > currentProduct.quantity_db + 1) {
@@ -80,7 +91,7 @@ const updateLocalQuantity = (change) => {
     return;
   }
 
-  if (newQuantity < 1) { //????
+  if (newQuantity < 1) { // bez tego nie działa aktualizowanie ilosći pobranych produktów
     addToCart(-1);
     delete tempCart[id];
     newQuantity = 0;
@@ -122,13 +133,8 @@ const updateLocalQuantity = (change) => {
             </span>
           )}
 
-          <div className="card-actions">
-            <button
-              type="button"
-              onClick={() => addToCart(1)}
-              className={isInCart ? "btn btn-in-cart mb-6 w-full" : "btn btn-custom mb-6 w-full"}
-              disabled={isInCart} // ✅ blokada przycisku
-            >
+          <div className="card-actions"> {/* blokowanie przycisku - checkIfInCart */}
+            <button type="button" onClick={() => addToCart(1)} className={isInCart ? "btn btn-in-cart mb-6 w-full" : "btn btn-custom mb-6 w-full"} disabled={isInCart}>
               {isInCart ? "W koszyku" : "Dodaj do koszyka"}
             </button>
           </div>
@@ -159,22 +165,13 @@ const updateLocalQuantity = (change) => {
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-600">Ilość:</label>
             <div className="flex items-center border rounded-md overflow-hidden">
-              <button
-                type="button"
-                className="btn btn-xs btn-ghost"
-                disabled={localQuantity <= 1}
-                onClick={() =>updateLocalQuantity(-1)} // zmniejsz ilość
-              >
+              <button type="button" className="btn btn-xs btn-ghost" disabled={localQuantity <= 1} onClick={() =>updateLocalQuantity(-1)}>
                 –
               </button>
               <span className="w-10 text-center">
                 {localQuantity}
                 </span>
-              <button
-                type="button"
-                className="btn btn-xs btn-ghost"
-                onClick={() => updateLocalQuantity(1)} // zwiększ ilość
-              >
+              <button type="button" className="btn btn-xs btn-ghost" onClick={() => updateLocalQuantity(1)}>
                 +
               </button>
             </div>
@@ -186,8 +183,7 @@ const updateLocalQuantity = (change) => {
             type="button"
             onClick={() => {
               // usuń z backendu
-              addToCart(-quantity); ///<---- tu jest problem bo ustawiam wartośc ujemną -1 a local storrage aktualizuje na tej podstawie
-
+              addToCart(-quantity);
               // usuń z localStorage
               const stored = localStorage.getItem("tempCartQuantity");
               if (stored) {
@@ -202,11 +198,9 @@ const updateLocalQuantity = (change) => {
                 }
               }
 
-              // odśwież UI, jeśli nasłuchujesz eventu
-              window.dispatchEvent(new Event("cartChange"));
+              window.dispatchEvent(new Event("cartChange")); // odświerz UI
             }}
-            className="btn btn-sm btn-error text-white"
-          >
+            className="btn btn-sm btn-error text-white">
             Usuń
           </button>
         </div>

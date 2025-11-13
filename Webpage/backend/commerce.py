@@ -278,7 +278,7 @@ def add_product_to_cart():
 
 """
 
-@commerce_bp.route('/carts', methods=['PUT'])
+@commerce_bp.route('/carts', methods=['PUT']) ## used - addToCart 
 @jwt_required()
 def add_product_to_cart():
 
@@ -288,12 +288,12 @@ def add_product_to_cart():
         product_id = data.get('product_id')
         quantity = data.get('quantity')  # np. +1, -1, +3, -2
 
-        if not product_id or quantity is None:
-            return jsonify({'error': 'ID produktu i ilość są wymagane'}), 400
+        if not product_id or quantity is None: # endpoint wymaga 2 pól
+            return '', 400
 
-        product = Products.query.get(product_id)
+        product = Products.query.get(product_id) # zabespieczenie jak by dane przekazane do endpointu były niekompletne - niepoprawne product id
         if not product:
-            return jsonify({'error': 'Nie znaleziono produktu'}), 404
+            return '', 404
 
         cart = Carts.query.filter_by(user_id=user_id).first()
         if not cart:
@@ -308,10 +308,9 @@ def add_product_to_cart():
 
         price_with_discount = product.price_including_promotion()
 
-        # 🔹 Jeżeli dodajemy (quantity > 0)
         if quantity > 0:
-            if product.quantity < quantity:
-                return jsonify({'error': 'Brak wystarczającej ilości w magazynie'}), 400
+            if product.quantity < quantity: # weryfikowane po stronie frontend - przekroczono stan magazynowy
+                return '', 409
 
             if product_in_cart:
                 product_in_cart.quantity += quantity
@@ -326,10 +325,9 @@ def add_product_to_cart():
 
             product.quantity -= quantity
 
-        # 🔹 Jeżeli odejmujemy (quantity < 0)
         elif quantity < 0:
-            if not product_in_cart:
-                return jsonify({'error': 'Produkt nie znajduje się w koszyku'}), 400
+            if not product_in_cart: # zabespieczenie jak by próbowano przekazać wartośc ujemną dla produktu którego nie ma wkoszyku tz nie była zajęty stan magazynowy
+                return '', 409
 
             new_quantity = product_in_cart.quantity + quantity  # quantity jest ujemne
 
@@ -340,7 +338,7 @@ def add_product_to_cart():
 
             product.quantity -= quantity  # odejmujemy ujemną -> dodajemy do magazynu
 
-        # 🔹 Aktualizacja kosztu koszyka
+        # Aktualizacja kosztu koszyka
         cart.total_products_cost = db.session.query(
             func.coalesce(
                 db.func.sum(CartProducts.quantity * CartProducts.unit_price_with_discount),
@@ -350,7 +348,7 @@ def add_product_to_cart():
 
         db.session.commit()
 
-        return jsonify({'message': 'Koszyk zaktualizowany pomyślnie'}), 200
+        return '', 204
 
     except Exception as e:
         db.session.rollback()
@@ -420,7 +418,7 @@ def remove_product_from_cart():
     
 """
     
-@commerce_bp.route('/carts', methods=['GET'])
+@commerce_bp.route('/carts', methods=['GET']) ## used - Cart , productCard
 @jwt_required()
 def get_cart():
 
@@ -430,8 +428,8 @@ def get_cart():
         user_id = get_jwt_identity()
 
         cart = Carts.query.filter_by(user_id=user_id).first()
-        if not cart:
-            return jsonify({'error': 'Nie znaleziono koszyka'}), 404
+        if not cart: # brak koszyka - jak dodaje produkty jest automatycznie tworzony
+            return '', 404
 
         products_in_cart = (
             CartProducts.query
@@ -441,8 +439,8 @@ def get_cart():
             )
 
 
-        if not products_in_cart:
-            return jsonify({'message': 'Koszyk jest pusty'}), 200
+        if not products_in_cart: # brak produktów w koszyku
+            return '', 204
 
 
         cart_data = {

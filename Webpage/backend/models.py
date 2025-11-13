@@ -542,7 +542,7 @@ class CartProducts (db.Model):
             "quantity": self.quantity,
             "price_including_promotion": self.unit_price_with_discount
         }
-    
+    """ # zmieniono metode wprowadzania danych. Teraz można wprowadzać dane ujemne aby usunąc produkt z listy
     @staticmethod
     def validate_quantity(quantity):
         try:
@@ -552,7 +552,7 @@ class CartProducts (db.Model):
             return quantity
         except (TypeError, ValueError):
             return None
-        
+    """
         
 
 class TransactionStatus(enum.Enum):

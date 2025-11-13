@@ -10,7 +10,7 @@ user_management_bp = Blueprint('user_management', __name__, url_prefix='/api/use
 
 ## ###################################################################### Użytkownicy ######################################################################
 
-@user_management_bp.route('/user', methods=['POST'])
+@user_management_bp.route('/user', methods=['POST']) ## used
 def register():
 
     """-------------------------------Tworzenie konta nowego użytkownika-------------------------------"""
@@ -65,7 +65,7 @@ def register():
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@user_management_bp.route('/user', methods=['PUT'])
+@user_management_bp.route('/user', methods=['PUT']) ## used
 @jwt_required()
 def change_password():
 
@@ -94,7 +94,7 @@ def change_password():
     return jsonify({'message': 'Hasło zostało zmienione pomyślnie'}), 200
 
 
-@user_management_bp.route('/user', methods=['GET'])
+@user_management_bp.route('/user', methods=['GET']) ## used
 @jwt_required()
 def get_current_user():
 
@@ -115,7 +115,7 @@ def get_current_user():
     
 
 
-@user_management_bp.route('/user', methods=['DELETE'])
+@user_management_bp.route('/user', methods=['DELETE']) ## used
 @jwt_required()
 def delete_user():
 
