@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../api/tokenHandler";
+import { getItem, setItem } from "./tempCartStorage";
 
 function ProductDetails() {
   const { productSlug } = useParams(); 
@@ -50,27 +51,31 @@ function ProductDetails() {
     try {
       await api.put("/commerce/carts", { product_id: product.id, quantity: change });
 
-      // 🔹 Aktualizacja localStorage
-      const stored = localStorage.getItem("tempCartQuantity");
-      const tempCart = stored ? JSON.parse(stored) : {};
+      const existing = getItem(product.id);
 
-      tempCart[product.id] = tempCart[product.id] || {};
-      const currentQty = tempCart[product.id].quantity_user || 0;
-      const newQty = currentQty + change;
+      if (!existing) {
+        // Produkt nie istnieje w localStorage - dodajemy go
+        setItem(product.id, {
+          quantity_user: 1,
+          quantity_db: product.quantity, // jeśli masz to pole w produkcie
+          price_including_promotion: product.price_including_promotion,
+        });
+      } else {
+        // Produkt już istnieje - aktualizujemy ilość
+        const newQty = existing.quantity_user + change;
 
-      // 🔸 Zabezpieczenie: jeśli wynik byłby ujemny, pomijamy zapis
-      if (change < 0 && newQty < 0) {
-        console.warn(`❌ Pominięto zapis — ilość produktu ${product.id} byłaby ujemna.`);
-        return;
+        // 🔸 Zabezpieczenie: jeśli wynik byłby ujemny lub zerowy, pomijamy
+        if (newQty <= 0) {
+          console.warn(`❌ Pominięto zapis — ilość produktu ${product.id} byłaby <= 0.`);
+          return;
+        }
+
+        setItem(product.id, {
+          ...existing,
+          quantity_user: newQty,
+          price_including_promotion: product.price_including_promotion,
+        });
       }
-
-      tempCart[product.id].quantity_user = newQty;
-      tempCart[product.id].price_including_promotion = product.price_including_promotion;
-
-      localStorage.setItem("tempCartQuantity", JSON.stringify(tempCart));
-
-      // 🔹 Odświeżamy widok koszyka
-      window.dispatchEvent(new Event("cartChange"));
       setIsInCart(true); // po dodaniu ustawiamy od razu flagę
     } catch (err) {
       console.error(err);

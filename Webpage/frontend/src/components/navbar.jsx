@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavbarUserMenu from "./navbarUserMenu";
 import api from "../api/tokenHandler";
+import { getCart } from "./tempCartStorage";
 
 function Navbar() {
   const [query, setQuery] = useState("");
@@ -20,12 +21,8 @@ function Navbar() {
     const fetchCart = async () => {
       try {
 
-        const stored = localStorage.getItem("tempCartQuantity");
-
-      // 🔹 SCENARIUSZ 1: mamy dane w localStorage → liczymy z nich
-      if (stored) {
-        const tempCart = JSON.parse(stored);
-        const values = Object.values(tempCart);
+        const cart = getCart();
+        const values = Object.values(cart);
 
         const totalItems = values.reduce((sum, item) => sum + (item.quantity_user || 0), 0);
         const totalValue = values.reduce((sum, item) => {
@@ -34,27 +31,7 @@ function Navbar() {
 
         setCartItems(totalItems);
         setCartValue(totalValue);
-        return; // zakończ — nie pobieraj z backendu
-      }
-      
-        const response = await api.get("/commerce/carts");
-        const data = response.data;
 
-        if (data.products) {
-          let totalItems = 0; // liczymy ilość przedmiotów w koszyku poprzez sume quantity z CartProducts
-
-          for (let i = 0; i < data.products.length; i++) {
-            const product = data.products[i];
-            totalItems += product.quantity || 0;
-          }
-
-          setCartItems(totalItems);
-          setCartValue(parseFloat(data.total_products_cost) || 0); // total_products_cost jest konwertowany na string w endpoincie, więc parsujemy na float
-        } else {
-          // jak pusty koszyk to mamy wartość 0
-          setCartItems(0);
-          setCartValue(0);
-        }
       } catch (err) {
         if (err.response?.status === 401) {
           // sesja wygasła — brak koszyka

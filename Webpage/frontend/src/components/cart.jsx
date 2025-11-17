@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ProductCard from "./productCard";
 import api from "../api/tokenHandler";
+import { getCart} from "./tempCartStorage";
 
 function Cart() {
   const [products, setProducts] = useState([]);
@@ -15,15 +16,14 @@ function Cart() {
       
 
       if (cartProducts.length > 0) {
-        const stored = localStorage.getItem("tempCartQuantity");
-        const tempCartQuantity = stored ? JSON.parse(stored) : {};
+        const tempCart = getCart(); 
 
         await Promise.all(
           cartProducts.map(async (p) => {
             const prodResp = await api.get(`catalog/products?product_id=${p.product_id}`);
             const productData = prodResp.data;
-            const prev = tempCartQuantity[p.product_id] || {};
-            tempCartQuantity[p.product_id] = {
+            const prev = tempCart[p.product_id] || {};
+            tempCart[p.product_id] = {
               quantity_db: productData.quantity,
               quantity_user: prev.quantity_user || 1, // jeśli brak — start 1
               price_including_promotion: productData.price_including_promotion,
@@ -31,9 +31,9 @@ function Cart() {
           })
         );
 
-        localStorage.setItem("tempCartQuantity", JSON.stringify(tempCartQuantity))
+        localStorage.setItem("tempCart", JSON.stringify(tempCart)) // nie inicjujemy eventów za pomocą saveCart i tym samym backendnie wpada w pętle wywołań
 
-        const total = Object.values(tempCartQuantity).reduce((sum, item) => {
+        const total = Object.values(tempCart).reduce((sum, item) => {
           return sum + item.quantity_user * parseFloat(item.price_including_promotion);
         }, 0);
 

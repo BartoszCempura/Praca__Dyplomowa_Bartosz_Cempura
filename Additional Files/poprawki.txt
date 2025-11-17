@@ -17,7 +17,7 @@ zobacz kod add_product_to cart z commerce i get_cart. Zobacz też kod printProdu
 
 tokenHandler do przejrzenia. Dodaj pomarańczową poświate jak najeżdzasz na przyciski navbar
 
-poprawiono userProfile
+poprawiono userProfile, productCard
 
 
 
