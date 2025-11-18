@@ -240,41 +240,45 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
         self.quantity = quantity
         self.unit_price = unit_price
 
-    def to_json(self):
-        return {
-            "id": self.id,
-            "category_name": self.category.name,
-            "category_id": self.category_id,
-            "name": self.name,
-            "description": self.description,
-            "image": self.image,
-            "quantity": self.quantity,
-            "unit_price": self.unit_price,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
-        }
-    
-    def to_json_user_view(self):
+
+    def _base_json(self):
+
+        """
+        Bazowe pola produktu wspólne dla wszystkich widoków.
+        NIE używaj bezpośrednio - użyj dedykowanych metod
+        """
         return {
             "id": self.id,
             "name": self.name,
-            "slug": self.slug,
             "image": self.image,
             "quantity": self.quantity,
             "unit_price": str(self.unit_price),
             "price_including_promotion": str(self.price_including_promotion())
         }
     
+    def to_json_user_view(self):
+        return {
+            **self._base_json(),
+            "slug": self.slug,
+        }
+    
     def to_json_description_view(self):
         return {
-            "id": self.id,
+            **self._base_json(),
             "category_name": self.category.name,
-            "name": self.name,
             "description": self.description,
-            "image": self.image,
-            "price_including_promotion": str(self.price_including_promotion())
         }
 
+    def to_json(self):
+        return {
+            **self._base_json(),
+            "category_name": self.category.name,
+            "category_id": self.category_id,
+            "description": self.description,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
+    
     def price_including_promotion(self):
         now = datetime.now(timezone.utc)
 

@@ -5,8 +5,9 @@ import { getItem, updateQuantity, removeItem, setItem } from "./tempCartStorage"
 
 function ProductCard({ id, name, slug, image, unit_price, price_including_promotion, variant, quantity }) {
   const [isInCart, setIsInCart] = useState(false);
+  const [localQuantity, setLocalQuantity] = useState(1);
 
-  {/* wykożystywane do deaktywacji p[rzycisków na bacie weryfikacji czy produkt znajduje sie już w koszyku*/}
+  {/* wykożystywane do deaktywacji przycisków na bazie weryfikacji czy produkt znajduje sie już w koszyku*/}
   useEffect(() => {
     const checkIfInCart = async () => {
       try {
@@ -33,13 +34,6 @@ function ProductCard({ id, name, slug, image, unit_price, price_including_promot
     return () => window.removeEventListener("cartChange", checkIfInCart);
   }, [id]);
 
-
-
-const [localQuantity, setLocalQuantity] = useState(() => {
-    const item = getItem(id);
-    return item?.quantity_user ?? 1;
-  });
-
   useEffect(() => {
     const sync = () => {
       const item = getItem(id);
@@ -59,25 +53,20 @@ const [localQuantity, setLocalQuantity] = useState(() => {
   if (!existing) {
     setItem(id, {
       quantity_user: 1,
-      quantity_db: quantity, // zakładam że masz w propsach
+      quantity_db: quantity,
+      price_including_promotion: price_including_promotion,
     });
   } else {
     updateQuantity(id, change);
   }
 
   setIsInCart(true);
-  window.dispatchEvent(new Event("cartChange"));
 };
-
-
 
   const handleRemove = async () => {
     await api.put("/commerce/carts", { product_id: id, quantity: -quantity });
     removeItem(id);
   };
-
-
-
 
   if (variant === "catalog") {
     return (

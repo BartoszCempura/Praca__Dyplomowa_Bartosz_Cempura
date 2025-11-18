@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ProductCard from "./productCard";
 import api from "../api/tokenHandler";
-import { getCart} from "./tempCartStorage";
+import { getCart, saveCartSilent} from "./tempCartStorage";
 
 function Cart() {
   const [products, setProducts] = useState([]);
@@ -16,22 +16,23 @@ function Cart() {
       
 
       if (cartProducts.length > 0) {
-        const tempCart = getCart(); 
+        const tempCart = getCart(); // pobieramy zmienną w local storrage
 
-        await Promise.all(
-          cartProducts.map(async (p) => {
-            const prodResp = await api.get(`catalog/products?product_id=${p.product_id}`);
-            const productData = prodResp.data;
-            const prev = tempCart[p.product_id] || {};
-            tempCart[p.product_id] = {
-              quantity_db: productData.quantity,
-              quantity_user: prev.quantity_user || 1, // jeśli brak — start 1
-              price_including_promotion: productData.price_including_promotion,
-            };
-          })
-        );
+        const productIds = cartProducts.map(p => p.product_id).join(',');
+        const response = await api.get(`/catalog/products?product_ids=${productIds}`);
+        const productsData = response.data.products;
 
-        localStorage.setItem("tempCart", JSON.stringify(tempCart)) // nie inicjujemy eventów za pomocą saveCart i tym samym backendnie wpada w pętle wywołań
+        // Aktualizacja tempCart - endpoint przyjmuje wiele id więc możemy zaktualizować wszystkie na raz - mniejsze obciążenie backendu
+        productsData.forEach(productData => {
+          const prev = tempCart[productData.id] || {};
+          tempCart[productData.id] = {
+            quantity_db: productData.quantity,
+            quantity_user: prev.quantity_user || 1,
+            price_including_promotion: productData.price_including_promotion,
+          };
+        });
+
+        saveCartSilent(tempCart); // nie inicjujemy eventów za pomocą saveCart i tym samym backend nie wpada w pętle wywołań
 
         const total = Object.values(tempCart).reduce((sum, item) => {
           return sum + item.quantity_user * parseFloat(item.price_including_promotion);

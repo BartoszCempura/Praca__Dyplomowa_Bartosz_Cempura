@@ -452,32 +452,37 @@ def modify_product(product_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/products', methods=['GET']) ## used - search dla printProducts
+@catalog_bp.route('/products', methods=['GET']) ## used - search dla printProducts i Cart - główny get produktów
 def search_products():
 
     """-------------------------------Pobranie produktu po product_id lub wyszukiwanie z paginacją po search-------------------------------"""
 
     try:
         product_id = request.args.get('product_id', type=int)
+        product_ids = request.args.get('product_ids', type=str)
         search_value = request.args.get('search', '', type=str)
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('limit', 20, type=int)
 
-        if product_id:
-            # 🔹 Pobranie konkretnego produktu po ID
+        if product_ids:
+            ids = [int(id.strip()) for id in product_ids.split(',')]
+            if not ids:
+                return '', 400
+            products = Products.query.filter(Products.id.in_(ids)).all()     
+            return jsonify({
+                "products": [product.to_json_user_view() for product in products]
+            }), 200
+        elif product_id:
             product = Products.query.get(product_id)
             if not product:
-                return jsonify({"error": "Product not found"}), 404
-
+                return '', 404
             return jsonify(product.to_json_user_view()), 200
-
         else:
-            # 🔹 Wyszukiwanie po frazie lub zwrócenie wszystkich produktów
             if search_value:
                 query = Products.query.filter(func.lower(Products.name).contains(search_value.lower()))
             else:
                 query = Products.query
-
+        
             pagination = query.paginate(page=page, per_page=per_page, error_out=False)
             products = pagination.items
 

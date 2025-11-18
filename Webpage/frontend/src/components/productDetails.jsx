@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../api/tokenHandler";
-import { getItem, setItem } from "./tempCartStorage";
+import { getItem, setItem, updateQuantity } from "./tempCartStorage";
 
 function ProductDetails() {
   const { productSlug } = useParams(); 
@@ -9,7 +9,6 @@ function ProductDetails() {
   const [attributes, setAttributes] = useState([]);
   const [isInCart, setIsInCart] = useState(false);
 
-  // 🟢 Pobieranie danych o produkcie
   useEffect(() => {
     const getProduct = async () => {
       try {
@@ -23,7 +22,7 @@ function ProductDetails() {
     getProduct();
   }, [productSlug]);
 
-  // 🟢 Sprawdzenie, czy produkt jest w koszyku
+
   useEffect(() => {
     if (!product?.id) return;
 
@@ -31,14 +30,23 @@ function ProductDetails() {
       try {
         const response = await api.get("/commerce/carts");
         const products = response.data.products || [];
-        const exists = products.some((p) => p.product_id === product.id);
+
+        let exists = false; // sprawdzamy czy produkt znajduje się juz w koszyku - wymagane dla mechanizmu wyłączania przycisku Dodaj do koszyka
+        for (let i = 0; i < products.length; i++) {
+          if (products[i].product_id ===  product.id) {
+            exists = true;
+            break;
+          }
+        }
+
         setIsInCart(exists);
       } catch (err) {
-        console.error("Błąd sprawdzania koszyka:", err);
+        console.error(err);
       }
     };
 
     checkIfInCart();
+
     window.addEventListener("cartChange", checkIfInCart);
     return () => window.removeEventListener("cartChange", checkIfInCart);
   }, [product?.id]);
@@ -46,8 +54,7 @@ function ProductDetails() {
   if (!product)
     return <div className="flex justify-center py-12">Loading...</div>;
 
-  // 🟢 Funkcja dodająca produkt do koszyka (identyczna logika jak w CartProduct)
-  const addToCart = async (change = 1) => {
+  const handleAddToCart = async (change) => {
     try {
       await api.put("/commerce/carts", { product_id: product.id, quantity: change });
 
@@ -57,25 +64,13 @@ function ProductDetails() {
         // Produkt nie istnieje w localStorage - dodajemy go
         setItem(product.id, {
           quantity_user: 1,
-          quantity_db: product.quantity, // jeśli masz to pole w produkcie
+          quantity_db: product.quantity,
           price_including_promotion: product.price_including_promotion,
         });
       } else {
-        // Produkt już istnieje - aktualizujemy ilość
-        const newQty = existing.quantity_user + change;
-
-        // 🔸 Zabezpieczenie: jeśli wynik byłby ujemny lub zerowy, pomijamy
-        if (newQty <= 0) {
-          console.warn(`❌ Pominięto zapis — ilość produktu ${product.id} byłaby <= 0.`);
-          return;
-        }
-
-        setItem(product.id, {
-          ...existing,
-          quantity_user: newQty,
-          price_including_promotion: product.price_including_promotion,
-        });
+        updateQuantity(product.id, change);
       }
+
       setIsInCart(true); // po dodaniu ustawiamy od razu flagę
     } catch (err) {
       console.error(err);
@@ -101,12 +96,12 @@ function ProductDetails() {
             {product.price_including_promotion} PLN
           </p>
 
-          {/* 🔘 Przycisk dodania do koszyka */}
+          {/*Przycisk dodania do koszyka */}
           <button
               type="button"
-              onClick={() => addToCart(1)}
+              onClick={() => handleAddToCart(1)}
               className={isInCart ? "btn btn-in-cart mb-6 w-full" : "btn btn-custom mb-6 w-full"}
-              disabled={isInCart} // ✅ blokada przycisku
+              disabled={isInCart}
             >
             {isInCart ? "W koszyku" : "Dodaj do koszyka"}
           </button>

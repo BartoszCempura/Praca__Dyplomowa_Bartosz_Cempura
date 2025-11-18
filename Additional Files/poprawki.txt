@@ -13,11 +13,8 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-zobacz kod add_product_to cart z commerce i get_cart. Zobacz też kod printProducts, productCard. 
-
 tokenHandler do przejrzenia. Dodaj pomarańczową poświate jak najeżdzasz na przyciski navbar
 
-poprawiono userProfile, productCard
 
 
 
