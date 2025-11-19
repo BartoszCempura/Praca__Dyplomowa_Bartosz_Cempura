@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 scheduler = APScheduler()
 
+""" implementacja w ciągu prac została wycofana """
 def clear_expired_carts():
 
     """-------------------------------Job usówania koszyków nieaktualizowanych przez 3 dni-------------------------------"""
@@ -219,6 +220,7 @@ def init_scheduler(app):
     scheduler.start()
     
     # Dodawanie innych jobą w ten sam sposób. Przy modyfikacji trzebausunąć stary wpis
+    """
     if not scheduler.get_job('clear_expired_carts_job'):
         scheduler.add_job(
             id='clear_expired_carts_job',
@@ -229,7 +231,7 @@ def init_scheduler(app):
             replace_existing=True,
             max_instances=1
     )
-        
+    """ 
     if not scheduler.get_job('update_accesory_weight_job'):
         scheduler.add_job(
             id='update_accesory_weight_job',

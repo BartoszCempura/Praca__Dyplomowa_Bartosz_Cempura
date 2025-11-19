@@ -1,15 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/tokenHandler";
+import { removeItem } from "./tempCartStorage";
 
 function NavbarUserMenu() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
 useEffect(() => {
-  const handleLoginStatusChange = () => {
-    if (sessionStorage.getItem("access_token")) {
+  const handleLoginStatusChange = async () => {
+    const token = sessionStorage.getItem("access_token");
+
+    if (token) {
       setIsLoggedIn(true)
+
+      try {
+        const response = await api.get("/user_management/user");
+        setUser(response.data);
+      } catch (err) {
+        console.error(err);
+      }
     } else {
       setIsLoggedIn(false)
     }
@@ -17,15 +28,41 @@ useEffect(() => {
 
   handleLoginStatusChange(); // pobranie początkowego stanu
   window.addEventListener("loginStatusChange", handleLoginStatusChange);
-
   return () => window.removeEventListener("loginStatusChange", handleLoginStatusChange); //sprzątanie
 }, []);
  
   const handleLogin = () => navigate("/login");
   const handleRegister = () => navigate("/register");
+  const handleAdmin = () => navigate("/admin");
+
+  const clearCartOnLogout = async () => {
+  try {
+    const response = await api.get("/commerce/carts");
+    const products = response.data.products || [];
+
+    if (products.length === 0) return;
+
+    await Promise.all(
+    products.map(async item => {
+      await api.put("/commerce/carts", {
+        product_id: item.product_id,
+        quantity: -item.quantity
+      });
+
+      removeItem(item.product_id); // dopiero po API
+    })
+  );
+
+  } catch (err) {
+    console.error("Error clearing cart:", err);
+  }
+};  
 
   const handleLogout = async () => {
     try {
+
+      await clearCartOnLogout();
+      
       await api.post("/auth/logout", {}, { withCredentials: true });
     } catch (err) {
       console.error(err);
@@ -51,11 +88,11 @@ const handleProfile = () => navigate("/user");
           )}
         </div>
 
-        <div tabIndex={0} role="button" className="group btn btn-ghost btn-circle avatar w-14 h-14 shadow-sm hover:shadow-amber-600 transition-shadow duration-100">
+        <div tabIndex={0} role="button" className="group btn btn-ghost btn-circle avatar w-14 h-14 shadow-sm hover:shadow-amber-500 transition-shadow duration-100">
           <div className="w-14 rounded-full">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 mx-auto mt-2.5 transition-colors duration-200 group-hover:text-amber-600"
+                className="h-8 w-8 mx-auto mt-2.5 stroke-cyan-500 transition-colors duration-200 group-hover:stroke-amber-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -73,6 +110,9 @@ const handleProfile = () => navigate("/user");
       {isLoggedIn ? (
         <ul tabIndex={-1} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
           <li><a onClick={handleProfile} style={{ cursor: "pointer" }}>Profil użytkownika</a></li>
+          {user?.role === "admin" && (
+            <li><a onClick={handleAdmin}>Kokpit</a></li>
+          )}
           <li><a>Ustawienia (brak implementacji)</a></li>
           <li><a onClick={handleLogout} className="cursor-pointer">Wyloguj</a></li>
         </ul>
