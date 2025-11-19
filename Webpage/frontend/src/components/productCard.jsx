@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import api from "../api/tokenHandler";
+import api, { isAuthenticated } from "../api/tokenHandler";
 import { getItem, updateQuantity, removeItem, setItem } from "./tempCartStorage";
 
 function ProductCard({ id, name, slug, image, unit_price, price_including_promotion, variant, quantity }) {
@@ -46,22 +46,38 @@ function ProductCard({ id, name, slug, image, unit_price, price_including_promot
   }, [id]);
 
   const handleAddToCart = async (change) => {
-  await api.put("/commerce/carts", { product_id: id, quantity: change });
 
-  const existing = getItem(id);
+    if (!isAuthenticated()) {
+      alert("Musisz być zalogowany, aby dodać produkt do koszyka!");
+      window.location.href = "/login";
+      return;
+    }
 
-  if (!existing) {
-    setItem(id, {
-      quantity_user: 1,
-      quantity_db: quantity,
-      price_including_promotion: price_including_promotion,
-    });
-  } else {
-    updateQuantity(id, change);
-  }
+    try {
+      await api.put("/commerce/carts", { product_id: id, quantity: change });
 
-  setIsInCart(true);
-};
+      const existing = getItem(id);
+
+      if (!existing) {
+        setItem(id, {
+          quantity_user: 1,
+          quantity_db: quantity,
+          price_including_promotion: price_including_promotion,
+        });
+      } else {
+        updateQuantity(id, change);
+      }
+
+      setIsInCart(true);
+    } catch (err) {
+      console.error(err);   
+      if (err.response?.status === 401) {
+        alert("Sesja wygasła. Zaloguj się ponownie.");
+      } else {
+        alert(err.response?.data?.error || "Coś poszło nie tak");
+      }
+    }
+  };
 
   const handleRemove = async () => {
     await api.put("/commerce/carts", { product_id: id, quantity: -quantity });

@@ -73,9 +73,16 @@ function Navbar() {
     <div className="navbar bg-base-200 grid grid-cols-3 items-center px-8 py-4 shadow-md z-50 relative">
       <div className="flex justify-start">
         <div className="flex items-center">
-          <img src="/LOGO.svg" className="h-20 mr-2" alt="TechTown Logo" />
-          <a href="/" className="btn btn-ghost text-xl hidden sm:inline-flex">
-            TechTown
+          <a href="/">
+            <img src="/LOGO.svg" className="h-20 mr-2" alt="TechTown Logo" />
+          </a>
+          <a href="/" className="ml-3 hidden sm:inline-flex group">
+            <div className="flex flex-col font-bold text-2xl relative">
+              <p className="inline-block relative">
+                TechTown
+                <span className="absolute -bottom-1 left-0 w-0 group-hover:w-[120%] h-[2px] bg-current transition-all duration-300"></span>
+              </p>
+            </div>
           </a>
         </div>
       </div>
@@ -89,9 +96,9 @@ function Navbar() {
       <div className="justify-end flex gap-8">
         {/* CART DROPDOWN */}
         <div className="dropdown dropdown-end">
-          <div tabIndex={0} role="button" className="btn btn-ghost btn-circle w-14 h-14">
+          <div tabIndex={0} role="button" className="group btn btn-ghost btn-circle w-14 h-14 shadow-sm hover:shadow-amber-600 transition-shadow duration-100">
             <div className="indicator">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 transition-colors duration-200 group-hover:text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

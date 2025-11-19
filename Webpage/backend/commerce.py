@@ -419,7 +419,7 @@ def remove_product_from_cart():
 """
     
 @commerce_bp.route('/carts', methods=['GET']) ## used - Cart , productCard
-@jwt_required()
+@jwt_required(optional=True)
 def get_cart():
 
     """---------------------Pobranie informacji i zawartości koszyka---------------------"""
@@ -429,7 +429,7 @@ def get_cart():
 
         cart = Carts.query.filter_by(user_id=user_id).first()
         if not cart: # brak koszyka - jak dodaje produkty jest automatycznie tworzony
-            return '', 404
+            return '', 200
 
         products_in_cart = (
             CartProducts.query

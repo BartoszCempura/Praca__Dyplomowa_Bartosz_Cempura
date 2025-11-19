@@ -1,33 +1,43 @@
 import api from "./axios";
 
+// lista publicznych endpointów
+const PUBLIC_ENDPOINTS = [
+  "/auth/refresh",
+  "/auth/login",
+  "/auth/register"
+];
+
+// Helper do sprawdzania czy endpoint jest publiczny
+function isPublicEndpoint(url) {
+  return PUBLIC_ENDPOINTS.some(endpoint => url.endsWith(endpoint));
+}
+
+//Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = sessionStorage.getItem("access_token");
-    if (
-      token &&
-      !config.url.endsWith("/auth/refresh") &&
-      !config.url.endsWith("/auth/login") &&
-      !config.url.endsWith("/auth/register")
-    ) {
+    
+    if (token && !isPublicEndpoint(config.url)) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   },
   (error) => Promise.reject(error)
 );
 
+// Response interceptor
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      originalRequest.url.includes("/auth/login") ||
-      originalRequest.url.includes("/auth/refresh")
-    ) {
+    // Dla publicznych endpointów nie próbuj odświeżać tokena
+    if (isPublicEndpoint(originalRequest.url)) {
       return Promise.reject(error);
     }
 
+    // Dla pozostałych - standard refresh flow
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -55,5 +65,10 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+//helper do sprawdzania autentykacji
+export function isAuthenticated() {
+  return !!sessionStorage.getItem("access_token");
+}
 
 export default api;

@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import api from "../api/tokenHandler";
+import api, { isAuthenticated } from "../api/tokenHandler";
 import { getItem, setItem, updateQuantity } from "./tempCartStorage";
 
 function ProductDetails() {
@@ -55,6 +55,13 @@ function ProductDetails() {
     return <div className="flex justify-center py-12">Loading...</div>;
 
   const handleAddToCart = async (change) => {
+
+    if (!isAuthenticated()) {
+        alert("Musisz być zalogowany, aby dodać produkt do koszyka!");
+        window.location.href = "/login";
+        return;
+      }
+
     try {
       await api.put("/commerce/carts", { product_id: product.id, quantity: change });
 
@@ -75,7 +82,7 @@ function ProductDetails() {
     } catch (err) {
       console.error(err);
       if (err.response?.status === 401) {
-        alert("Musisz być zalogowany, aby dodać produkt do koszyka!");
+        alert("Sesja wygasła. Zaloguj się ponownie.");
       } else {
         alert(err.response?.data?.error || "Coś poszło nie tak");
       }
