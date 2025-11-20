@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/tokenHandler";
-import { removeItem } from "./tempCartStorage";
+import { useCart } from "../utils/realCart";
 
 function NavbarUserMenu() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const { clearCart } = useCart();
 
 useEffect(() => {
   const handleLoginStatusChange = async () => {
@@ -35,34 +36,12 @@ useEffect(() => {
   const handleRegister = () => navigate("/register");
   const handleAdmin = () => navigate("/admin");
 
-  const clearCartOnLogout = async () => {
-  try {
-    const response = await api.get("/commerce/carts");
-    const products = response.data.products || [];
-
-    if (products.length === 0) return;
-
-    await Promise.all(
-    products.map(async item => {
-      await api.put("/commerce/carts", {
-        product_id: item.product_id,
-        quantity: -item.quantity
-      });
-
-      removeItem(item.product_id); // dopiero po API
-    })
-  );
-
-  } catch (err) {
-    console.error("Error clearing cart:", err);
-  }
-};  
 
   const handleLogout = async () => {
-    try {
 
-      await clearCartOnLogout();
-      
+      clearCart(); // czyścimy koszyk w local storage 
+
+    try {   
       await api.post("/auth/logout", {}, { withCredentials: true });
     } catch (err) {
       console.error(err);

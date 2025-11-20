@@ -43,6 +43,11 @@ export function removeItem(productId) {
   saveCart(cart);
 }
 
+export function clearCart() {
+  localStorage.removeItem(STORAGE_KEY);
+  window.dispatchEvent(new Event("cartChange"));
+}
+
 export function updateQuantity(productId, change) { // pozwala na zmiane ilości produktu w koszyku - dodaje lub odejmuje
   const cart = getCart();
   const item = cart[productId];

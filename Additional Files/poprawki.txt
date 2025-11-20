@@ -13,7 +13,9 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 
 
-Zastanów sie jak umieścić funkcje czyszcząca koszyk w jednym miejscu i ją poprostu wywoływać
+dodałem w realCart funkcje - clearCart (nazwe zmeiniam) a ta bierze z tempCartStorage - też clearCart. w navbarUserMenu dodałem do wylogowania clearCart
+Zasada jest taka ze robie put -1 dla każdego id w cart a potem poprostu usówam  tempCartStorage
+Zastanów się nad tym czy to spoko i jak tak to dodaj wywołanie jeszcze do tokenHandler aby przy wymuszeniu wykogowania też się wykonało
 
 
 

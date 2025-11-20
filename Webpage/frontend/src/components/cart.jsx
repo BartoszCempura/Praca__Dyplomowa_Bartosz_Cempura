@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ProductCard from "./productCard";
 import api from "../api/tokenHandler";
-import { getCart, saveCartSilent} from "./tempCartStorage";
+import { getCart, saveCartSilent} from "../utils/tempCartStorage";
 
 function Cart() {
   const [products, setProducts] = useState([]);

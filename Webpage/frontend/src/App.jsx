@@ -1,5 +1,5 @@
 import './App.css'
-import {Navbar, Menu, PrintProducts, SearchProducts, Home, ProductDetails, Footer, LoginPage, UserProfile, UserCreateAccount, Cart} from "./components/"
+import {Navbar, Menu, PrintProducts, SearchProducts, Home, ProductDetails, Footer, LoginPage, UserProfile, UserCreateAccount, Cart} from "./utils/"
 import { Routes, Route, useParams } from "react-router-dom";
 
 function App() {

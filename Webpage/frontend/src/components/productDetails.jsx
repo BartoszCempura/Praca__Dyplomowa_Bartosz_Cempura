@@ -1,13 +1,13 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import api, { isAuthenticated } from "../api/tokenHandler";
-import { getItem, setItem, updateQuantity } from "./tempCartStorage";
+import api from "../api/tokenHandler";
+import { useCart} from "../utils/realCart";
 
 function ProductDetails() {
   const { productSlug } = useParams(); 
   const [product, setProduct] = useState(null);
   const [attributes, setAttributes] = useState([]);
-  const [isInCart, setIsInCart] = useState(false);
+  const { isInCart, addToCart } = useCart(product?.id);
 
   useEffect(() => {
     const getProduct = async () => {
@@ -22,71 +22,15 @@ function ProductDetails() {
     getProduct();
   }, [productSlug]);
 
-
-  useEffect(() => {
-    if (!product?.id) return;
-
-    const checkIfInCart = async () => {
-      try {
-        const response = await api.get("/commerce/carts");
-        const products = response.data.products || [];
-
-        let exists = false; // sprawdzamy czy produkt znajduje się juz w koszyku - wymagane dla mechanizmu wyłączania przycisku Dodaj do koszyka
-        for (let i = 0; i < products.length; i++) {
-          if (products[i].product_id ===  product.id) {
-            exists = true;
-            break;
-          }
-        }
-
-        setIsInCart(exists);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    checkIfInCart();
-
-    window.addEventListener("cartChange", checkIfInCart);
-    return () => window.removeEventListener("cartChange", checkIfInCart);
-  }, [product?.id]);
-
   if (!product)
     return <div className="flex justify-center py-12">Loading...</div>;
 
-  const handleAddToCart = async (change) => {
-
-    if (!isAuthenticated()) {
-        alert("Musisz być zalogowany, aby dodać produkt do koszyka!");
-        window.location.href = "/login";
-        return;
-      }
-
-    try {
-      await api.put("/commerce/carts", { product_id: product.id, quantity: change });
-
-      const existing = getItem(product.id);
-
-      if (!existing) {
-        // Produkt nie istnieje w localStorage - dodajemy go
-        setItem(product.id, {
-          quantity_user: 1,
-          quantity_db: product.quantity,
-          price_including_promotion: product.price_including_promotion,
-        });
-      } else {
-        updateQuantity(product.id, change);
-      }
-
-      setIsInCart(true); // po dodaniu ustawiamy od razu flagę
-    } catch (err) {
-      console.error(err);
-      if (err.response?.status === 401) {
-        alert("Sesja wygasła. Zaloguj się ponownie.");
-      } else {
-        alert(err.response?.data?.error || "Coś poszło nie tak");
-      }
-    }
+  const handleAddToCart = (change) => {
+    addToCart({
+      id: product.id,
+      quantity: product.quantity,
+      price_including_promotion: product.price_including_promotion
+    }, change);
   };
 
   return (

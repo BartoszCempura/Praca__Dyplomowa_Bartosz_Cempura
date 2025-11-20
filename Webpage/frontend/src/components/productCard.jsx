@@ -1,38 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import api, { isAuthenticated } from "../api/tokenHandler";
-import { getItem, updateQuantity, removeItem, setItem } from "./tempCartStorage";
+import { useCart} from "../utils/realCart";
+import { getItem, updateQuantity } from "../utils/tempCartStorage";
 
 function ProductCard({ id, name, slug, image, unit_price, price_including_promotion, variant, quantity }) {
-  const [isInCart, setIsInCart] = useState(false);
   const [localQuantity, setLocalQuantity] = useState(1);
-
-  {/* wykożystywane do deaktywacji przycisków na bazie weryfikacji czy produkt znajduje sie już w koszyku*/}
-  useEffect(() => {
-    const checkIfInCart = async () => {
-      try {
-        const response = await api.get("/commerce/carts");
-        const products = response.data.products || []; // pobieramy elementy products, jak ich brak to inicjujemy pustą tablice dla uniknięcia błędów
-
-        let exists = false; // sprawdzamy czy produkt znajduje się juz w koszyku - wymagane dla mechanizmu wyłączania przycisku Dodaj do koszyka
-        for (let i = 0; i < products.length; i++) {
-          if (products[i].product_id === id) {
-            exists = true;
-            break;
-          }
-        } 
-        setIsInCart(exists);
-
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    checkIfInCart();
-    
-    window.addEventListener("cartChange", checkIfInCart); // nasłuch na event z innych komponentów (np. po dodaniu/usupełnieniu)
-    return () => window.removeEventListener("cartChange", checkIfInCart);
-  }, [id]);
+  const { isInCart, addToCart, removeFromCart } = useCart(id);
 
   useEffect(() => {
     const sync = () => {
@@ -45,43 +18,17 @@ function ProductCard({ id, name, slug, image, unit_price, price_including_promot
     return () => window.removeEventListener("cartChange", sync);
   }, [id]);
 
-  const handleAddToCart = async (change) => {
-
-    if (!isAuthenticated()) {
-      alert("Musisz być zalogowany, aby dodać produkt do koszyka!");
-      window.location.href = "/login";
-      return;
-    }
-
-    try {
-      await api.put("/commerce/carts", { product_id: id, quantity: change });
-
-      const existing = getItem(id);
-
-      if (!existing) {
-        setItem(id, {
-          quantity_user: 1,
-          quantity_db: quantity,
-          price_including_promotion: price_including_promotion,
-        });
-      } else {
-        updateQuantity(id, change);
-      }
-
-      setIsInCart(true);
-    } catch (err) {
-      console.error(err);   
-      if (err.response?.status === 401) {
-        alert("Sesja wygasła. Zaloguj się ponownie.");
-      } else {
-        alert(err.response?.data?.error || "Coś poszło nie tak");
-      }
-    }
+  
+  const handleAddToCart = (change) => {
+    addToCart({
+      id,
+      quantity,
+      price_including_promotion
+    }, change);
   };
 
-  const handleRemove = async () => {
-    await api.put("/commerce/carts", { product_id: id, quantity: -quantity });
-    removeItem(id);
+  const handleRemove = () => {
+    removeFromCart(id, quantity);
   };
 
   if (variant === "catalog") {

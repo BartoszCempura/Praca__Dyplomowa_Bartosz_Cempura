@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavbarUserMenu from "./navbarUserMenu";
 import api from "../api/tokenHandler";
-import { getCart } from "./tempCartStorage";
+import { getCart } from "../utils/tempCartStorage";
 
 function Navbar() {
   const [query, setQuery] = useState("");
