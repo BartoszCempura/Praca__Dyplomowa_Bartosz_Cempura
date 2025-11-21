@@ -1,13 +1,14 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../api/tokenHandler";
-import { useCart} from "../utils/realCart";
+import { useCart} from "../utils/useCart";
+import { addToCart } from "../utils/cartActions";
 
 function ProductDetails() {
   const { productSlug } = useParams(); 
   const [product, setProduct] = useState(null);
   const [attributes, setAttributes] = useState([]);
-  const { isInCart, addToCart } = useCart(product?.id);
+  const isInCart  = useCart(product?.id);
 
   useEffect(() => {
     const getProduct = async () => {

@@ -1,4 +1,5 @@
 import api from "./axios";
+import { clearCart } from "../utils/tempCartStorage";
 
 // lista publicznych endpointów
 const PUBLIC_ENDPOINTS = [
@@ -52,7 +53,7 @@ api.interceptors.response.use(
         } catch (logoutErr) {
           console.warn("Błąd przy próbie wylogowania:", logoutErr);
         }
-
+        clearCart();
         sessionStorage.removeItem("access_token");
         window.dispatchEvent(new Event("loginStatusChange"));
         setTimeout(() => {

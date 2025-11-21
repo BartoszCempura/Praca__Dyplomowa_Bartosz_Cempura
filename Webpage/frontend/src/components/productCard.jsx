@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useCart} from "../utils/realCart";
 import { getItem, updateQuantity } from "../utils/tempCartStorage";
+import { useCart } from "../utils/useCart"
+import { addToCart, removeFromCart } from "../utils/cartActions";
 
 function ProductCard({ id, name, slug, image, unit_price, price_including_promotion, variant, quantity }) {
   const [localQuantity, setLocalQuantity] = useState(1);
-  const { isInCart, addToCart, removeFromCart } = useCart(id);
+  const isInCart  = useCart(id);
 
   useEffect(() => {
     const sync = () => {

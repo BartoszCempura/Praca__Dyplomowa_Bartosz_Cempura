@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/tokenHandler";
-import { useCart } from "../utils/realCart";
+import { clearCart } from "../utils/cartActions";
 
 function NavbarUserMenu() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const { clearCart } = useCart();
 
 useEffect(() => {
   const handleLoginStatusChange = async () => {
@@ -39,7 +38,7 @@ useEffect(() => {
 
   const handleLogout = async () => {
 
-      clearCart(); // czyścimy koszyk w local storage 
+    clearCart(); // czyścimy koszyk w local storage 
 
     try {   
       await api.post("/auth/logout", {}, { withCredentials: true });
