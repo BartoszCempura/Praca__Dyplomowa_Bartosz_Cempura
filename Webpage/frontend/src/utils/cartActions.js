@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
 import api, { isAuthenticated } from "../api/tokenHandler";
-import { getCart, getItem, setItem, updateQuantity, removeItem, clearCart as clearLocalCart } from "./tempCartStorage";
+import { getCart, getItem, setItem, updateQuantity, removeItem, saveCart, clearCart as clearLocalCart } from "./tempCartStorage";
 
 
   // Funkcja dodawania produktu do koszyka. ardument "product" to obiekt zawierający id, quantity, price_including_promotion
@@ -76,4 +75,45 @@ export async function clearCart() {
   }
 }
 
+// funkcja zastosowana w przypadku gdy użytkownika wylogowało z sesji - odświeża koszyk w local storage na podstawie danych z backendu po ponownym zalogowaniu
+
+export async function refreshTempCart() {
+  try {
+    const response = await api.get("/commerce/carts");
+    const cartProducts = response.data.products || [];
+
+    if (cartProducts.length === 0) {
+      saveCart({});
+      return { totalItems: 0, totalValue: 0 };
+    }
+
+    const tempCart = getCart();
+
+    const productIds = cartProducts.map(p => p.product_id).join(",");
+    const responseProducts = await api.get(`/catalog/products?product_ids=${productIds}`);
+    const productsData = responseProducts.data.products;
+
+    productsData.forEach(productData => {
+      const prev = tempCart[productData.id] || {};
+      tempCart[productData.id] = {
+        quantity_db: productData.quantity,
+        quantity_user: prev.quantity_user || 1,
+        price_including_promotion: productData.price_including_promotion,
+      };
+    });
+
+    saveCart(tempCart);
+
+    const values = Object.values(tempCart);
+
+    const totalItems = values.reduce((s, p) => s + (p.quantity_user || 0), 0);
+    const totalValue = values.reduce((s, p) => s + p.quantity_user * parseFloat(p.price_including_promotion), 0);
+
+    return { totalItems, totalValue };
+
+  } catch (err) {
+    console.error("Błąd podczas odświeżania koszyka:", err);
+    return { totalItems: 0, totalValue: 0 };
+  }
+}
 

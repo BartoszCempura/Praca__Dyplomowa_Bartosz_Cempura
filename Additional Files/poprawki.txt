@@ -11,8 +11,9 @@ Zastanów się czy zmodyfikować coś w metodach zwracania danych dla użytkowni
 
 ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również komputer z akcesoriów ????
 
-Teraz jak samo mnie wyloguje to pozostają produkty w koszyku , i fajnie bo się wyświetlaja ale dobrze by było jak by jeszcze strona odrazu pokazywała że tak fajktycznie jest
-Natę chwile tempCart aktualizuje się tylko po otwarciu koszyka. A dobrze by było jak by sie to działo tez po zalogowaniu..
+
+
+Kolejne etapy realizacji transakcji - dodawanie danych do temp i na tej podstawie finalizacja transakcji
 
 
 

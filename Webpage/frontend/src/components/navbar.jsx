@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavbarUserMenu from "./navbarUserMenu";
-import api from "../api/tokenHandler";
 import { getCart } from "../utils/tempCartStorage";
+import { refreshTempCart } from "../utils/cartActions";
 
 function Navbar() {
   const [query, setQuery] = useState("");
@@ -49,9 +49,11 @@ function Navbar() {
     }
 
     // jak zostanie wyemitowany loginChange to zachodzą zmianyw elemencie
-    const handleLoginStatusChange = () => {
+    const handleLoginStatusChange = async () => {
       if (sessionStorage.getItem("access_token")) {
-        fetchCart();
+        const { totalItems, totalValue } = await refreshTempCart();
+        setCartItems(totalItems);
+        setCartValue(totalValue);
       } else {
         setCartItems(0);
         setCartValue(0);

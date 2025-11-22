@@ -35,8 +35,8 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False ## wyłączamy sygnały z SQLAlchemy, takie jak model modified - lepsza wydajność
     app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies'] ## ustawiamy lokalizację tokenów JWT - access w nagłówkach a refresh w ciasteczkach http
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=15)
-    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(seconds=30)
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=15)
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(minutes=30)
     app.config['JWT_COOKIE_SECURE'] = False ## ustawiamy ciasteczka JWT jako secure - będą przesyłane tylko przez HTTPS - False na czas developmentu
     app.config['JWT_COOKIE_SAMESITE'] = 'Lax' ## ustawiamy ciasteczka JWT jako samesite strict - będą przesyłane tylko w kontekście tej samej domeny - Lax na czas developmentu
     app.config['JWT_REFRESH_COOKIE_PATH'] = '/' ## ustawiamy ścieżkę ciasteczka refresh JWT
