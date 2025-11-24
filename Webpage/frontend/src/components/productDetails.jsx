@@ -36,44 +36,41 @@ function ProductDetails() {
 
   return (
     <div className="hero bg-base-100 min-h-screen py-12">
+
       <div className="hero-content flex-col lg:flex-row items-start gap-12">
+
         {/* Obraz produktu */}
         <img src={product.image} alt={product.name} className="max-w-sm rounded-lg shadow-2xl" />
 
         {/* Dane produktu */}
         <div className="lg:ml-8 flex-1">
+          <span className="text-sm text-gray-500">{product.category_slug}</span>
           <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
           <p className="text-lg mb-6">{product.description}</p>
-          <p className="text-2xl font-semibold mb-6">
-            {product.price_including_promotion} PLN
-          </p>
+          <p className="text-2xl font-semibold mb-6">{product.price_including_promotion} PLN</p>
 
           {/*Przycisk dodania do koszyka */}
-          <button
-              type="button"
-              onClick={() => handleAddToCart(1)}
+          <button type="button" onClick={() => handleAddToCart(1)}
               className={isInCart ? "btn btn-in-cart mb-6 w-full" : "btn btn-custom mb-6 w-full"}
-              disabled={isInCart}
-            >
+              disabled={isInCart}>
             {isInCart ? "W koszyku" : "Dodaj do koszyka"}
           </button>
-          
 
           {/* Atrybuty */}
           {attributes.length > 0 && (
             <div>
               <h2 className="text-2xl font-semibold mb-4">Specyfikacja:</h2>
               <ul className="list-disc list-inside space-y-1">
-                {attributes.map((attr) => (
-                  <li key={attr.name}>
-                    <strong>{attr.name}:</strong> {attr.value}
-                  </li>
+                {attributes.map((attribute) => (
+                  <li key={attribute.name}><strong>{attribute.name}:</strong> {attribute.value}</li>
                 ))}
               </ul>
             </div>
           )}
         </div>
+
       </div>
+
     </div>
   );
 }

@@ -250,6 +250,7 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
         return {
             "id": self.id,
             "name": self.name,
+            "category_slug": self.category.slug,
             "image": self.image,
             "quantity": self.quantity,
             "unit_price": str(self.unit_price),
@@ -264,15 +265,13 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
     
     def to_json_description_view(self):
         return {
-            **self._base_json(),
-            "category_name": self.category.name,
+            **self._base_json(),            
             "description": self.description,
         }
 
     def to_json(self):
         return {
             **self._base_json(),
-            "category_name": self.category.name,
             "category_id": self.category_id,
             "description": self.description,
             "created_at": self.created_at.isoformat() if self.created_at else None,

@@ -100,7 +100,7 @@ const handleResetFilters = () => {
       <div className="flex flex-wrap justify-center gap-6 my-10 mr-5">
         {products.length > 0 ? (
           products.map(p => (
-            <ProductCard key={p.id} categorySlug={categorySlug} variant="catalog" {...p} />
+            <ProductCard key={p.id} categorySlug={p.category_slug} variant="catalog" {...p} />
           ))
         ) : (
           <span>
