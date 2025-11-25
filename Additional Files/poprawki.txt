@@ -17,5 +17,9 @@ Kolejne etapy realizacji transakcji - dodawanie danych do temp i na tej podstawi
 
 poczytaj co robi printProduct strefa Object w dokumentacji react
 
+może warto dodać ulobione (z małym sercem w górnym rogu karty)?
+
+I na głównej stronie może warto dodać sekcje promocje - np taki przewijany pasek z wszystkimi produktami w promocji
+
 
 

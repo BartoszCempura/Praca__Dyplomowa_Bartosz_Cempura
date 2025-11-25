@@ -82,7 +82,7 @@ function Navbar() {
             <div className="flex flex-col font-bold text-2xl relative">
               <p className="inline-block relative">
                 TechTown
-                <span className="absolute -bottom-1 left-0 w-0 group-hover:w-[120%] h-[2px] bg-current transition-all duration-300"></span>
+                <span className="absolute -bottom-1 left-0 w-0 group-hover:w-[120%] h-[2px] bg-gradient-to-r from-cyan-500 via-cyan-200 to-amber-600 transition-all duration-300"></span>
               </p>
             </div>
           </a>
@@ -100,7 +100,7 @@ function Navbar() {
         <div className="dropdown dropdown-end">
           <div tabIndex={0} role="button" className="group btn btn-ghost btn-circle w-14 h-14 shadow-sm hover:shadow-amber-500 transition-shadow duration-100">
             <div className="indicator">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 stroke-cyan-500 transition-colors duration-200 group-hover:stroke-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 transition-colors duration-200 group-hover:stroke-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -110,7 +110,7 @@ function Navbar() {
                   2a2 2 0 11-4 0 2 2 0 014 0z"
                 />
               </svg>
-              <span className="badge badge-sm indicator-item text-cyan-500">{cartItems}</span>
+              <span className="badge badge-sm indicator-item">{cartItems}</span>
             </div>
           </div>
           <div tabIndex={0} className="card card-compact dropdown-content bg-base-100 z-1 mt-3 w-52 shadow">

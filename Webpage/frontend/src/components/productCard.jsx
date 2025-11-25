@@ -51,9 +51,9 @@ function ProductCard({ id, name, slug, categorySlug, image, unit_price, price_in
           </Link>
           {/* Cena lub przekreślona cena i cena promocyjna */}
           {price_including_promotion !== unit_price ? (
-            <div className="relative inline-block">
-              <span className="text-md font-semibold text-success">{price_including_promotion} PLN</span>
-              <span className="absolute right-2 -top-1 text-error line-through text-sm">{unit_price} PLN</span>
+            <div className="relative inline-block mb-1">
+              <span className="text-md font-semibold text-amber-500">{price_including_promotion} PLN</span>
+              <span className="absolute right-0 -top-1 line-through text-sm">{unit_price} PLN</span>
             </div>
           ) : (
             <span className="text-md font-semibold">{price_including_promotion} PLN</span>

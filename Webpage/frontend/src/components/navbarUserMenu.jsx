@@ -70,7 +70,7 @@ const handleProfile = () => navigate("/user");
           <div className="w-14 rounded-full">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 mx-auto mt-2.5 stroke-cyan-500 transition-colors duration-200 group-hover:stroke-amber-500"
+                className="h-8 w-8 mx-auto mt-2.5 transition-colors duration-200 group-hover:stroke-amber-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

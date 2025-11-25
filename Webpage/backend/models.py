@@ -4,6 +4,7 @@ from datetime import datetime, timezone, timedelta
 from backend import db
 import enum
 import re
+from backend.utils import _money
 from sqlalchemy import CheckConstraint, UniqueConstraint, func, Numeric, Index
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from slugify import slugify
@@ -253,8 +254,8 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
             "category_slug": self.category.slug,
             "image": self.image,
             "quantity": self.quantity,
-            "unit_price": str(self.unit_price),
-            "price_including_promotion": str(self.price_including_promotion())
+            "unit_price": _money(self.unit_price),
+            "price_including_promotion": _money(self.price_including_promotion())
         }
     
     def to_json_user_view(self):
