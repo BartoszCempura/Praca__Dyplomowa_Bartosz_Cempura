@@ -17,7 +17,7 @@ Kolejne etapy realizacji transakcji - dodawanie danych do temp i na tej podstawi
 
 poczytaj co robi printProduct strefa Object w dokumentacji react
 
-może warto dodać ulobione (z małym sercem w górnym rogu karty)?
+może warto dodać ulobione (z małym sercem w górnym rogu karty)? - ogarnij kod przycisku na karcie produktu, dodaj zmiennystan doaj indykator ilości dla ikony ulubione!!! 
 
 I na głównej stronie może warto dodać sekcje promocje - np taki przewijany pasek z wszystkimi produktami w promocji
 

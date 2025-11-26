@@ -674,7 +674,7 @@ def add_to_whishlist():
         db.session.add(wishlist_item)
         db.session.commit()
 
-        return jsonify({'message': 'Produkt dodany do ulubionych'}), 201
+        return '', 201
 
     except Exception as e:
         db.session.rollback()
@@ -699,7 +699,7 @@ def remove_from_whishlist(product_id):
         db.session.delete(wishlist_item)
         db.session.commit()
 
-        return jsonify({'message': 'Produkt usunięty z ulubionych'}), 200
+        return '', 200
 
     except Exception as e:
         db.session.rollback()
@@ -708,7 +708,7 @@ def remove_from_whishlist(product_id):
 
 
 @commerce_bp.route('/wishlists', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_wishlist():
 
     """-------------------------------Pobieramy listę wszystkich ulubionych produktów użytkownika-------------------------------"""
@@ -718,7 +718,7 @@ def get_wishlist():
     try:
         products = Wishlists.query.filter_by(user_id=user_id).all()
         if not products:
-            return jsonify({'error': 'No products found in wishlist'}), 404
+            return jsonify({'error': 'No products found in wishlist'}), 200
 
         return jsonify([product.to_json() for product in products]), 200
     

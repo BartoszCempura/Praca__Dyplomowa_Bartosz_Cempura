@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getItem, updateQuantity } from "../utils/tempCartStorage";
 import { useCart } from "../utils/useCart"
+import { useWishlist } from "../utils/useWhishlist";
 import { addToCart, removeFromCart } from "../utils/cartActions";
+import { addToWishlist, removeFromWishlist} from "../utils/wishlistActions";
 
 function ProductCard({ id, name, slug, categorySlug, image, unit_price, price_including_promotion, variant, quantity }) {
-  const [localQuantity, setLocalQuantity] = useState(1);
-  const isInCart  = useCart(id);
+  const [ localQuantity, setLocalQuantity ] = useState(1);
+  const inWishList = useWishlist(id);
+  const isInCart = useCart(id);
 
   useEffect(() => {
     const sync = () => {
@@ -28,13 +31,35 @@ function ProductCard({ id, name, slug, categorySlug, image, unit_price, price_in
     }, change);
   };
 
+  const handleAddToWishlist = () => {
+    if (!inWishList) {
+      addToWishlist(id);
+    } else {
+      removeFromWishlist(id);
+    }
+  };
+
   const handleRemove = () => {
     removeFromCart(id, quantity);
   };
 
   if (variant === "catalog") {
     return (
-      <div className="card card-side bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 w-100 grid grid-cols-2 border border-gray-900">
+      <div className="card card-side bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 w-100 grid grid-cols-2 border border-gray-900 relative">
+
+        <button type="button" className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-base-200 transition-colors group" onClick={handleAddToWishlist}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className={`h-6 w-6 transition-colors duration-200 ${inWishList ? 'fill-amber-500 stroke-amber-500' : 'group-hover:stroke-amber-500'}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+        </button>
+
         {/* Obraz produktu */}
         <figure>
           <Link to={`/product/${slug}`}>
