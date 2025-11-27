@@ -4,7 +4,7 @@ import api, { isAuthenticated } from "../api/tokenHandler";
 export async function getWishlist() {
 
   if (!isAuthenticated()) {
-    alert("Musisz być zalogowany, aby zobaczyć swoją listę życzeń!");
+    alert("Musisz być zalogowany, aby zobaczyć listę ulubionych!");
     window.location.href = "/login";
     return;
   }
@@ -26,7 +26,7 @@ export async function getWishlist() {
 export async function addToWishlist(id) {
 
   if (!isAuthenticated()) {
-    alert("Musisz być zalogowany, aby dodać produkt do koszyka!");
+    alert("Musisz być zalogowany, aby dodać produkt do ulubionych!");
     window.location.href = "/login";
     return;
   }

@@ -1,17 +1,22 @@
 import { useState, useEffect } from "react";
 import api from "../api/tokenHandler";
 
-export function useWishlist(productId) {
+export function useWishlist(productId = null) {
   const [ inWishList, setInWishList ] = useState(false);
 
-  async function checkIfInWishlist(productId) {
+  async function checkIfInWishlist() {
     try {
       const response = await api.get("/commerce/wishlists");
       const products = response.data || [];
 
+      if (!productId) {
+        setInWishList(products.length > 0);
+        return;
+      }
+
       let exists = false;
         for (let i = 0; i < products.length; i++) {
-          if (products[i].product.id === productId) {
+          if (products[i].id === productId) {
             exists = true;
             break;
           }
@@ -25,12 +30,10 @@ export function useWishlist(productId) {
 
 
   useEffect(() => {
-    if (!productId) return; // hook działa TYLKO jeśli przekazano ID
+    
+    checkIfInWishlist();
 
-    const handler = () => checkIfInWishlist(productId);
-
-    // pierwsze sprawdzenie
-    handler();
+    const handler = () => checkIfInWishlist();
 
     // nasłuch na zmiany koszyka
     window.addEventListener("wishlistChange", handler);

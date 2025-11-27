@@ -717,10 +717,10 @@ def get_wishlist():
 
     try:
         products = Wishlists.query.filter_by(user_id=user_id).all()
-        if not products:
-            return jsonify({'error': 'No products found in wishlist'}), 200
 
-        return jsonify([product.to_json() for product in products]), 200
+        product_list = [wish.product.to_json_user_view() for wish in products if wish.product is not None]
+
+        return jsonify(product_list), 200
     
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
