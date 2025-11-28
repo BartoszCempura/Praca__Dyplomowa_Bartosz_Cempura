@@ -1063,7 +1063,6 @@ def add_promotion():
         return jsonify({'error': 'Internal server error'}), 500
     
     
-
 @catalog_bp.route('/admin/promotions/<int:promotion_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
@@ -1129,7 +1128,6 @@ def modify_promotion(promotion_id):
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-
     
 @catalog_bp.route('/admin/promotions', methods=['GET'])
 @jwt_required()
@@ -1198,10 +1196,10 @@ def get_all_products_in_promotion(promotion_id):
 
     try:
         products = ProductPromotions.query.filter_by(promotion_id=promotion_id).all()
-        if not products:
-            return jsonify({'error': 'No products found for this promotion'}), 404
         
-        return jsonify([product.to_json_user_view() for product in products]), 200
+        product_list = [wish.product.to_json_user_view() for wish in products if wish.product is not None]
+
+        return jsonify(product_list), 200
     
     except Exception as e:
         print(f"[ERROR]: {str(e)}")

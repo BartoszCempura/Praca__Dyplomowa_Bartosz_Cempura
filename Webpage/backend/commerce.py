@@ -649,7 +649,7 @@ def get_all_user_transactions():
 ## ###################################################################### Whishlist ######################################################################
 
 
-@commerce_bp.route('/wishlists', methods=['POST'])
+@commerce_bp.route('/wishlists', methods=['POST']) ## used - productCard
 @jwt_required()
 def add_to_whishlist():
 
@@ -682,7 +682,7 @@ def add_to_whishlist():
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@commerce_bp.route('/wishlists/<int:product_id>', methods=['DELETE'])
+@commerce_bp.route('/wishlists/<int:product_id>', methods=['DELETE']) ## used - productCard
 @jwt_required()
 def remove_from_whishlist(product_id):
 
@@ -707,7 +707,7 @@ def remove_from_whishlist(product_id):
         return jsonify({'error': 'Internal server error'}), 500
 
 
-@commerce_bp.route('/wishlists', methods=['GET'])
+@commerce_bp.route('/wishlists', methods=['GET']) ## used - wishlist
 @jwt_required(optional=True)
 def get_wishlist():
 

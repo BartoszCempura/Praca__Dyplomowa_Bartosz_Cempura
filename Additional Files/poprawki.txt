@@ -16,10 +16,11 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 Kolejne etapy realizacji transakcji - dodawanie danych do temp i na tej podstawie finalizacja transakcji
 
 poczytaj co robi printProduct strefa Object w dokumentacji react
+ 
+Trzeba przeanalizować slider dla promocji, możliwe przebudować uprościć - do sprawdzenia jak będzie wiecej produktów nastanie i zwiękrze ilosc promowanych produktów do 10
+ - jest txt na pulpicie z starszą , prostrzą konstrukcją
 
-może warto dodać ulobione (z małym sercem w górnym rogu karty)? - ogarnij kod przycisku na karcie produktu, dodaj zmiennystan doaj indykator ilości dla ikony ulubione!!! 
-
-I na głównej stronie może warto dodać sekcje promocje - np taki przewijany pasek z wszystkimi produktami w promocji
+ Zastanów się również nad home jsx - zmieniłem działąnie karuzeli
 
 
 
