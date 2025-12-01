@@ -34,6 +34,8 @@ useEffect(() => {
   const handleLogin = () => navigate("/login");
   const handleRegister = () => navigate("/register");
   const handleAdmin = () => navigate("/admin");
+  const handleProfile = () => navigate("/user");
+  const handleSettings = () => navigate("/settings");
 
 
   const handleLogout = async () => {
@@ -52,8 +54,6 @@ useEffect(() => {
     navigate("/login");
   };
 
-
-const handleProfile = () => navigate("/user");
 
   return (
     <div className="dropdown dropdown-end">
@@ -87,11 +87,11 @@ const handleProfile = () => navigate("/user");
       {/*Menu*/}
       {isLoggedIn ? (
         <ul tabIndex={-1} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-          <li><a onClick={handleProfile} style={{ cursor: "pointer" }}>Profil użytkownika</a></li>
+          <li><a onClick={handleProfile}>Profil użytkownika</a></li>
           {user?.role === "admin" && (
             <li><a onClick={handleAdmin}>Kokpit</a></li>
           )}
-          <li><a>Ustawienia (brak implementacji)</a></li>
+          <li><a onClick={handleSettings}>Ustawienia</a></li>
           <li><a onClick={handleLogout} className="cursor-pointer">Wyloguj</a></li>
         </ul>
       ) : (

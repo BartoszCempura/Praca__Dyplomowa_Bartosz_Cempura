@@ -12,3 +12,4 @@ export { default as UserCreateAccount } from "../components/createAccountPage";
 export { default as Cart } from "../components/cart";
 export { default as CartDeliveryPaymentAdress } from "../components/cartDeliveryPaymentAdress";
 export { default as Wishlist } from "../components/wishlist";
+export { default as Settings } from "../components/settings";

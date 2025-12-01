@@ -229,7 +229,7 @@ def get_all_addresses():
         addresses = UserAddress.query.filter_by(user_id=current_user_id).all()
 
         if not addresses:
-            return jsonify({'message': 'No addresses found'}), 404
+            return '', 200
 
         return jsonify([address.to_json() for address in addresses]), 200
 
