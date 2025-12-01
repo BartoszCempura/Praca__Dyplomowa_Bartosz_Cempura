@@ -1189,7 +1189,7 @@ def add_products_to_promotion(promotion_id):
 
 
 
-@catalog_bp.route('/product-promotions/<int:promotion_id>', methods=['GET'])
+@catalog_bp.route('/product-promotions/<int:promotion_id>', methods=['GET']) ## used - promotionSLider
 def get_all_products_in_promotion(promotion_id):
 
     """-------------------------------Pobieramy listę wszystkich produktów objętych promocją-------------------------------"""

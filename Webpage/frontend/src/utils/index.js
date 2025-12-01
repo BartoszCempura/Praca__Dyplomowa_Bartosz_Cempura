@@ -1,7 +1,7 @@
 // src/components/index.js - file needed to import components by their name instead providing the full path
 export { default as Navbar } from "../components/navbar";
 export { default as Menu } from "../components/categoriesSection";
-export { default as PrintProducts } from "../components/catalog";
+export { default as ProductCatalog } from "../components/productCatalog";
 export { default as Home } from "../components/home";
 export { default as Footer } from "../components/footer";
 export { default as ProductDetails } from "../components/productDetails";
@@ -10,4 +10,5 @@ export { default as LoginPage } from "../components/loginPage";
 export { default as UserProfile } from "../components/userProfile";
 export { default as UserCreateAccount } from "../components/createAccountPage";
 export { default as Cart } from "../components/cart";
+export { default as CartDeliveryPaymentAdress } from "../components/cartDeliveryPaymentAdress";
 export { default as Wishlist } from "../components/wishlist";

@@ -120,7 +120,7 @@ function Navbar() {
           </div>
         </div>
 
-        {/* CART DROPDOWN */}
+        {/* cart dropdown */}
         <div className="dropdown dropdown-end">
           <div tabIndex={0} role="button" className="group btn btn-ghost btn-circle w-14 h-14 shadow-sm hover:shadow-amber-500 transition-shadow duration-100">
             <div className="indicator">

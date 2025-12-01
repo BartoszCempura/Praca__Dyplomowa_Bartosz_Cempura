@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import ProductCard from "./productCard";
 import api from "../api/tokenHandler";
 import { getCart, saveCartSilent} from "../utils/tempCartStorage";
+import { useNavigate } from "react-router-dom";
 
 function Cart() {
   const [products, setProducts] = useState([]);
   const [cartValue, setCartValue] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
   const fetchCartProducts = async () => {
@@ -76,7 +78,7 @@ function Cart() {
             Wartość: {cartValue.toFixed(2)} zł
           </span>
           <div className="card-actions">
-            <button className="btn btn-custom btn-block">Przejdź dalej</button>
+            <button className="btn btn-custom btn-block" onClick={() => navigate("/cart/delivery-payment-address")}>Przejdź dalej</button>
           </div>
         </div>
       </aside>

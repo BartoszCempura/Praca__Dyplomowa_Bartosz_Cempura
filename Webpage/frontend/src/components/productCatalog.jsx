@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import ProductCard from "./productCard";
 import api from "../api/tokenHandler";
 
-function PrintProducts({ categorySlug }) {
+function ProductCatalog({ categorySlug }) {
   const [products, setProducts] = useState([]);
   const [attributes, setAttributes] = useState({});
   const [searchParams, setSearchParams] = useSearchParams();
@@ -112,4 +112,4 @@ const handleResetFilters = () => {
   );
 }
 
-export default PrintProducts;
+export default ProductCatalog;

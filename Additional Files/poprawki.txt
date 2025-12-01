@@ -15,12 +15,20 @@ ciekawe czy jak wybiore akcesorium to w proponowanych otrzymam również kompute
 
 Kolejne etapy realizacji transakcji - dodawanie danych do temp i na tej podstawie finalizacja transakcji
 
-poczytaj co robi printProduct strefa Object w dokumentacji react
+cartDeliveryPaymentAdress.jsx 
+- adres dostawy ma być podstawiony z bazy (w ustawienia dla konta dodajemy podgląd oraz możliwośc zmiany adresu dostawy) - trzeba jescze billing/ payment adress
+- załadować metody dostawty wraz z checkboxami (dodaj najpierw do bazy) - checkbox dodaje wpis w tempCart
+- załadować metody płatnosci wraz z checkboxami (dodaj najpierw do bazy) - checkbox dodaje wpis w tempCart
+
+Kolejna strona to wyświetlenie wszystich informacji z tempCart i przycisk zatwierdź lub cofnij - masz już zrobiony w przycisku wybierania
+
+------------------------------------------------Na potem !!! ----------------------------------------------------
+
+productCatalog - można spróbować poprawić filtrowanie tak aby value pokazywało faktyczna ilosc produktów spełniających oczekiwania
  
 Trzeba przeanalizować slider dla promocji, możliwe przebudować uprościć - do sprawdzenia jak będzie wiecej produktów nastanie i zwiękrze ilosc promowanych produktów do 10
  - jest txt na pulpicie z starszą , prostrzą konstrukcją
 
- Zastanów się również nad home jsx - zmieniłem działąnie karuzeli
 
 
 
