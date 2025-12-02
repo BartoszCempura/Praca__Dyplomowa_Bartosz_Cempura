@@ -72,8 +72,8 @@ function Cart() {
         )}
       </div>
 
-      <aside className="bg-base-200 p-4 max-h-screen overflow-y-auto rounded-lg shadow-md my-10 border-1 border-gray-900">
-        <div className="card-body">
+      <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900">
+        <div className="card-body items-center">
           <span className="text-info mb-2">
             Wartość: {cartValue.toFixed(2)} zł
           </span>

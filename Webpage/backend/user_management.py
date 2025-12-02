@@ -167,21 +167,35 @@ def register_address():
         data = request.get_json()
 
         required_fields = ['street_name', 'building_number', 'zip_code', 'city']
+
+        field_labels = {
+            'street_name': 'Nazwa ulicy',
+            'building_number': 'Numer budynku',
+            'zip_code': 'Kod pocztowy',
+            'city': 'Miasto'
+        }
         for field in required_fields:
             if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+                return jsonify({'error': f'Pole "{field_labels[field]}" jest wymagane'}), 400
 
         if not UserAddress.validate_zip_code(data['zip_code']): 
-            return jsonify({'error': 'Invalid zip code format'}), 400
+            return jsonify({'error': 'Nieprawidłowy format kodu pocztowego'}), 400
+        
+        nip = data.get('nip')
 
-        if data.get('nip') and not UserAddress.validate_nip(data.get('nip')): # sprawdzamy czy nip w ogóle został podany i jak tak to go walidujemy
-            return jsonify({'error': 'Invalid NIP format'}), 400
+        if nip and not UserAddress.validate_nip(nip): # sprawdzamy czy nip w ogóle został podany i jak tak to go walidujemy
+            return jsonify({'error': 'Nieprawidłowy format NIP'}), 400
+        
+        if nip:
+            exists = UserAddress.query.filter_by(nip=nip).first()
+            if exists:
+                return jsonify({'error': 'Adres z takim NIP już istnieje'}), 400
 
         type_str = data.get('type', 'Shipping')  # default 'shipping', dodatkowe wyłapanie błedu aby ten się w ogóle wyświetlił
         try:
             address_type = AddressType(type_str)
         except ValueError:
-            return jsonify({'error': f'Invalid address type: {type_str}'}), 400
+            return jsonify({'error': f'Nieprawidłowy typ adresu: {type_str}'}), 400
         
         if address_type == AddressType.Default:
             if_default_check = UserAddress.query.filter(
@@ -189,7 +203,7 @@ def register_address():
                 UserAddress.user_id == current_user_id
             ).first()
             if if_default_check:
-                return jsonify({'error': 'Default address already exists'}), 400
+                return jsonify({'error': 'Domyślny adres już istnieje'}), 400
 
         # Create address instance
         address = UserAddress(
@@ -198,10 +212,10 @@ def register_address():
             company_name=data.get('company_name'),
             first_name=data.get('first_name'),
             last_name=data.get('last_name'),
-            nip=data.get('nip'),
+            nip=data.get('nip') or None,
             street_name=data['street_name'],
             building_number=data['building_number'],
-            flat_number=data.get('flat_number'),
+            flat_number=data.get('flat_number') or None,
             zip_code=data['zip_code'],
             city=data['city'],
             type=address_type.value # używamy .value aby uzyskać wartość enum
@@ -210,7 +224,7 @@ def register_address():
         db.session.add(address)
         db.session.commit()
 
-        return jsonify({'message': 'Address registered successfully'}), 200
+        return jsonify({'message': 'Adres został pomyślnie zarejestrowany'}), 200
 
     except Exception as e:
         db.session.rollback()
@@ -218,7 +232,7 @@ def register_address():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
     
 
-@user_management_bp.route('/addresses', methods=['GET'])
+@user_management_bp.route('/addresses', methods=['GET']) ## used - ustawienia
 @jwt_required()
 def get_all_addresses():
 

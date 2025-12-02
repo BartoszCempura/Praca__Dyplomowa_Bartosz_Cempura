@@ -51,8 +51,8 @@ const handleSubmit = async (e) => {
     } catch (err) {
     console.error(err);
     setMessageType("error");
+    setMessage(err.response?.data?.error || "Coś poszło nie tak");
     e.target.reset();
-    setMessage(err.response?.data?.error || "Błąd podczas rejestracji konta");
     }
   };
 
