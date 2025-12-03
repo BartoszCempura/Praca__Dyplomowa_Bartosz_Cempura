@@ -156,7 +156,7 @@ def delete_user():
     
 ## ###################################################################### Adresy dostawy ######################################################################
 
-@user_management_bp.route('/addresses', methods=['POST'])
+@user_management_bp.route('/addresses', methods=['POST']) ## used - ustawienia
 @jwt_required()
 def register_address():
 

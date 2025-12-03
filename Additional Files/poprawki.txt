@@ -30,5 +30,9 @@ Trzeba przeanalizować slider dla promocji, możliwe przebudować uprościć - d
  - jest txt na pulpicie z starszą , prostrzą konstrukcją
 
 
+ZOabcz bo jak zmieniasz ustawienia i cię wyloguje to masz coś poszło nei tak a powinna być informacja że musisz być zalogowany
+
+Nie odświerza sie lista adresów trzeba dodać eventy aby działało przy usówaniu i dodawaniu nowych
+
 
 

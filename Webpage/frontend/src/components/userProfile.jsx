@@ -26,7 +26,7 @@ function UserProfile() {
         setUser(response.data);
       } catch (err) {
         console.error(err);
-        alert(err.response?.data?.error || "Błąd podczas pobierania danych użytkownika");
+        alert(err.response?.data?.error || "Coś poszło nie tak");
       }
     };
 

@@ -25,9 +25,9 @@ function Settings() {
     const fetchAddresses = async () => {
       try {
         const response = await api.get("/user_management/addresses");
-        setAddresses(response.data);
+        setAddresses(response.data || []);
 
-        if (response.data.length > 0) {
+        if (response.data && response.data.length > 0) {
             let defaultAddress = null;
             for (let i = 0; i < response.data.length; i++) {
                 if (response.data[i].type === "Default") {
@@ -91,6 +91,18 @@ function Settings() {
     setCity("");
 };
 
+  const handleDeleteAddress = async (id) => {
+    if (!id) return;
+
+    try {
+        const response = await api.delete(`/user_management/addresses/${id}`); 
+
+    } catch (err) {
+    console.error(err);
+    setMessage(err.response?.data?.error || "Coś poszło nie tak");
+    }
+  };
+
   const handleZipChange = (e) => {
     let value = e.target.value.replace(/\D/g, ""); // remove non-digits
     if (value.length > 2) {
@@ -115,59 +127,57 @@ function Settings() {
 
 
     return (
-        <div className="container grid grid-cols-[1fr_3fr] bg-base-100 py-20 gap-6 mx-auto">
+        <div className="container grid grid-cols-[1fr_3fr] bg-base-100 py-20 gap-6 mx-auto" style={{width:"60%"}}>
 
-            <div className="card bg-base-200 shadow-md shadow-black/40 p-6 mb-6 border border-gray-900">
+            <div className="card bg-base-200 shadow-md shadow-black/40 p-6 mb-6 border border-gray-900 lg:h-66 h-75">
                 <h2 className="text-2xl font-bold text-center mb-6">Zapisane adresy:</h2>
 
                 <div className="space-y-2">
                     <div className="flex flex-col items-center gap-4">
                     
-                        {addresses.map(address => (
-                            <button key={address.id} className={`w-full text-left p-2 rounded transition ${
-                                    selectedAddress?.id === address.id 
-                                    ? "bg-base-300" 
-                                    : "hover:bg-base-300"
-                                }`} onClick={() => setSelectedAddress(address)}>
-                                <strong>Tytuł: </strong>{address.title || `${address.street_name} ${address.city}`}
-                            </button>
-                        ))}
+                       <select defaultValue="Medium" className="select select-md">
+                            {addresses.map(address => (
+                                <option key={address.id} onClick={() => setSelectedAddress(address)}>{(address.title || `${address.street_name} ${address.city}`) + ` - ${address.type}`}</option>
+                            ))}
+                        </select>
 
                         <button className="btn btn-custom btn-block" onClick={() => document.getElementById("add_address").showModal()}>
-                            Dodaj adres
+                            Dodaj adress
+                        </button>
+                        <button className="btn btn-error text-white hover:opacity-90 mb-2" style={{ width: "151px" }} onClick={() => handleDeleteAddress(selectedAddress?.id)} disabled={!selectedAddress}>
+                            Usuń adress
                         </button>
                     </div>
                 </div>
             </div>
 
 
-            <div className="card bg-base-200 shadow-md shadow-black/40 p-6 mb-6 border border-gray-900">
-                <h2 className="text-2xl font-bold text-center mb-6">Szczegóły:</h2>
-                <div className="space-y-2">
-                    <div className="flex justify-between">
-                    <strong>Tytuł:</strong>
-                    <span>{selectedAddress?.title}</span>
-                    </div>
+        <div className="card bg-base-200 shadow-md shadow-black/40 p-6 mb-6 border border-gray-900">
+            <h2 className="text-2xl text-center font-bold mb-6">Szczegóły:</h2>
 
-                    <div className="flex justify-between">
-                    <strong>Ulica:</strong>
-                    <span>
-                        {selectedAddress?.street_name} {selectedAddress?.building_number}
-                    </span>
-                    </div>
+            <div className="space-y-2">
 
-                    <div className="flex justify-between">
-                    <strong>Kod pocztowy:</strong>
-                    <span>{selectedAddress?.zip_code}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                    <strong>Miasto:</strong>
-                    <span>{selectedAddress?.city}</span>
-                    </div>
+                {[
+                { label: "Tytuł:", value: selectedAddress?.title || "-" },
+                { label: "Nazwa firmy:", value: selectedAddress?.company_name || "-" },
+                { label: "NIP:", value: selectedAddress?.nip || "-" },
+                { label: "Osoba:", value: `${selectedAddress?.first_name} ${selectedAddress?.last_name}` },
+                { label: "Ulica:", value: `${selectedAddress?.street_name} ${selectedAddress?.building_number}` },
+                { label: "Nr mieszkania:", value: selectedAddress?.flat_number || "-" },
+                { label: "Miasto:", value: selectedAddress?.city },
+                { label: "Kod pocztowy:", value: selectedAddress?.zip_code }
+                ].map((item, index) => (
+                <div key={index} className="grid grid-cols-[150px_1fr_auto] gap-2 items-center">
+                    <strong>{item.label}</strong>
+                    <span>{item.value}</span>
+                    <button className="btn btn-sm border-gray-600">Edytuj</button>
                 </div>
-            </div>
+                ))}
 
+            </div>
+        </div>
+
+            {/*modal - dodawanie adresu*/}
             <dialog id="add_address" className="modal">
                 <div className="modal-box">
                     <form method="dialog">
