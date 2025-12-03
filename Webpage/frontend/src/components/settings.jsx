@@ -78,6 +78,42 @@ function Settings() {
     }
   };
 
+  const handleCloseModal = () => {
+    setTitle("");
+    setCompanyName("");
+    setFirstName("");
+    setLastName("");
+    setNip("");
+    setStreetName("");
+    setBuildingNumber("");
+    setApartmentNumber("");
+    setZipCode("");
+    setCity("");
+};
+
+  const handleZipChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ""); // remove non-digits
+    if (value.length > 2) {
+        value = value.slice(0, 2) + "-" + value.slice(2, 5);
+    }
+    setZipCode(value);
+    };
+
+  const handleNipChange = (e) => {
+  let value = e.target.value.replace(/\D/g, ""); // only digits
+
+  if (value.length > 3) {
+    value = value.slice(0, 3) + "-" + value.slice(3);
+  }
+  if (value.length > 10) {
+    value = value.slice(0, 10) + "-" + value.slice(10);
+  }
+  value = value.slice(0, 12);
+
+  setNip(value);
+};
+
+
     return (
         <div className="container grid grid-cols-[1fr_3fr] bg-base-100 py-20 gap-6 mx-auto">
 
@@ -135,7 +171,7 @@ function Settings() {
             <dialog id="add_address" className="modal">
                 <div className="modal-box">
                     <form method="dialog">
-                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={handleCloseModal} >✕</button>
                     </form>
                     <h3 className="font-bold text-lg text-center">Dodaj adres</h3>
 
@@ -144,22 +180,40 @@ function Settings() {
                         <input type="text" className="input validator w-full mb-4" value={title} onChange={(e) => setTitle(e.target.value)}/>
                         <label className="label text-sm">Nazwa firmy (opcjonalnie):</label> 
                         <input type="text" className="input validator w-full mb-4" value={companyName} onChange={(e) => setCompanyName(e.target.value)}/>
-                        <label className="label text-sm">Imie:</label> 
-                        <input type="text" className="input validator w-full mb-4" value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
-                        <label className="label text-sm">Nazwisko:</label> 
-                        <input type="text" className="input validator w-full mb-4" value={lastName} onChange={(e) => setLastName(e.target.value)}/>
                         <label className="label text-sm">NIP (opcjonalnie):</label> 
-                        <input type="text" className="input validator w-full mb-4" value={nip} onChange={(e) => setNip(e.target.value)}/>
-                        <label className="label text-sm">Nazwa ulicy:</label> 
-                        <input type="text" className="input validator w-full mb-4" value={streetName} onChange={(e) => setStreetName(e.target.value)}/>
-                        <label className="label text-sm">Nr budynku</label> 
-                        <input type="text" className="input validator w-full mb-4" value={buildingNumber} onChange={(e) => setBuildingNumber(e.target.value)}/>
-                        <label className="label text-sm">Nr mieszkania (opcjonalnie)</label> 
-                        <input type="text" className="input validator w-full mb-4" value={apartmentNumber} onChange={(e) => setApartmentNumber(e.target.value)}/>
-                        <label className="label text-sm">Kod pocztowy:</label> 
-                        <input type="text" className="input validator w-full mb-4" value={zipCode} onChange={(e) => setZipCode(e.target.value)}/>
-                        <label className="label text-sm">Miasto:</label> 
-                        <input type="text" className="input validator w-full mb-4" value={city} onChange={(e) => setCity(e.target.value)}/>
+                        <input type="text" pattern="(^$|^[0-9]{3}-[0-9]{6}-[0-9]{1}$)" className="input validator w-full mb-4" value={nip} onChange={handleNipChange}/>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div className="w-full">
+                                <label className="label text-sm">Imie:</label> 
+                                <input type="text" className="input validator" value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
+                            </div>
+                            <div className="w-full">
+                                <label className="label text-sm">Nazwisko:</label>                       
+                                <input type="text" className="input validator" value={lastName} onChange={(e) => setLastName(e.target.value)}/>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-[3fr_1fr] gap-4 mb-4">
+                            <div className="w-full">               
+                                <label className="label text-sm">Nazwa ulicy:</label> 
+                                <input type="text" className="input validator" value={streetName} onChange={(e) => setStreetName(e.target.value)}/>
+                            </div> 
+                            <div className="w-full">
+                                <label className="label text-sm">Nr. budynku</label> 
+                                <input type="number" inputMode="numeric" max={99999} className="input validator" value={buildingNumber} onChange={(e) => setBuildingNumber(e.target.value)}/>
+                            </div>
+                        </div>
+                        <label className="label text-sm">Nr. mieszkania (opcjonalne)</label> 
+                        <input type="number" inputMode="numeric" max={99999} className="input validator w-full mb-4" value={apartmentNumber} onChange={(e) => setApartmentNumber(e.target.value)}/> 
+                        <div className="grid grid-cols-[4fr_2fr] gap-4 mb-4">
+                            <div className="w-full">
+                                <label className="label text-sm">Miasto:</label> 
+                                <input type="text" className="input validator" value={city} onChange={(e) => setCity(e.target.value)}/>
+                            </div>
+                            <div className="w-full">
+                                <label className="label text-sm">Kod pocztowy:</label> 
+                                <input type="text" pattern="(^$|^[0-9]{2}-[0-9]{3}$)" className="input validator" value={zipCode} onChange={handleZipChange}/>       
+                            </div>
+                        </div>
                         <label className="label text-sm">Typ adresu:</label> 
                         <select className="select select-bordered w-full" value={type} onChange={(e) => setType(e.target.value)}>
                             <option value="Shipping">Adres wysyłkowy</option>
