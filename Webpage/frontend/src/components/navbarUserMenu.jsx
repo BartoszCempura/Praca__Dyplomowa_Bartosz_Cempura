@@ -35,7 +35,7 @@ useEffect(() => {
   const handleRegister = () => navigate("/register");
   const handleAdmin = () => navigate("/admin");
   const handleProfile = () => navigate("/user");
-  const handleSettings = () => navigate("/settings");
+  const handleAdressess = () => navigate("/dane-do-zamowien");
 
 
   const handleLogout = async () => {
@@ -91,7 +91,7 @@ useEffect(() => {
           {user?.role === "admin" && (
             <li><a onClick={handleAdmin}>Kokpit</a></li>
           )}
-          <li><a onClick={handleSettings}>Ustawienia</a></li>
+          <li><a onClick={handleAdressess}>Dane do zamówień</a></li>
           <li><a onClick={handleLogout} className="cursor-pointer">Wyloguj</a></li>
         </ul>
       ) : (

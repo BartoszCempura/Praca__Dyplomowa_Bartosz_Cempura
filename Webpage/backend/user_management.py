@@ -251,7 +251,55 @@ def get_all_addresses():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+@user_management_bp.route('/addresses/<int:address_id>/type', methods=['PATCH'])
+@jwt_required()
+def update_address_type(address_id):
+    """-------------------------------Zmiana typu adresu-------------------------------"""
     
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+
+        # Znajdź adres użytkownika
+        address = UserAddress.query.filter_by(
+            id=address_id,
+            user_id=current_user_id
+        ).first()
+
+        if not address:
+            return jsonify({'error': 'Adres nie został znaleziony'}), 404
+
+        type_str = data.get('type')
+        if not type_str:
+            return jsonify({'error': 'Pole "type" jest wymagane'}), 400
+
+        # Walidacja typu
+        try:
+            address_type = AddressType(type_str)
+        except ValueError:
+            return jsonify({'error': f'Nieprawidłowy typ adresu: {type_str}'}), 400
+
+        # Jeśli zmiana na Default - zmień poprzedni Default na Shipping
+        if address_type == AddressType.Default:
+            current_default = UserAddress.query.filter(
+                UserAddress.user_id == current_user_id,
+                UserAddress.type == 'Default',
+                UserAddress.id != address_id
+            ).first()
+
+            if current_default:
+                current_default.type = 'Shipping'
+
+        # Ustaw nowy typ
+        address.type = address_type.value
+        db.session.commit()
+
+        return jsonify({'message': 'Typ adresu został zaktualizowany'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR]: {str(e)}")
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500    
 
 @user_management_bp.route('/addresses/<int:address_id>', methods=['DELETE'])
 @jwt_required()
