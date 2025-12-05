@@ -51,3 +51,14 @@ export async function setDefaultAddress(id) {
         alert(err.response?.data?.error || "Coś poszło nie tak");
     }
 }
+
+// nie używany - ze względów czasowych zrezygnowano 
+export async function editAddress(id, updatedData) {
+    try {
+        await api.patch(`/user_management/addresses/${id}`, updatedData);
+        window.dispatchEvent(new Event("addressesChange"));
+    } catch (err) {
+        console.error(err);
+        alert(err.response?.data?.error || "Coś poszło nie tak");
+    }
+}

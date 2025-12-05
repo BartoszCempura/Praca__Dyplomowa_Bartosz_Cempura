@@ -20,11 +20,11 @@ function Wishlist() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center my-10">
+    <div className="container flex flex-col items-center my-10 h-[60vh] overflow-y-auto mx-auto">
       <h1 className="text-2xl font-bold mb-10">
         Ulubione produkty
       </h1>
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-6 mb-10">
         {products.length > 0 ? (
           products.map((p) => <ProductCard key={p.id} categorySlug={p.category_slug} variant="catalog" {...p} />)
         ) : (

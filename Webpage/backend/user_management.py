@@ -156,7 +156,7 @@ def delete_user():
     
 ## ###################################################################### Adresy dostawy ######################################################################
 
-@user_management_bp.route('/addresses', methods=['POST']) ## used - ustawienia
+@user_management_bp.route('/addresses', methods=['POST']) ## used - daneDoZamowien
 @jwt_required()
 def register_address():
 
@@ -232,7 +232,7 @@ def register_address():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
     
 
-@user_management_bp.route('/addresses', methods=['GET']) ## used - ustawienia
+@user_management_bp.route('/addresses', methods=['GET']) ## used - daneDoZamowien
 @jwt_required()
 def get_all_addresses():
 
@@ -251,16 +251,17 @@ def get_all_addresses():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-@user_management_bp.route('/addresses/<int:address_id>/type', methods=['PATCH'])
+@user_management_bp.route('/addresses/<int:address_id>/type', methods=['PATCH']) ## used - daneDoZamowien - ustawianie domyślnego adresu - nie pełne zastosowanie - powinno być dla dowolnej zmiany
 @jwt_required()
 def update_address_type(address_id):
+
     """-------------------------------Zmiana typu adresu-------------------------------"""
     
     try:
         current_user_id = get_jwt_identity()
         data = request.get_json()
 
-        # Znajdź adres użytkownika
+        # szukam adresu użytkownika
         address = UserAddress.query.filter_by(
             id=address_id,
             user_id=current_user_id
@@ -273,13 +274,13 @@ def update_address_type(address_id):
         if not type_str:
             return jsonify({'error': 'Pole "type" jest wymagane'}), 400
 
-        # Walidacja typu
+        # sprawdzam czy podano prawidłowy
         try:
             address_type = AddressType(type_str)
         except ValueError:
             return jsonify({'error': f'Nieprawidłowy typ adresu: {type_str}'}), 400
 
-        # Jeśli zmiana na Default - zmień poprzedni Default na Shipping
+        # zmieniam poprzedni default na shipping
         if address_type == AddressType.Default:
             current_default = UserAddress.query.filter(
                 UserAddress.user_id == current_user_id,
@@ -290,7 +291,6 @@ def update_address_type(address_id):
             if current_default:
                 current_default.type = 'Shipping'
 
-        # Ustaw nowy typ
         address.type = address_type.value
         db.session.commit()
 
@@ -301,7 +301,7 @@ def update_address_type(address_id):
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500    
 
-@user_management_bp.route('/addresses/<int:address_id>', methods=['DELETE'])
+@user_management_bp.route('/addresses/<int:address_id>', methods=['DELETE']) ## used - daneDoZamowien - addressCard
 @jwt_required()
 def delete_address(address_id):
 

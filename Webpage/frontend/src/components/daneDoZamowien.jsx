@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/tokenHandler";
-import { getAddressess } from "../utils/settingsActions";
+import { getAddressess } from "../utils/daneDoZamowieniaActions";
 import AddressCard from "./addressCard";
 
 function DaneDoZamowien() {
@@ -140,12 +140,21 @@ function DaneDoZamowien() {
                     <h3 className="font-bold text-lg text-center">Dodaj adres</h3>
 
                     <form onSubmit={handleAddAddress}>
+                        <label className="label text-sm">Typ adresu:</label>
+                        <select className="select select-bordered w-full mb-4" value={type} onChange={(e) => setType(e.target.value)}>
+                            <option value="Shipping">Adres wysyłkowy</option>
+                            <option value="Billing">Adres rozliczeniowy</option>
+                        </select>
                         <label className="label text-sm">Tytuł (opcjonalne):</label> 
                         <input type="text" className="input validator w-full mb-4" value={title} onChange={(e) => setTitle(e.target.value)}/>
-                        <label className="label text-sm">Nazwa firmy (opcjonalnie):</label> 
-                        <input type="text" className="input validator w-full mb-4" value={companyName} onChange={(e) => setCompanyName(e.target.value)}/>
-                        <label className="label text-sm">NIP (opcjonalnie):</label> 
-                        <input type="text" pattern="(^$|^[0-9]{3}-[0-9]{6}-[0-9]{1}$)" className="input validator w-full mb-4" value={nip} onChange={handleNipChange}/>
+                        {type === "Billing" && (
+                        <>
+                            <label className="label text-sm">Nazwa firmy (opcjonalnie):</label> 
+                            <input type="text" className="input validator w-full mb-4" value={companyName} onChange={(e) => setCompanyName(e.target.value)}/>
+                            <label className="label text-sm">NIP (opcjonalnie):</label> 
+                            <input type="text" pattern="(^$|^[0-9]{3}-[0-9]{6}-[0-9]{1}$)" className="input validator w-full mb-4" value={nip} onChange={handleNipChange}/>
+                        </>
+                        )}
                         <div className="grid grid-cols-2 gap-4 mb-4">
                             <div className="w-full">
                                 <label className="label text-sm">Imie:</label> 
@@ -156,7 +165,7 @@ function DaneDoZamowien() {
                                 <input type="text" className="input validator" value={lastName} onChange={(e) => setLastName(e.target.value)}/>
                             </div>
                         </div>
-                        <div className="grid grid-cols-[3fr_1fr] gap-4 mb-4">
+                        <div className="grid grid-cols-[5fr_2fr] gap-4 mb-4">
                             <div className="w-full">               
                                 <label className="label text-sm">Nazwa ulicy:</label> 
                                 <input type="text" className="input validator" value={streetName} onChange={(e) => setStreetName(e.target.value)}/>
@@ -177,13 +186,7 @@ function DaneDoZamowien() {
                                 <label className="label text-sm">Kod pocztowy:</label> 
                                 <input type="text" pattern="(^$|^[0-9]{2}-[0-9]{3}$)" className="input validator" value={zipCode} onChange={handleZipChange}/>       
                             </div>
-                        </div>
-                        <label className="label text-sm">Typ adresu:</label> 
-                        <select className="select select-bordered w-full" value={type} onChange={(e) => setType(e.target.value)}>
-                            <option value="Shipping">Adres wysyłkowy</option>
-                            <option value="Billing">Adres rozliczeniowy</option>
-                        </select>
-
+                        </div> 
                         <div className="modal-action justify-center">
                             <button type="submit" className="btn btn-custom btn-block">Zapisz</button>
                         </div>

@@ -1,5 +1,5 @@
-import { deleteAddress, setDefaultAddress } from "../utils/settingsActions";
-import { useState } from "react";
+import { deleteAddress, setDefaultAddress } from "../utils/daneDoZamowieniaActions";
+
 
 function AddressCard({id, title, company_name, first_name, last_name, nip, street_name, building_number, flat_number, zip_code, city, type}) {
     
@@ -9,11 +9,14 @@ function AddressCard({id, title, company_name, first_name, last_name, nip, stree
     };
 
     const handleDefaultChange = async () => {
-        // Tylko jeśli nie jest już Default
         if (type !== "Default") {
             await setDefaultAddress(id);
         }
     };
+
+    const handleEditAddress = () => {
+        alert("Na tę chwile brak implementacji :(");
+    }
 
     return (
         <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 w-70 border border-gray-900 p-5">
@@ -56,18 +59,20 @@ function AddressCard({id, title, company_name, first_name, last_name, nip, stree
                     </p>
                 )}
 
-                <div className="card-actions mt-auto justify-end items-center pt-4">
+                <div className="card-actions mt-auto justify-between items-center pt-4">
                     <label className="flex items-center gap-2 cursor-pointer">
                         <span className="text-sm">Domyślny</span>
                         <input
                             type="checkbox"
                             checked={type === "Default"}
                             onChange={handleDefaultChange}
-                            className="checkbox checkbox-sm border-indigo-600 bg-indigo-500 checked:border-orange-500 checked:bg-orange-400"
+                            className="checkbox checkbox-sm bg-cyan-500 checked:bg-amber-500"
                         />
                     </label>
-                    <button type="button" className="btn btn-outline btn-sm">Edytuj</button>
-                    <button type="button" className="btn btn-outline btn-sm"onClick={handleDeleteAddress}>Usuń</button>
+                    <div className="flex gap-4">
+                        <button type="button" className="btn btn-outline btn-sm"  onClick={handleEditAddress}>Edytuj</button>
+                        <button type="button" className="btn btn-outline btn-sm" onClick={handleDeleteAddress}>Usuń</button>
+                    </div>
                     
                 </div>
             </div>

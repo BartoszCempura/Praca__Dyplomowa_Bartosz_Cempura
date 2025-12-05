@@ -32,10 +32,5 @@ Trzeba przeanalizować slider dla promocji, możliwe przebudować uprościć - d
 
 ZOabcz bo jak zmieniasz ustawienia i cię wyloguje to masz coś poszło nei tak a powinna być informacja że musisz być zalogowany
 
-Nie odświerza sie lista adresów trzeba dodać eventy aby działało przy usówaniu i dodawaniu nowych
-
-
-
 api nie powinno zwracać adresów typu other. Other jest tylko dla poja wypałnienia przy finalizacji zakupu.
 
-space between dla elementów na dote listy adresów. Zobacz co można zrobić z endpointem patch zamiast post - albo moze da sie to jakoś zcalić? 

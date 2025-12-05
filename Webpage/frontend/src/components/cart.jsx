@@ -57,7 +57,7 @@ function Cart() {
 
   return (
     <div className="grid grid-cols-[4fr_1fr] gap-6 items-start mx-28">
-      <div className="flex flex-col items-center gap-4 my-10 w-full pr-18">
+      <div className="flex flex-col gap-4 my-10 justify-center items-center w-full pr-18 h-[60vh] overflow-y-auto">
         {products && products.length > 0 ? (
           products.map((p) => (
             <ProductCard
@@ -68,7 +68,7 @@ function Cart() {
             />
           ))
         ) : (
-          <span className="mt-15">Brak produktów w koszyku</span>
+          <span className="text-2xl font-bold">Brak produktów w koszyku</span>
         )}
       </div>
 

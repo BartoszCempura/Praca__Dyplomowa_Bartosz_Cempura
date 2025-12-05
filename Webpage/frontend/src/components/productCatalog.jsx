@@ -58,7 +58,7 @@ const handleResetFilters = () => {
 
   return (
     <div className="grid grid-cols-[1fr_4fr] gap-6 items-start">
-      <aside className="bg-base-200 p-4 pl-10 max-h-screen overflow-y-auto sticky top-0">
+      <aside className="flex flex-col flex-grow bg-base-200 p-4 pl-10 max-h-screen overflow-y-auto sticky top-0">
         <div className="divider mb-6">
           <h2 className="font-bold text-lg">Filtry</h2>
         </div>         
