@@ -59,7 +59,8 @@ function AddressCard({id, title, company_name, first_name, last_name, nip, stree
                     </p>
                 )}
 
-                <div className="card-actions mt-auto justify-between items-center pt-4">
+                <div className="card-actions mt-auto justify-around items-center pt-4">
+                    {type !== "Billing" && (
                     <label className="flex items-center gap-2 cursor-pointer">
                         <span className="text-sm">Domyślny</span>
                         <input
@@ -69,6 +70,7 @@ function AddressCard({id, title, company_name, first_name, last_name, nip, stree
                             className="checkbox checkbox-sm bg-cyan-500 checked:bg-amber-500"
                         />
                     </label>
+                    )}
                     <div className="flex gap-4">
                         <button type="button" className="btn btn-outline btn-sm"  onClick={handleEditAddress}>Edytuj</button>
                         <button type="button" className="btn btn-outline btn-sm" onClick={handleDeleteAddress}>Usuń</button>

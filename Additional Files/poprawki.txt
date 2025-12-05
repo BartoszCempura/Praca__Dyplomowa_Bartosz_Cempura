@@ -30,7 +30,13 @@ Trzeba przeanalizować slider dla promocji, możliwe przebudować uprościć - d
  - jest txt na pulpicie z starszą , prostrzą konstrukcją
 
 
-ZOabcz bo jak zmieniasz ustawienia i cię wyloguje to masz coś poszło nei tak a powinna być informacja że musisz być zalogowany
 
 api nie powinno zwracać adresów typu other. Other jest tylko dla poja wypałnienia przy finalizacji zakupu.
+
+następny krok sprzedażowy ma przepisać wszystkie produkty w tempCart do zmeinnej tempTransaction gdzie wszystkie produkty pakujemy do products , 
+dodajemy na podstawie wyboru użytkownika adres , wybiera wartośc metody dostawy, wybiera metode płatności
+
+Przeskakują mi adresy jak zmieniam typ na domyślny dla pierwszej pozycji. 
+
+
 

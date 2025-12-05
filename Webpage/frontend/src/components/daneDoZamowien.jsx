@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import api from "../api/tokenHandler";
-import { getAddressess } from "../utils/daneDoZamowieniaActions";
+import { getAddressess, checkIfDefaultIsSet } from "../utils/daneDoZamowieniaActions";
 import AddressCard from "./addressCard";
 
 function DaneDoZamowien() {
     const [addresses, setAddresses] = useState([]);
+
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState('');
+
+    const [defaultExists, setDefaultExists] = useState(false);
 
     const [title, setTitle] = useState("");
     const [companyName, setCompanyName] = useState("");
@@ -20,9 +23,13 @@ function DaneDoZamowien() {
     const [city, setCity] = useState("");
     const [type, setType] = useState("Shipping");
 
+
     const fetchAddresses = async () => {
         const data = await getAddressess();
         setAddresses(data);
+
+        const exists = await checkIfDefaultIsSet();
+        setDefaultExists(exists);
     };
 
     useEffect(() => {
@@ -78,6 +85,7 @@ function DaneDoZamowien() {
         setCity("");
         setMessage("");
         setMessageType("");
+        setType("Shipping");
     };
 
 
@@ -103,32 +111,43 @@ function DaneDoZamowien() {
         setNip(value);
     };
 
-
+    const billingAddresses = addresses.filter(a => a.type === "Billing");
+    const nonBillingAddresses = addresses.filter(a => a.type !== "Billing");
 
     return (
-        <div className="container py-20 mx-auto" style={{width:"60%"}}>
+        <div className="container py-20 mx-auto" style={{ width: "60%" }}>
 
-                <h2 className="text-2xl font-bold text-center mb-6">Zapisane adresy:</h2>
+            {/* Adresy wysyłkowe / domyślne */}
+            <div>
+                <h2 className="divider text-2xl font-bold text-center mb-10">Adresy wysyłkowe:</h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center mb-10">
-                    {addresses && addresses.length > 0 ? (
-                        addresses.map((a) => (
-                            <AddressCard
-                                key={a.id}
-                                id={a.id}
-                                {...a}
-                            />
-                        ))
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch mb-10">
+                    {nonBillingAddresses.length > 0 ? (
+                    nonBillingAddresses.map(a => <AddressCard key={a.id} {...a} />)
                     ) : (
-                        <span className="mt-15">Brak Dodanych adresów</span>
+                        <span className="col-span-full block text-center my-15">Brak dodanych adresów</span>
                     )}
                 </div>
-                <div className="flex justify-center">
-                    <button className="btn btn-custom btn-block" onClick={() => document.getElementById("add_address").showModal()}>
-                                Dodaj adress
-                    </button>
-                </div>
+            </div>
 
+            {/* Adresy rozliczeniowe */}
+            <div>
+                <h2 className="divider text-2xl font-bold text-center mb-10">Adresy rozliczeniowe:</h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch mb-10">
+                    {billingAddresses.length > 0 ? (
+                    billingAddresses.map(a => <AddressCard key={a.id} {...a} />)
+                    ) : (
+                        <span className="col-span-full block text-center my-15">Brak dodanych adresów</span>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex justify-center">
+                <button className="btn btn-custom btn-block" onClick={() => document.getElementById("add_address").showModal()}>
+                    Dodaj adres
+                </button>
+            </div>
 
 
             {/*modal - dodawanie adresu*/}
@@ -142,8 +161,11 @@ function DaneDoZamowien() {
                     <form onSubmit={handleAddAddress}>
                         <label className="label text-sm">Typ adresu:</label>
                         <select className="select select-bordered w-full mb-4" value={type} onChange={(e) => setType(e.target.value)}>
-                            <option value="Shipping">Adres wysyłkowy</option>
-                            <option value="Billing">Adres rozliczeniowy</option>
+                            <option value="Shipping">Wysyłkowy</option>
+                            <option value="Billing">Rozliczeniowy</option>
+                            {!defaultExists && (
+                            <option value="Default">Domyślny</option>
+                             )}
                         </select>
                         <label className="label text-sm">Tytuł (opcjonalne):</label> 
                         <input type="text" className="input validator w-full mb-4" value={title} onChange={(e) => setTitle(e.target.value)}/>
@@ -157,11 +179,11 @@ function DaneDoZamowien() {
                         )}
                         <div className="grid grid-cols-2 gap-4 mb-4">
                             <div className="w-full">
-                                <label className="label text-sm">Imie:</label> 
+                                <label className="label text-sm">Imie (opcjonalne):</label> 
                                 <input type="text" className="input validator" value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
                             </div>
                             <div className="w-full">
-                                <label className="label text-sm">Nazwisko:</label>                       
+                                <label className="label text-sm">Nazwisko (opcjonalne):</label>                       
                                 <input type="text" className="input validator" value={lastName} onChange={(e) => setLastName(e.target.value)}/>
                             </div>
                         </div>

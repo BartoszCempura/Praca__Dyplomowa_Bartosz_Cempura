@@ -52,6 +52,19 @@ export async function setDefaultAddress(id) {
     }
 }
 
+export async function checkIfDefaultIsSet() {
+  try {
+      const response = await api.get("/user_management/addresses");
+      const addresses = response.data || [];
+
+      return addresses.some(addr => addr.type === "Default");
+  } catch (err) {
+      console.error(err);
+      return false;
+  }
+}
+
+
 // nie używany - ze względów czasowych zrezygnowano 
 export async function editAddress(id, updatedData) {
     try {
