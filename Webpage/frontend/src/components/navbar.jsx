@@ -4,6 +4,7 @@ import NavbarUserMenu from "./navbarUserMenu";
 import { getCart } from "../utils/tempCartStorage";
 import { useWishlist} from "../utils/useWhishlist";
 import { refreshTempCart } from "../utils/cartActions";
+import LOGO from "../assets/LOGO.svg";
 
 function Navbar() {
   const [query, setQuery] = useState("");
@@ -74,13 +75,15 @@ function Navbar() {
       window.removeEventListener("cartChange", handleCartChange);
     };
   }, []);
+ 
+
 
   return (
     <div className="navbar bg-base-200 grid grid-cols-3 items-center px-8 py-4 shadow-md z-50 relative">
       <div className="flex justify-start">
         <div className="flex items-center">
           <a href="/">
-            <img src="/LOGO.svg" className="h-20 mr-2" alt="TechTown Logo" />
+            <img src={LOGO} className="h-20 mr-2" alt="TechTown Logo" />
           </a>
           <a href="/" className="ml-3 hidden sm:inline-flex group">
             <div className="flex flex-col font-bold text-2xl relative">

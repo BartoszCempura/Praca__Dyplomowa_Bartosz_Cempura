@@ -9,7 +9,7 @@ export { default as SearchProducts } from "../components/searchProducts";
 export { default as LoginPage } from "../components/loginPage";
 export { default as UserProfile } from "../components/userProfile";
 export { default as UserCreateAccount } from "../components/createAccountPage";
-export { default as Cart } from "../components/cart";
-export { default as CartDeliveryPaymentAdress } from "../components/cartDeliveryPaymentAdress";
+export { default as CartPartOne } from "../components/cartPartOne";
+export { default as CartPartTwo } from "../components/cartPartTwo";
 export { default as Wishlist } from "../components/wishlist";
 export { default as DaneDoZamowien } from "../components/daneDoZamowien"

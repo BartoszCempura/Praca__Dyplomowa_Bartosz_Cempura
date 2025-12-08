@@ -117,3 +117,23 @@ export async function refreshTempCart() {
   }
 }
 
+export async function getDelivery() {
+ try {
+    const response = await api.get("/commerce/delivery-methods");
+    return response || [];
+
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export async function getPaymentMethods() {
+  try {
+    const response = await api.get("/commerce/payment-methods");
+    return response.data || [];
+  } catch (err) {
+    console.error("Błąd pobierania metod płatności:", err);
+    return [];
+  }
+}

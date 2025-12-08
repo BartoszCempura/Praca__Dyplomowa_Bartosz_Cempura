@@ -240,7 +240,7 @@ def get_all_addresses():
 
     try:
         current_user_id = get_jwt_identity()
-        addresses = UserAddress.query.filter_by(user_id=current_user_id).all()
+        addresses = UserAddress.query.filter_by(user_id=current_user_id).order_by(UserAddress.id.asc()).all()
 
         if not addresses:
             return '', 200

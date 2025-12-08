@@ -4,7 +4,7 @@ import api from "../api/tokenHandler";
 import { getCart, saveCartSilent} from "../utils/tempCartStorage";
 import { useNavigate } from "react-router-dom";
 
-function Cart() {
+function CartPartOne() {
   const [products, setProducts] = useState([]);
   const [cartValue, setCartValue] = useState(0);
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ function Cart() {
 
   return (
     <div className="grid grid-cols-[4fr_1fr] gap-6 items-start mx-28">
-      <div className="flex flex-col gap-4 my-10 justify-center items-center w-full pr-18 h-[60vh] overflow-y-auto">
+      <div className="flex flex-col gap-4 my-10 items-center w-full pr-18 h-[60vh] overflow-y-auto">
         {products && products.length > 0 ? (
           products.map((p) => (
             <ProductCard
@@ -68,7 +68,9 @@ function Cart() {
             />
           ))
         ) : (
-          <span className="text-2xl font-bold">Brak produktów w koszyku</span>
+          <div className="my-auto">
+            <p className="text-2xl font-bold">Brak produktów w koszyku</p>
+          </div>
         )}
       </div>
 
@@ -78,7 +80,8 @@ function Cart() {
             Wartość: {cartValue.toFixed(2)} zł
           </span>
           <div className="card-actions">
-            <button className="btn btn-custom btn-block" onClick={() => navigate("/cart/delivery-payment-address")}>Przejdź dalej</button>
+            <button disabled={!products || products.length === 0} className={`btn btn-block ${products && products.length > 0 ? 'btn-custom' : 'btn-disabled'}`}
+            style={products && products.length > 0 ? {} : { width: '151px' }} onClick={() => navigate("/cart/delivery-payment-address")}>Przejdź dalej</button>
           </div>
         </div>
       </aside>
@@ -86,4 +89,4 @@ function Cart() {
   );
 }
 
-export default Cart;
+export default CartPartOne;

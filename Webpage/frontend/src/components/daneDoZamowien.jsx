@@ -21,7 +21,7 @@ function DaneDoZamowien() {
     const [apartmentNumber, setApartmentNumber] = useState("");
     const [zipCode, setZipCode] = useState("");
     const [city, setCity] = useState("");
-    const [type, setType] = useState("Shipping");
+    const [type, setType] = useState("Shipping"); // był problem z dodawaniem adresu domyślnego przy usunięciu wszystkich adresów z listy - chyba nie występuje
 
 
     const fetchAddresses = async () => {
@@ -90,7 +90,7 @@ function DaneDoZamowien() {
 
 
     const handleZipChange = (e) => {
-        let value = e.target.value.replace(/\D/g, ""); // remove non-digits
+        let value = e.target.value.replace(/\D/g, ""); // tylko liczby
         if (value.length > 2) {
             value = value.slice(0, 2) + "-" + value.slice(2, 5);
         }
@@ -98,7 +98,7 @@ function DaneDoZamowien() {
     };
 
     const handleNipChange = (e) => {
-        let value = e.target.value.replace(/\D/g, ""); // only digits
+        let value = e.target.value.replace(/\D/g, ""); // tylko liczby
 
         if (value.length > 3) {
             value = value.slice(0, 3) + "-" + value.slice(3);
@@ -112,7 +112,7 @@ function DaneDoZamowien() {
     };
 
     const billingAddresses = addresses.filter(a => a.type === "Billing");
-    const nonBillingAddresses = addresses.filter(a => a.type !== "Billing");
+    const nonBillingAddresses = addresses.filter(a => a.type !== "Billing"); // a co jak adres będzie typu other?? 
 
     return (
         <div className="container py-20 mx-auto" style={{ width: "60%" }}>
