@@ -56,7 +56,7 @@ function CartPartOne() {
 }, []);
 
   return (
-    <div className="grid grid-cols-[4fr_1fr] gap-6 items-start mx-28">
+    <div className="grid grid-cols-[4fr_1fr] gap-6 items-start mx-60">
       <div className="flex flex-col gap-4 my-10 items-center w-full pr-18 h-[60vh] overflow-y-auto">
         {products && products.length > 0 ? (
           products.map((p) => (

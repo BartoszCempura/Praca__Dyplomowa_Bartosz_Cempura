@@ -117,14 +117,13 @@ export async function refreshTempCart() {
   }
 }
 
-export async function getDelivery() {
+export async function getDeliveryMethods() {
  try {
     const response = await api.get("/commerce/delivery-methods");
-    return response || [];
-
-
+    return response.data || [];
   } catch (err) {
     console.error(err);
+    return [];
   }
 }
 
@@ -133,7 +132,17 @@ export async function getPaymentMethods() {
     const response = await api.get("/commerce/payment-methods");
     return response.data || [];
   } catch (err) {
-    console.error("Błąd pobierania metod płatności:", err);
+    console.error(err);
+    return [];
+  }
+}
+
+export async function getUserAdresses() {
+  try {
+    const response = await api.get("user_management/addresses");
+    return response.data || [];
+  } catch (err) {
+    console.error(err);
     return [];
   }
 }

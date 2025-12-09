@@ -60,7 +60,7 @@ def get_all_delivery_methods():
 
 
 
-@commerce_bp.route('/delivery-methods', methods=['GET'])
+@commerce_bp.route('/delivery-methods', methods=['GET']) # used - cartPartTwo
 def get_all_active_delivery_methods():
 
     """-------------------------------Pobiera aktywne Delivery methods dla procesu sprzedażowego-------------------------------"""
@@ -147,7 +147,7 @@ def add_payment_method():
     
 
     
-@commerce_bp.route('/admin/payment-methods', methods=['GET'])
+@commerce_bp.route('/admin/payment-methods', methods=['GET']) 
 @jwt_required()
 @role_required('admin')
 def get_all_payment_methods():
@@ -159,7 +159,7 @@ def get_all_payment_methods():
 
 
 
-@commerce_bp.route('/payment-methods', methods=['GET'])
+@commerce_bp.route('/payment-methods', methods=['GET']) # used - cartPartTwo
 def get_all_active_payment_methods():
 
     """-------------------------------Pobiera aktywne payment methods dla procesu zakupowego-------------------------------"""
