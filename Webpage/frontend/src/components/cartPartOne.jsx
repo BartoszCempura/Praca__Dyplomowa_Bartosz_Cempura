@@ -83,6 +83,9 @@ function CartPartOne() {
             <button disabled={!products || products.length === 0} className={`btn btn-block ${products && products.length > 0 ? 'btn-custom' : 'btn-disabled'}`}
             style={products && products.length > 0 ? {} : { width: '151px' }} onClick={() => navigate("/cart/delivery-payment-address")}>Przejdź dalej</button>
           </div>
+          <div className="card-actions">
+              <button className="btn btn-custom btn-block" onClick={() => navigate(-1)}>Powrót</button>
+          </div>
         </div>
       </aside>
     </div>
