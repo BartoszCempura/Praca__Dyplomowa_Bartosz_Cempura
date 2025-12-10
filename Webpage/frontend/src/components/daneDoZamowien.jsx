@@ -112,8 +112,10 @@ function DaneDoZamowien() {
     };
 
     const billingAddresses = addresses.filter(a => a.type === "Billing");
-    const nonBillingAddresses = addresses.filter(a => a.type !== "Billing"); // a co jak adres będzie typu other?? 
-
+    const shippingAddresses = addresses.filter(a => 
+        a.type === "Shipping" || a.type === "Default"
+    );
+    
     return (
         <div className="container py-20 mx-auto" style={{ width: "60%" }}>
 
@@ -122,8 +124,8 @@ function DaneDoZamowien() {
                 <h2 className="divider text-2xl font-bold text-center mb-10">Adresy wysyłkowe:</h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch mb-10">
-                    {nonBillingAddresses.length > 0 ? (
-                    nonBillingAddresses.map(a => <AddressCard key={a.id} {...a} />)
+                    {shippingAddresses.length > 0 ? (
+                    shippingAddresses.map(a => <AddressCard key={a.id} variant="settings" {...a} />)
                     ) : (
                         <span className="col-span-full block text-center my-15">Brak dodanych adresów</span>
                     )}
@@ -136,7 +138,7 @@ function DaneDoZamowien() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch mb-10">
                     {billingAddresses.length > 0 ? (
-                    billingAddresses.map(a => <AddressCard key={a.id} {...a} />)
+                    billingAddresses.map(a => <AddressCard key={a.id} variant="settings" {...a} />)
                     ) : (
                         <span className="col-span-full block text-center my-15">Brak dodanych adresów</span>
                     )}

@@ -1,7 +1,6 @@
 import api, { isAuthenticated } from "../api/tokenHandler";
 import { getCart, getItem, setItem, updateQuantity, removeItem, saveCart, clearCart as clearLocalCart } from "./tempCartStorage";
 
-
   // Funkcja dodawania produktu do koszyka. ardument "product" to obiekt zawierający id, quantity, price_including_promotion
   // change to zmiana ilości (dodatnia lub ujemna)
 

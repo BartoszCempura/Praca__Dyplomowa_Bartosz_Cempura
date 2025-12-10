@@ -2,6 +2,7 @@ import { getPaymentMethods, getDeliveryMethods, getUserAdresses } from "../utils
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCart } from "../utils/tempCartStorage";
+import AddressCard from "./addressCard";
 
 function CartPartTwo() {
     const navigate = useNavigate();
@@ -21,6 +22,7 @@ function CartPartTwo() {
     const fetchData = async () => {
         const dataPayment = await getPaymentMethods();
         const dataDelivery = await getDeliveryMethods();
+        const dataAdresses = await getUserAdresses();
 
         setPaymentMethods(dataPayment);
         setSelectedPayment(dataPayment[0]?.id || null);
@@ -28,7 +30,10 @@ function CartPartTwo() {
         setDeliveryMethods(dataDelivery);
         setSelectedDelivery(dataDelivery[0]?.id || null);
 
-        
+        setUserAdresses(dataAdresses);
+
+        const defaultShipping = dataAdresses.find(a => a.type === "Default");
+        setShippingAdress(defaultShipping || null);
 
         const tempCart = getCart(); //pracujemy nad tym !!!
         const total = Object.values(tempCart).reduce((sum, item) => {
@@ -43,9 +48,14 @@ function CartPartTwo() {
         fetchData();
 
         const handler = () => fetchData();
+
+        window.addEventListener("addressesChange", handler);
         window.addEventListener("paymentsChange", handler);
 
-        return () => window.removeEventListener("paymentsChange", handler);
+        return () => {
+            window.removeEventListener("addressesChange", handler);
+            window.removeEventListener("paymentsChange", handler);
+        };
     }, []);
 
     
@@ -60,12 +70,28 @@ function CartPartTwo() {
         setShippingAdress(adressid);
     }
 
+    const handleSelectBillingAdress = (adressId) => {
+        setBillingAdress(adressId);
+    };
+
+
+    //jak dam wybieranie adresu z listy
+    const billingAddresses = userAdresses.filter(a => a.type === "Billing");
+    const shippingAddresses = userAdresses.filter(a => 
+        a.type === "Shipping" || a.type === "Default"
+    );
+
     return (
         <div className="contsiner grid grid-cols-[4fr_1fr] items-start gap-6 mx-60">
             <div className="flex flex-col items-center gap-4 my-10 w-full pr-18 bg-base-100">
 
-                <div className="w-full bg-base-200 p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-semibold mb-4">Adres dostawy</h2>
+                <div className="w-full bg-base-100 p-6 rounded-lg shadow-md">
+                    <h2 className="text-xl font-semibold mb-4">Wybierz adres dostawy:</h2>
+                    {shippingAdress ? (
+                        <AddressCard variant="summary" {...shippingAdress} />
+                    ) : (
+                        <p className="text-center">Tutaj przycisk wyboru</p>
+                    )}
                 </div>
 
                 <div className="w-full rounded-lg bg-base-100">

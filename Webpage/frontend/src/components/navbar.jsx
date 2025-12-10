@@ -5,6 +5,7 @@ import { getCart } from "../utils/tempCartStorage";
 import { useWishlist} from "../utils/useWhishlist";
 import { refreshTempCart } from "../utils/cartActions";
 import LOGO from "../assets/LOGO.svg";
+import { isAuthenticated } from "../api/tokenHandler";
 
 function Navbar() {
   const [query, setQuery] = useState("");
@@ -77,6 +78,15 @@ function Navbar() {
   }, []);
  
 
+  const handleCartClick = () => {
+
+    if (!isAuthenticated()) {
+      alert("Musisz być zalogowany, aby zobaczyć koszyk!");
+      navigate("/login");
+      return;
+    }
+    navigate("/cart");
+  };
 
   return (
     <div className="navbar bg-base-200 grid grid-cols-3 items-center px-8 py-4 shadow-md z-50 relative">
@@ -146,7 +156,7 @@ function Navbar() {
               <span className="text-info mb-2">
                 Wartość: {cartValue.toFixed(2)} zł
               </span>
-              <div className="card-actions" onClick={() => navigate("/cart")}>
+              <div className="card-actions" onClick={handleCartClick}>
                 <button className="btn btn-custom btn-block">Zobacz koszyk</button>
               </div>
             </div>
