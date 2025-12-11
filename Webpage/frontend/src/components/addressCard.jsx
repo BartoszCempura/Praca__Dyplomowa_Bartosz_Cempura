@@ -86,7 +86,7 @@ function AddressCard({id, title, company_name, first_name, last_name, nip, stree
 
     if (variant === "summary") {
         return (
-            <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 w-70 border border-gray-900 p-5">
+            <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 w-full border border-gray-900 p-5">
                 <div className="flex flex-col space-y-2 flex-grow">
 
                     {/* Tytuł */}

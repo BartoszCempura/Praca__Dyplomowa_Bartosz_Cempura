@@ -72,8 +72,9 @@ function CartPartTwo() {
         setShippingAdress(selected);
     };
 
-    const handleSelectBillingAdress = (adressId) => {
-        setBillingAdress(adressId);
+    const handleSelectBillingAdress = (addressId) => {
+        const selected = userAdresses.find(a => a.id === addressId);
+        setBillingAdress(selected);
     };
 
 
@@ -84,46 +85,51 @@ function CartPartTwo() {
     );
 
     return (
-        <div className="contsiner grid grid-cols-[4fr_1fr] items-start gap-6 mx-60">
+        <div className="container grid grid-cols-[4fr_1fr] items-start gap-6 mx-60">
             <div className="flex flex-col items-center gap-6 my-10 w-full pr-18 bg-base-100">
 
-                <div className="flex w-full bg-base-100 rounded-lg">
-                    <div className="flex mx-auto gap-20">
+                <div className="flex w-full rounded-lg bg-red-500">
+                    <div className="flex mx-auto gap-20 bg-white">
+                        {/* Adres dostawy - zawsze wyświetlany */}
                         <div>
-                            <h2 className="text-xl font-semibold mb-4">Wybierz adres dostawy:</h2>
+                            <h2 className="text-xl font-semibold mb-4">Adres dostawy:</h2>
                             {shippingAdress ? (
                                 <AddressCard variant="summary" {...shippingAdress} />
                             ) : (
-                                <div className="card justify-center items-center bg-base-200 h-full shadow-md hover:shadow-black/40 transition-shadow duration-100 w-70 border border-gray-900 p-5">
-                                        <button className="btn btn-custom btn-block"onClick={() => {console.log("Dodaj inny adres rozliczeniowy");}}>
-                                            Dodaj
-                                        </button>
-                                    </div>
+                                <div className="card justify-center items-center bg-base-200 h-full shadow-md hover:shadow-black/40 transition-shadow duration-100 w-full border border-gray-900 p-5">
+                                    <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
+                                        Dodaj
+                                    </button>
+                                </div>
                             )}
                         </div>
-                        {shippingAdress && billingAdress && (
-                            shippingAdress.id === billingAdress.id ? (
-                                // Jeśli adresy są takie same → pokazujemy komunikat
-                                <div className="flex flex-col items-center">
-                                    <h2 className="text-xl font-semibold mb-4">Wybierz adres rozliczeniowy:</h2>
-                                    <div className="card justify-center items-center bg-base-200 h-full shadow-md hover:shadow-black/40 transition-shadow duration-100 w-70 border border-gray-900 p-5">
-                                        <button className="btn btn-custom btn-block" onClick={() => document.getElementById("select_address").showModal()}
-                                            >Dodaj
-                                        </button>
-                                    </div>
+
+                        {/* Adres rozliczeniowy - 3 scenariusze */}
+                        <div>
+                            <h2 className="text-xl font-semibold mb-4">Adres rozliczeniowy:</h2>
+                            
+                            {/* Scenariusz 1: billingAdress jest null */}
+                            {!billingAdress ? (
+                                <div className="card justify-center items-center bg-base-200 h-full shadow-md hover:shadow-black/40 transition-shadow duration-100 w-full border border-gray-900 p-5">
+                                    <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
+                                        Dodaj
+                                    </button>
                                 </div>
                             ) : (
-                                <div>
-                                    <h2 className="text-xl font-semibold mb-4">Wybierz adres rozliczeniowy:</h2>
-
-                                    {billingAdress ? (
-                                        <AddressCard variant="summary" {...billingAdress} />
-                                    ) : (
-                                        <p className="text-center">Tutaj przycisk wyboru</p>
-                                    )}
-                                </div>
-                            )
-                        )}
+                                /* Scenariusz 2 i 3: billingAdress istnieje */
+                                shippingAdress && billingAdress.id === shippingAdress.id ? (
+                                    /* Scenariusz 2: billingAdress === shippingAdress */
+                                    <div className="card justify-center items-center bg-amber-400 h-full shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-5">
+                                        <button className="btn btn-custom btn-block" onClick={() => document.getElementById("select_address").showModal()}>
+                                            Zmień adres
+                                        </button>
+                                    </div>
+                                ) : (
+                                    /* Scenariusz 3: billingAdress !== shippingAdress */
+                                    <AddressCard variant="summary" {...billingAdress} />
+                                )
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -209,11 +215,11 @@ function CartPartTwo() {
 
                     <h3 className="font-bold text-lg text-center mb-4">Dodaj adres</h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                         {shippingAddresses.map((address) => (
                             <div 
                                 key={address.id}
-                                className={`cursor-pointer p-2 rounded-lg hover:bg-base-200 ${
+                                className={`cursor-pointer rounded-lg hover:bg-base-200 ${
                                     shippingAdress?.id === address.id ? "ring-2 ring-amber-500" : ""
                                 }`}
                                 onClick={() => handleSelectShippingAdress(address.id)}

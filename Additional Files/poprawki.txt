@@ -37,5 +37,6 @@ następny krok sprzedażowy ma przepisać wszystkie produkty w tempCart do zmein
 dodajemy na podstawie wyboru użytkownika adres , wybiera wartośc metody dostawy, wybiera metode płatności
 
 
-przy zmianie przypisania adresu billing znika przycisk wyboru - moze ustawić tezba że jak nei jest żadna wartośc wybrana to mamy pusto a jak jest to mamy treść i przycisk
-Modal działą dla shipping - zmnień dla billing i dodaj przycik który będzie działał dla shipping i default. 
+trzeba dodać przycisk do wybory adresy billing , i trzeba dostosowac modal tak aby reagował na to jaki adres ustawiamy. 
+
+Coś jest nie tak z układem elementu adresu. Postaraj się nad tym popracować - masz kolory
