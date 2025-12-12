@@ -1,7 +1,7 @@
 import { deleteAddress, setDefaultAddress } from "../utils/daneDoZamowieniaActions";
 
 
-function AddressCard({id, title, company_name, first_name, last_name, nip, street_name, building_number, flat_number, zip_code, city, type, variant}) {
+function AddressCard({id, title, company_name, first_name, last_name, nip, street_name, building_number, flat_number, zip_code, city, type, variant, handleOpenModal}) {
     
 
     const handleDeleteAddress = () => {
@@ -125,6 +125,58 @@ function AddressCard({id, title, company_name, first_name, last_name, nip, stree
                             {zip_code} {city}
                         </p>
                     )}
+                    <div className="card-actions mt-auto justify-around items-center pt-4">
+                        <button className="btn btn-custom btn-block" onClick={() => handleOpenModal(type)}>
+                            Zmień adres
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (variant === "modal") {
+        return (
+            <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 w-full border border-gray-900 p-5">
+                <div className="flex flex-col space-y-2 flex-grow">
+
+                    {/* Tytuł */}
+                    {title && (
+                        <h3 className="font-medium text-center">
+                            {title}
+                        </h3>
+                    )}
+
+                    {/* Nazwa firmy */}
+                    {company_name && (
+                        <p className="font-medium">{company_name}</p>
+                    )}
+
+                    {/* NIP */}
+                    {nip && <p>NIP: {nip}</p>}
+
+                    {/* Osoba */}
+                    {(first_name || last_name) && (
+                        <p>
+                            {first_name} {last_name}
+                        </p>
+                    )}
+
+                    {/* Ulica */}
+                    {(street_name || building_number) && (
+                        <p>
+                            {street_name} {building_number}
+                            {flat_number ? `/${flat_number}` : ""}
+                        </p>
+                    )}
+
+                    {/* Miasto */}
+                    {(zip_code || city) && (
+                        <p>
+                            {zip_code} {city}
+                        </p>
+                    )}
+                    
                 </div>
             </div>
         );

@@ -18,6 +18,8 @@ function CartPartTwo() {
     const [ shippingAdress, setShippingAdress ] = useState(null);
     const [ billingAdress, setBillingAdress ] = useState(null);
 
+    const [ modal, setModal ] = useState(null);
+
 
     const fetchData = async () => {
         const dataPayment = await getPaymentMethods();
@@ -67,9 +69,15 @@ function CartPartTwo() {
         setSelectedDelivery(methodId);
     };
 
+    const handleOpenModal = (type) => {
+        setModal(type);
+        document.getElementById("select_address").showModal()
+    }
+
     const handleSelectShippingAdress = (addressId) => {
         const selected = userAdresses.find(a => a.id === addressId);
         setShippingAdress(selected);
+        setBillingAdress(selected);
     };
 
     const handleSelectBillingAdress = (addressId) => {
@@ -79,8 +87,8 @@ function CartPartTwo() {
 
 
     //jak dam wybieranie adresu z listy
-    const billingAddresses = userAdresses.filter(a => a.type === "Billing");
-    const shippingAddresses = userAdresses.filter(a => 
+    const billingAdresses = userAdresses.filter(a => a.type === "Billing");
+    const shippingAdresses = userAdresses.filter(a => 
         a.type === "Shipping" || a.type === "Default"
     );
 
@@ -88,15 +96,15 @@ function CartPartTwo() {
         <div className="container grid grid-cols-[4fr_1fr] items-start gap-6 mx-60">
             <div className="flex flex-col items-center gap-6 my-10 w-full pr-18 bg-base-100">
 
-                <div className="flex w-full rounded-lg bg-red-500">
-                    <div className="flex mx-auto gap-20 bg-white">
-                        {/* Adres dostawy - zawsze wyświetlany */}
-                        <div>
+                
+                    <div className="grid grid-cols-2 gap-20 mx-auto w-full">
+                        {/* Adres dostawy */}
+                        <div className="flex flex-col w-full">
                             <h2 className="text-xl font-semibold mb-4">Adres dostawy:</h2>
                             {shippingAdress ? (
-                                <AddressCard variant="summary" {...shippingAdress} />
+                                <AddressCard variant="summary" {...shippingAdress} handleOpenModal={handleOpenModal}/>
                             ) : (
-                                <div className="card justify-center items-center bg-base-200 h-full shadow-md hover:shadow-black/40 transition-shadow duration-100 w-full border border-gray-900 p-5">
+                                <div id="3" className="card justify-center items-center bg-base-200 flex-grow shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-5 w-full">
                                     <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
                                         Dodaj
                                     </button>
@@ -104,39 +112,37 @@ function CartPartTwo() {
                             )}
                         </div>
 
-                        {/* Adres rozliczeniowy - 3 scenariusze */}
-                        <div>
+                        {/* Adres rozliczeniowy */}
+                        <div className="flex flex-col w-full">
                             <h2 className="text-xl font-semibold mb-4">Adres rozliczeniowy:</h2>
                             
-                            {/* Scenariusz 1: billingAdress jest null */}
                             {!billingAdress ? (
-                                <div className="card justify-center items-center bg-base-200 h-full shadow-md hover:shadow-black/40 transition-shadow duration-100 w-full border border-gray-900 p-5">
+                                <div className="card justify-center items-center bg-base-200 flex-grow shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-5 gap-4 w-full">
+                                    <p>Nie zdefiniowano adresu rozliczeniowego</p>
                                     <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
                                         Dodaj
                                     </button>
                                 </div>
                             ) : (
-                                /* Scenariusz 2 i 3: billingAdress istnieje */
                                 shippingAdress && billingAdress.id === shippingAdress.id ? (
-                                    /* Scenariusz 2: billingAdress === shippingAdress */
-                                    <div className="card justify-center items-center bg-amber-400 h-full shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-5">
-                                        <button className="btn btn-custom btn-block" onClick={() => document.getElementById("select_address").showModal()}>
+                                    <div className="card justify-center items-center bg-base-200 flex-grow shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-5 gap-4 w-full">
+                                        <p>Domyślnie dla transakcji adresem rozliczeniowym jest adres dostawy</p>
+                                        <button className="btn btn-custom btn-block" onClick={() => handleOpenModal("Billing")}>
                                             Zmień adres
                                         </button>
                                     </div>
                                 ) : (
-                                    /* Scenariusz 3: billingAdress !== shippingAdress */
-                                    <AddressCard variant="summary" {...billingAdress} />
+                                    <AddressCard variant="summary" {...billingAdress} handleOpenModal={handleOpenModal} />
                                 )
                             )}
                         </div>
                     </div>
-                </div>
+
 
                 <div className="w-full rounded-lg bg-base-100">
                     <h2 className="text-xl font-semibold mb-4">Wybierz metodę dostawy:</h2>
 
-                    <ul className="list bg-base-200 rounded-box shadow-md border-1 border-gray-900">
+                    <ul className="list bg-base-200 rounded-box shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900">
 
                         {deliveryMethods.map((method) => (
                             <li key={method.id} className="flex justify-between items-center p-4 mx-2">
@@ -161,7 +167,7 @@ function CartPartTwo() {
                 <div className="w-full rounded-lg bg-base-100 ">
                     <h2 className="text-xl font-semibold mb-4">Wybierz metodę płatności:</h2>
 
-                    <ul className="list bg-base-200 rounded-box shadow-md border-1 border-gray-900">
+                    <ul className="list bg-base-200 rounded-box shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900">
 
                         {paymentMethods.map((method) => (
                             <li key={method.id} className="flex justify-between items-center p-4 mx-2">
@@ -213,10 +219,24 @@ function CartPartTwo() {
                         </button>
                     </form>
 
-                    <h3 className="font-bold text-lg text-center mb-4">Dodaj adres</h3>
-
+                    <h3 className="font-bold text-lg text-center mb-4">Wybierz adres:</h3>
+                    { modal === "Billing" ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        {shippingAddresses.map((address) => (
+                        {billingAdresses.map((address) => (
+                            <div 
+                                key={address.id}
+                                className={`cursor-pointer rounded-lg hover:bg-base-200 ${
+                                    billingAdress?.id === address.id ? "ring-2 ring-amber-500" : ""
+                                }`}
+                                onClick={() => handleSelectBillingAdress(address.id)}
+                            >
+                                <AddressCard variant="modal" {...address} />
+                            </div>
+                        ))}
+                    </div>
+                    ):(
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                        {shippingAdresses.map((address) => (
                             <div 
                                 key={address.id}
                                 className={`cursor-pointer rounded-lg hover:bg-base-200 ${
@@ -224,10 +244,12 @@ function CartPartTwo() {
                                 }`}
                                 onClick={() => handleSelectShippingAdress(address.id)}
                             >
-                                <AddressCard variant="summary" {...address} />
+                                <AddressCard variant="modal" {...address} />
                             </div>
                         ))}
                     </div>
+                    )}
+
 
                 </div>
             </dialog>
