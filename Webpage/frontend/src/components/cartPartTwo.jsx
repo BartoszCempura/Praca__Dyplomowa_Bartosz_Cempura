@@ -20,7 +20,7 @@ function CartPartTwo() {
 
     const [ modal, setModal ] = useState(null);
 
-
+    // Ładowanie danych
     const fetchData = async () => {
         const dataPayment = await getPaymentMethods();
         const dataDelivery = await getDeliveryMethods();
@@ -38,12 +38,6 @@ function CartPartTwo() {
         setShippingAdress(defaultAdress || null);
         setBillingAdress(defaultAdress || null);
 
-        const tempCart = getCart(); //pracujemy nad tym !!!
-        const total = Object.values(tempCart).reduce((sum, item) => {
-          return sum + item.quantity_user * parseFloat(item.price_including_promotion);
-        }, 0);
-
-        setCartValue(total);
     };
 
 
@@ -61,7 +55,26 @@ function CartPartTwo() {
         };
     }, []);
 
+    //Przeliczenie wartości koszyka
+
+    useEffect(() => {
+        const tempCart = getCart();
+
+        let total = Object.values(tempCart).reduce((sum, item) => {
+          return sum + item.quantity_user * parseFloat(item.price_including_promotion);
+        }, 0);
+
+        const selectedPaymentData = paymentMethods.find(p => p.id === selectedPayment);
+        const selectedDeliveryData = deliveryMethods.find(d => d.id === selectedDelivery);
+
+        if (selectedPaymentData) total += parseFloat(selectedPaymentData.fee) || 0;
+        if (selectedDeliveryData) total += parseFloat(selectedDeliveryData.fee) || 0;
+
+        setCartValue(total);
+    }, [selectedPayment, selectedDelivery, paymentMethods, deliveryMethods]);
     
+
+    // funkcje 
     const handleSelectPayment = (methodId) => {
         setSelectedPayment(methodId);
     };
