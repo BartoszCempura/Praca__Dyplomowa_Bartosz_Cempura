@@ -57,7 +57,8 @@ function CartPartOne() {
 
   return (
     <div className="grid grid-cols-[4fr_1fr] gap-6 items-start mx-60">
-      <div className="flex flex-col gap-4 my-10 items-center w-full pr-18 h-[60vh] overflow-y-auto">
+      <div className="flex flex-col gap-4 my-10 items-center w-full pr-18 h-[50vh] overflow-y-auto">
+        <h2 className="text-xl font-semibold">Produkty w koszyku:</h2>
         {products && products.length > 0 ? (
           products.map((p) => (
             <ProductCard
@@ -74,7 +75,7 @@ function CartPartOne() {
         )}
       </div>
 
-      <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900">
+      <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900 mt-21">
         <div className="card-body items-center">
           <span className="text-info mb-2">
             Wartość: {cartValue.toFixed(2)} zł

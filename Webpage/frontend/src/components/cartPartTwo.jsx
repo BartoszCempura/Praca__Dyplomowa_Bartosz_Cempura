@@ -227,7 +227,7 @@ function CartPartTwo() {
                         <h2 className="text-xl font-semibold">Dodatkowe informacje:</h2>
                         <fieldset className="fieldset">
                             <legend className="fieldset-legend text-gray-500">Uwagi do zamówienia</legend>
-                            <textarea className="textarea textarea-lg w-full bg-base-200 rounded-box shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900" value={text} onChange={handleTextChange} maxLength={max_length}></textarea>
+                            <textarea className="textarea textarea-lg w-full bg-base-200 rounded-box shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 h-32" value={text} onChange={handleTextChange} maxLength={max_length}></textarea>
                             <div className="label">
                                 <span className="label-text-alt">{text.length}/{max_length}</span>
                             </div>
@@ -236,7 +236,7 @@ function CartPartTwo() {
                 </div>
 
 
-                <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900">
+                <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900 mt-21">
                     <div className="card-body items-center">
                     <span className="text-info mb-2">
                         Wartość: {cartValue.toFixed(2)} zł
@@ -298,22 +298,17 @@ function CartPartTwo() {
         {step === "summary" && (
             <div className="container grid grid-cols-[4fr_1fr] items-start gap-6 mx-60">
                 <div className="flex flex-col items-center gap-6 my-10 w-full pr-18 bg-base-100">
+
                     <h2 className="text-xl font-semibold">Produkty w koszyku:</h2>
                     <div className="flex flex-col gap-4 items-center w-full">
-                        {products && products.length > 0 ? (
-                        products.map((p) => (
+                        {products.map((p) => (
                             <ProductCard
                             key={p.product_id}          // id wpisu w koszyku
                             id={p.product_id}   // id produktu z katalogu (ważne!)
                             variant="summary"
                             {...p}
                             />
-                        ))
-                        ) : (
-                        <div className="my-auto">
-                            <p className="text-2xl font-bold">Brak produktów w koszyku</p>
-                        </div>
-                        )}
+                        ))}
                     </div>
 
                     <div className={`grid gap-20 w-full ${isDifferentAddress ? "grid-cols-2 mx-auto" : "grid-cols-1 text-center"}`}>
@@ -381,13 +376,13 @@ function CartPartTwo() {
                         <h2 className="text-xl font-semibold">Dodatkowe informacje:</h2>
                         <fieldset className="fieldset">
                             <legend className="fieldset-legend text-gray-500">Uwagi do zamówienia</legend>
-                            <textarea className="textarea textarea-lg w-full bg-base-200 rounded-box shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 text-gray-400 cursor-default" onMouseDown={(e) => e.preventDefault()} value={text} maxLength={max_length} readOnly tabIndex={-1}></textarea>
+                            <textarea className="textarea textarea-lg w-full bg-base-200 rounded-box shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 text-gray-400 cursor-default h-32" onMouseDown={(e) => e.preventDefault()} value={text} maxLength={max_length} readOnly tabIndex={-1}></textarea>
                         </fieldset>
                     </div> 
 
                 </div>
 
-                <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900">
+                <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900 mt-23">
                     <div className="card-body items-center">
                     <span className="text-info mb-2">
                         Wartość: {cartValue.toFixed(2)} zł

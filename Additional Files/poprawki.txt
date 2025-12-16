@@ -33,4 +33,4 @@ Trzeba przeanalizować slider dla promocji, możliwe przebudować uprościć - d
 
 api nie powinno zwracać adresów typu other. Other jest tylko dla poja wypałnienia przy finalizacji zakupu.
 
-Przepisujemy wszystkie dane do zmeinnej tempSummary - tutaj chce produkty spakować , oddzielnie dac pozostałę wartosci - trzeba sprawdzić jak to w modelu wygląda
+Dodajemy finalizacje transakcji dla przycisku Kupuję
