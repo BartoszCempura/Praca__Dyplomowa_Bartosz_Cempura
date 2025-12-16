@@ -468,7 +468,7 @@ def closing_purchase():
         user_id = get_jwt_identity()
         data = request.get_json()
 
-        required_fields = ['billing_address_id', 'shipping_address_id', 'delivery_method_id', 'payment_method_id']
+        required_fields = ['billing_address_id', 'shipping_address_id', 'delivery_method_id', 'payment_method_id', 'products']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'error': f'{field} is required'}), 400

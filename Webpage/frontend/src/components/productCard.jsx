@@ -139,6 +139,32 @@ function ProductCard({ id, name, slug, categorySlug, image, unit_price, price_in
     );
   }
 
+  if (variant === "summary") {
+    return (
+      <div className="w-full flex items-center gap-6 bg-base-200 shadow-md border border-gray-900 rounded-lg p-4 hover:shadow-black/40 transition-shadow duration-100">
+        {/* Zdjęcie produktu */}
+        <figure className="w-24 h-24 flex-shrink-0">
+            <img src={image} alt={name} className="w-full h-full object-cover rounded-lg" />
+        </figure>
+
+        <div className="flex justify-between items-center flex-grow gap-6">
+          {/* Nazwa produktu */}
+            <h2 className="text-lg font-semibold line-clamp-1">{name}</h2>
+
+          {/* Cena produktu i ilość */}  
+            <div className="flex items-center gap-2">
+              <span className="font-medium whitespace-nowrap mr-4">{price_including_promotion} PLN</span>
+              <label className="text-sm text-gray-500">Ilość:</label>
+              <div className="flex items-center">
+                <span className="w-10 text-center">{localQuantity}</span>
+              </div>
+            </div>
+
+        </div>
+      </div>
+    );
+  }
+
   return null;
 }
 

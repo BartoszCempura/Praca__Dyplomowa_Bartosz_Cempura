@@ -33,10 +33,4 @@ Trzeba przeanalizować slider dla promocji, możliwe przebudować uprościć - d
 
 api nie powinno zwracać adresów typu other. Other jest tylko dla poja wypałnienia przy finalizacji zakupu.
 
-następny krok sprzedażowy ma przepisać wszystkie produkty w tempCart do zmeinnej tempTransaction gdzie wszystkie produkty pakujemy do products , 
-dodajemy na podstawie wyboru użytkownika adres , wybiera wartośc metody dostawy, wybiera metode płatności
-
-
-trzeba dodać przycisk do wybory adresy billing , i trzeba dostosowac modal tak aby reagował na to jaki adres ustawiamy. 
-
-Coś jest nie tak z układem elementu adresu. Postaraj się nad tym popracować - masz kolory
+Przepisujemy wszystkie dane do zmeinnej tempSummary - tutaj chce produkty spakować , oddzielnie dac pozostałę wartosci - trzeba sprawdzić jak to w modelu wygląda

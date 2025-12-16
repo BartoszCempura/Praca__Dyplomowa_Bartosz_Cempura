@@ -145,3 +145,24 @@ export async function getUserAdresses() {
     return [];
   }
 }
+
+export async function mergeCartAndLocal() {
+  try {
+    const response = await api.get("/commerce/carts");
+    const backendData = response.data?.products || [];
+
+    const mergedData = backendData.map(p => {
+      const localItem = getItem(p.product_id);
+
+      return {
+        ...p,
+        quantity: localItem?.quantity_user ?? p.quantity
+      };
+    });
+
+    return mergedData;
+  } catch (err) {
+    console.error("mergeCartAndLocal error:", err);
+    return []; 
+  }
+}
