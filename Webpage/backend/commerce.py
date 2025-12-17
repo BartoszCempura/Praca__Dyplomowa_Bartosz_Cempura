@@ -338,6 +338,7 @@ def add_product_to_cart():
 
             product.quantity -= quantity  # odejmujemy ujemną -> dodajemy do magazynu
 
+        """
         # Aktualizacja kosztu koszyka
         cart.total_products_cost = db.session.query(
             func.coalesce(
@@ -345,6 +346,7 @@ def add_product_to_cart():
                 Decimal("0.00")
             )
         ).filter_by(cart_id=cart.id).scalar()
+        """
 
         db.session.commit()
 
@@ -444,7 +446,6 @@ def get_cart():
 
 
         cart_data = {
-            'total_products_cost': str(cart.total_products_cost),
             'products': [product.to_json_user_view() for product in products_in_cart]
         }
 
@@ -465,7 +466,7 @@ def closing_purchase():
     """---------------------Zamknięcie zakupu---------------------"""
 
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
 
         required_fields = ['billing_address_id', 'shipping_address_id', 'delivery_method_id', 'payment_method_id', 'products']
@@ -476,19 +477,34 @@ def closing_purchase():
         cart = Carts.query.filter_by(user_id=user_id).first()
         if not cart:
             return jsonify({'error': 'Nie znaleziono koszyka'}), 404
-
-        if cart.total_products_cost == 0:
+        
+        products = data.get('products')
+        if not products:
             return jsonify({'error': 'Koszyk jest pusty'}), 400
 
         delivery_method = DeliveryMethods.query.filter_by(id=data.get('delivery_method_id'), is_active=True).first()
+        if not delivery_method:
+            return jsonify({'error': 'Nieprawidłowa metoda dostawy'}), 400
+        
         payment_method = PaymentMethods.query.filter_by(id=data.get('payment_method_id'), is_active=True).first()
+        if not payment_method:
+            return jsonify({'error': 'Nieprawidłowa metoda płatności'}), 400
+        
         billing_address = UserAddress.query.get(data.get('billing_address_id'))
         shipping_address = UserAddress.query.get(data.get('shipping_address_id'))
+        if not billing_address or not shipping_address:
+            return jsonify({'error': 'Adress nie istnieje'}), 400
+        if billing_address.user_id != user_id or shipping_address.user_id != user_id:
+            return jsonify({'error': 'Nieprawidłowy adres użytkownika'}), 403
+
+        products_value_sum = 0
+        for product in products:
+            products_value_sum += (product["quantity"] * Decimal(product["unit_price_with_discount"]))
 
         # Tworzenie nowej transakcji
         new_transaction = Transactions(
             user_id=user_id,
-            total_transaction_value=cart.total_products_cost + delivery_method.fee + payment_method.fee,
+            total_transaction_value=(products_value_sum + delivery_method.fee + payment_method.fee),
             billing_address_id=billing_address.id,
             billing_address_data=billing_address.to_json(),
             shipping_address_id=shipping_address.id,
@@ -501,14 +517,26 @@ def closing_purchase():
         db.session.add(new_transaction)
         db.session.flush()  # potrzebne, by mieć transaction.id
 
-        # Przeniesienie produktów z koszyka do transakcji
-        cart_products = CartProducts.query.filter_by(cart_id=cart.id).all()
-        for cart_product in cart_products:
+        
+        for product in products:
+            db_product_data = Products.query.filter_by(id=product["product_id"]).with_for_update().first()
+
+            if not db_product_data:
+                return jsonify({'error': 'Produkt nie istnieje'}), 404
+
+            if product["quantity"] <= 0:
+                return jsonify({'error': 'Nieprawidłowa ilość produktu'}), 400
+            
+            if db_product_data.quantity < product["quantity"]:
+                return jsonify({'error': f'Brak produktu {db_product_data.name} na stanie'}), 400
+            
+            db_product_data.quantity -= (product["quantity"] - 1) # odejmujemy quantity - 1, bo 1 sztuka została zarezerwowana przy dodaniu do koszyka
+
             new_transaction_product = TransactionProducts(
                 transaction_id=new_transaction.id,
-                product_id=cart_product.product_id,
-                quantity=cart_product.quantity,
-                unit_price_with_discount=cart_product.unit_price_with_discount
+                product_id=product["product_id"],
+                quantity=product["quantity"],
+                unit_price_with_discount=db_product_data.price_including_promotion(),
             )
             db.session.add(new_transaction_product)
 

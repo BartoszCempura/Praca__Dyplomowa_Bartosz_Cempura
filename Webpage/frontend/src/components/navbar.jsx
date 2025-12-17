@@ -30,7 +30,7 @@ function Navbar() {
 
         const totalItems = values.reduce((sum, item) => sum + (item.quantity_user || 0), 0);
         const totalValue = values.reduce((sum, item) => {
-          return sum + (item.quantity_user || 0) * parseFloat(item.price_including_promotion || 0);
+          return sum + (item.quantity_user || 0) * parseFloat(item.unit_price_with_discount || 0);
         }, 0);
 
         setCartItems(totalItems);

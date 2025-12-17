@@ -33,4 +33,7 @@ Trzeba przeanalizować slider dla promocji, możliwe przebudować uprościć - d
 
 api nie powinno zwracać adresów typu other. Other jest tylko dla poja wypałnienia przy finalizacji zakupu.
 
-Dodajemy finalizacje transakcji dla przycisku Kupuję
+dodaj odliczanie do końca promocji
+zmień położenie przycisków przewijania produktów w promocji
+
+Jest coś takiego jak storage event api aby się local storrage synchronizowało na kartach - czy warto??

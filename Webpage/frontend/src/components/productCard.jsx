@@ -6,7 +6,7 @@ import { useWishlist } from "../utils/useWhishlist";
 import { addToCart, removeFromCart } from "../utils/cartActions";
 import { addToWishlist, removeFromWishlist} from "../utils/wishlistActions";
 
-function ProductCard({ id, name, slug, categorySlug, image, unit_price, price_including_promotion, variant, quantity }) {
+function ProductCard({ id, name, slug, categorySlug, image, unit_price, unit_price_with_discount, variant, quantity }) {
   const [ localQuantity, setLocalQuantity ] = useState(1);
   const inWishList = useWishlist(id);
   const isInCart = useCart(id);
@@ -27,7 +27,7 @@ function ProductCard({ id, name, slug, categorySlug, image, unit_price, price_in
     addToCart({
       id,
       quantity,
-      price_including_promotion
+      unit_price_with_discount
     }, change);
   };
 
@@ -75,13 +75,13 @@ function ProductCard({ id, name, slug, categorySlug, image, unit_price, price_in
             <h2 className="card-title">{name}</h2>
           </Link>
           {/* Cena lub przekreślona cena i cena promocyjna */}
-          {price_including_promotion !== unit_price ? (
+          {unit_price_with_discount !== unit_price ? (
             <div className="relative inline-block mb-1">
-              <span className="text-md font-semibold text-amber-500">{price_including_promotion} PLN</span>
+              <span className="text-md font-semibold text-amber-500">{unit_price_with_discount} PLN</span>
               <span className="absolute right-0 -top-1 line-through text-sm">{unit_price} PLN</span>
             </div>
           ) : (
-            <span className="text-md font-semibold">{price_including_promotion} PLN</span>
+            <span className="text-md font-semibold">{unit_price_with_discount} PLN</span>
           )}
           {/* Przycisk dodaj do koszyka i jego blokowanie jeżeli produkt jest już w koszyku */}
           <div className="card-actions">
@@ -112,7 +112,7 @@ function ProductCard({ id, name, slug, categorySlug, image, unit_price, price_in
             <h2 className="text-lg font-semibold line-clamp-1">{name}</h2>
           </Link>
           {/* Cena produktu*/}
-          <span className="font-medium whitespace-nowrap">{price_including_promotion} PLN</span>
+          <span className="font-medium whitespace-nowrap">{unit_price_with_discount} PLN</span>
 
           {/* Sekcja zmiany ilości */}
           <div className="flex items-center gap-2">
@@ -153,7 +153,7 @@ function ProductCard({ id, name, slug, categorySlug, image, unit_price, price_in
 
           {/* Cena produktu i ilość */}  
             <div className="flex items-center gap-2">
-              <span className="font-medium whitespace-nowrap mr-4">{price_including_promotion} PLN</span>
+              <span className="font-medium whitespace-nowrap mr-4">{unit_price_with_discount} PLN</span>
               <label className="text-sm text-gray-500">Ilość:</label>
               <div className="flex items-center">
                 <span className="w-10 text-center">{localQuantity}</span>

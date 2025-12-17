@@ -30,14 +30,14 @@ function CartPartOne() {
           tempCart[productData.id] = {
             quantity_db: productData.quantity,
             quantity_user: prev.quantity_user || 1,
-            price_including_promotion: productData.price_including_promotion,
+            unit_price_with_discount: productData.unit_price_with_discount,
           };
         });
 
         saveCartSilent(tempCart); // nie inicjujemy eventów za pomocą saveCart i tym samym backend nie wpada w pętle wywołań
 
         const total = Object.values(tempCart).reduce((sum, item) => {
-          return sum + item.quantity_user * parseFloat(item.price_including_promotion);
+          return sum + item.quantity_user * parseFloat(item.unit_price_with_discount);
         }, 0);
 
         setCartValue(total);

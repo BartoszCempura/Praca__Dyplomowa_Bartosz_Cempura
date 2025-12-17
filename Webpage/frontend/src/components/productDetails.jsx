@@ -30,7 +30,7 @@ function ProductDetails() {
     addToCart({
       id: product.id,
       quantity: product.quantity,
-      price_including_promotion: product.price_including_promotion
+      unit_price_with_discount: product.unit_price_with_discount
     }, change);
   };
 
@@ -47,7 +47,7 @@ function ProductDetails() {
           <span className="text-sm text-gray-500">{product.category_slug}</span>
           <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
           <p className="text-lg mb-6">{product.description}</p>
-          <p className="text-2xl font-semibold mb-6">{product.price_including_promotion} PLN</p>
+          <p className="text-2xl font-semibold mb-6">{product.unit_price_with_discount} PLN</p>
 
           {/*Przycisk dodania do koszyka */}
           <button type="button" onClick={() => handleAddToCart(1)}

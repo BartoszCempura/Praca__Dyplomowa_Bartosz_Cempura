@@ -255,7 +255,7 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
             "image": self.image,
             "quantity": self.quantity,
             "unit_price": _money(self.unit_price),
-            "price_including_promotion": _money(self.price_including_promotion())
+            "unit_price_with_discount": _money(self.price_including_promotion())
         }
     
     def to_json_user_view(self):
@@ -491,14 +491,10 @@ class PaymentMethods (db.Model):
     
 class Carts (db.Model):
     __tablename__ = 'carts'
-    __table_args__ = (
-        CheckConstraint('total_products_cost >= 0', name='carts_total_products_cost_check'),
-        {'schema': 'commerce'}
-    )
+    __table_args__ = ({'schema': 'commerce'})
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='CASCADE'), nullable=False)
-    total_products_cost = db.Column(Numeric(10, 2), nullable=False, default=0.00)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -506,7 +502,6 @@ class Carts (db.Model):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "total_products_cost": self.total_products_cost,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -534,7 +529,7 @@ class CartProducts (db.Model):
             "cart_id": self.cart_id,
             "product_id": self.product_id,
             "quantity": self.quantity,
-            "price_including_promotion": self.unit_price_with_discount # zmiana nazwy pola ze względu na spójnośc z frontendem - koszyk i katalog productCard
+            "unit_price_with_discount": self.unit_price_with_discount # zmiana nazwy pola ze względu na spójnośc z frontendem - koszyk i katalog productCard
         }
     
     def to_json_user_view(self):
@@ -544,7 +539,7 @@ class CartProducts (db.Model):
             "name": self.product.name,
             "image": self.product.image,
             "quantity": self.quantity,
-            "price_including_promotion": self.unit_price_with_discount
+            "unit_price_with_discount": self.unit_price_with_discount
         }
     """ # zmieniono metode wprowadzania danych. Teraz można wprowadzać dane ujemne aby usunąc produkt z listy
     @staticmethod

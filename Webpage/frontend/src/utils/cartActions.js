@@ -1,7 +1,7 @@
 import api, { isAuthenticated } from "../api/tokenHandler";
 import { getCart, getItem, setItem, updateQuantity, removeItem, saveCart, clearCart as clearLocalCart } from "./tempCartStorage";
 
-  // Funkcja dodawania produktu do koszyka. ardument "product" to obiekt zawierający id, quantity, price_including_promotion
+  // Funkcja dodawania produktu do koszyka. ardument "product" to obiekt zawierający id, quantity, unit_price_with_discount
   // change to zmiana ilości (dodatnia lub ujemna)
 
 export async function addToCart(product, change) {
@@ -21,7 +21,7 @@ export async function addToCart(product, change) {
       setItem(product.id, {
         quantity_user: 1,
         quantity_db: product.quantity,
-        price_including_promotion: product.price_including_promotion,
+        unit_price_with_discount: product.unit_price_with_discount,
       });
     } else {
       updateQuantity(product.id, change);
@@ -97,7 +97,7 @@ export async function refreshTempCart() {
       tempCart[productData.id] = {
         quantity_db: productData.quantity,
         quantity_user: prev.quantity_user || 1,
-        price_including_promotion: productData.price_including_promotion,
+        unit_price_with_discount: productData.unit_price_with_discount,
       };
     });
 
@@ -106,7 +106,7 @@ export async function refreshTempCart() {
     const values = Object.values(tempCart);
 
     const totalItems = values.reduce((s, p) => s + (p.quantity_user || 0), 0);
-    const totalValue = values.reduce((s, p) => s + p.quantity_user * parseFloat(p.price_including_promotion), 0);
+    const totalValue = values.reduce((s, p) => s + p.quantity_user * parseFloat(p.unit_price_with_discount), 0);
 
     return { totalItems, totalValue };
 
@@ -165,4 +165,19 @@ export async function mergeCartAndLocal() {
     console.error("mergeCartAndLocal error:", err);
     return []; 
   }
+}
+
+export async function closePurchase(payLoad) {
+  try {
+    const response = await api.post("/commerce/transactions", payLoad);
+    const successMessage = response.data?.message || "Transakcja zakończona pomyślnie";
+    alert(successMessage);
+    return { success: true};
+  } catch (err) {
+    console.error(err);
+    const errorMessage = err.response.data?.error || "Wystąpił błąd podczas finalizacji transakcji!";
+    alert(errorMessage);
+    return { success: false};
+  }
+
 }

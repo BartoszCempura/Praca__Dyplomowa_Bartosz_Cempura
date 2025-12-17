@@ -1,7 +1,7 @@
-import { getPaymentMethods, getDeliveryMethods, getUserAdresses, mergeCartAndLocal } from "../utils/cartActions";
+import { getPaymentMethods, getDeliveryMethods, getUserAdresses, mergeCartAndLocal, closePurchase } from "../utils/cartActions";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCart } from "../utils/tempCartStorage";
+import { getCart, clearCart } from "../utils/tempCartStorage";
 import AddressCard from "./addressCard";
 import ProductCard from "./productCard";
 
@@ -70,7 +70,7 @@ function CartPartTwo() {
         const tempCart = getCart();
 
         let total = Object.values(tempCart).reduce((sum, item) => {
-          return sum + item.quantity_user * parseFloat(item.price_including_promotion);
+          return sum + item.quantity_user * parseFloat(item.unit_price_with_discount);
         }, 0);    
 
         if (selectedPaymentData) total += parseFloat(selectedPaymentData.fee) || 0;
@@ -118,6 +118,23 @@ function CartPartTwo() {
     }
 
     const isDifferentAddress = billingAdress && shippingAdress && billingAdress.id !== shippingAdress.id;
+
+    const payLoad = {
+        products: products,
+        billing_address_id: billingAdress?.id,
+        shipping_address_id: shippingAdress?.id,
+        delivery_method_id: selectedDelivery,
+        payment_method_id: selectedPayment,
+        notes: text,
+    }
+
+    const handleClosePurchase = async () => {
+      const result = await closePurchase(payLoad);
+      if (result.success) {
+        clearCart();
+        navigate("/");
+      }
+    }
 
     return (
         <>
@@ -388,7 +405,7 @@ function CartPartTwo() {
                         Wartość: {cartValue.toFixed(2)} zł
                     </span>
                     <div className="card-actions">
-                        <button className="btn btn-custom btn-block" onClick={() => setStep("summary")}>Kupuję</button>
+                        <button className="btn btn-custom btn-block" onClick={handleClosePurchase}>Kupuję</button>
                     </div>
                     <div className="card-actions">
                         <button className="btn btn-custom btn-block" onClick={() => setStep("form")}>Powrót</button>
