@@ -58,41 +58,44 @@ const handleResetFilters = () => {
 
   return (
     <div className="grid grid-cols-[1fr_4fr] gap-6 items-start">
-      <aside className="flex flex-col flex-grow bg-base-200 p-4 pl-10 max-h-screen overflow-y-auto sticky top-0">
-        <div className="divider mb-6">
-          <h2 className="font-bold text-lg">Filtry</h2>
-        </div>         
+      <aside className="flex flex-col flex-grow bg-base-200 p-4 pl-10 h-full sticky top-0">
+        <div className="shrink-0">
+          <div className="divider mb-6">
+              <h2 className="font-bold text-lg">Filtry</h2>
+          </div> 
+        </div>        
 
-
-        {/* Gdy są atrybuty */}
-        {Object.keys(attributes).length > 0 ? (
-          Object.keys(attributes).map(attrName => (
-            <details key={attrName} className="mb-3">
-              <summary className="cursor-pointer font-medium capitalize">
-                {attrName}
-              </summary>
-              <ul className="menu dropdown-content bg-base-100 rounded-box w-70 p-2 shadow-sm ml-4 mt-2">
-                {Object.entries(attributes[attrName]).map(([value, count]) => {
-                  const isChecked = searchParams.getAll(attrName).includes(value);
-                  return (
-                    <li key={value} className="flex flex-row items-center gap-2">
-                      <input type="checkbox" className="checkbox checkbox-sm" checked={isChecked} onChange={() => handleCheckboxChange(attrName, value)}/>
-                      <span className="whitespace-nowrap">
-                        {value} ({count})
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </details>
-          ))
-        ) : (
-          <p>Brak filtrów</p>
-        )}
-        <div className="divider mt-10">
-          <button onClick={handleResetFilters} className="btn btn-md btn-outline">
-            Resetuj
-          </button>
+        <div className="flex-1 overflow-y-auto pr-2">
+          {/* Gdy są atrybuty */}
+          {Object.keys(attributes).length > 0 ? (
+            Object.keys(attributes).map(attrName => (
+              <details key={attrName} className="mb-3">
+                <summary className="cursor-pointer font-medium capitalize">
+                  {attrName}
+                </summary>
+                <ul className="menu dropdown-content bg-base-100 rounded-box w-70 p-2 shadow-sm ml-4 mt-2">
+                  {Object.entries(attributes[attrName]).map(([value, count]) => {
+                    const isChecked = searchParams.getAll(attrName).includes(value);
+                    return (
+                      <li key={value} className="flex flex-row items-center gap-2">
+                        <input type="checkbox" className="checkbox checkbox-sm" checked={isChecked} onChange={() => handleCheckboxChange(attrName, value)}/>
+                        <span className="whitespace-nowrap">
+                          {value} ({count})
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </details>
+            ))
+          ) : (
+            <p>Brak filtrów</p>
+          )}
+          <div className="divider mt-10">
+            <button onClick={handleResetFilters} className="btn btn-md btn-outline">
+              Resetuj
+            </button>
+          </div>
         </div>
       </aside>
 

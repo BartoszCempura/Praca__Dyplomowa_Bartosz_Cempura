@@ -151,7 +151,8 @@ function CartPartTwo() {
                                 {shippingAdress ? (
                                     <AddressCard variant="summary" {...shippingAdress} handleOpenModal={handleOpenModal}/>
                                 ) : (
-                                    <div id="3" className="card justify-center items-center bg-base-200 flex-grow shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-5 w-full">
+                                    <div id="3" className="card justify-center items-center bg-base-200 flex-grow shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-6 gap-4 w-full">
+                                        <p>Nie zdefiniowano adresu rozliczeniowego</p>
                                         <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
                                             Dodaj
                                         </button>
@@ -164,7 +165,7 @@ function CartPartTwo() {
                                 <h2 className="text-xl font-semibold mb-4">Adres rozliczeniowy:</h2>
                                 
                                 {!billingAdress ? (
-                                    <div className="card justify-center items-center bg-base-200 flex-grow shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-5 gap-4 w-full">
+                                    <div className="card justify-center items-center bg-base-200 flex-grow shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-6 gap-4 w-full">
                                         <p>Nie zdefiniowano adresu rozliczeniowego</p>
                                         <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
                                             Dodaj
