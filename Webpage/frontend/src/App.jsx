@@ -1,8 +1,15 @@
 import './App.css'
 import {Navbar, Menu, ProductCatalog, SearchProducts, Home, ProductDetails, Footer, LoginPage, UserProfile, DaneDoZamowien, UserCreateAccount, CartPartOne, CartPartTwo, Wishlist} from "./utils/"
 import { Routes, Route, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { getSessionId } from "./utils/trackInteraction";
 
 function App() {
+
+  useEffect(() => {
+    getSessionId(); // Wygeneruje UUID jeśli nie istnieje
+  }, [])
+
   return (
     <>
       <Navbar />

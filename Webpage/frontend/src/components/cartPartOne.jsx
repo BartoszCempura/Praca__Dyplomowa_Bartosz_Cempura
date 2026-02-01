@@ -56,7 +56,7 @@ function CartPartOne() {
 }, []);
 
   return (
-    <div className="grid grid-cols-[4fr_1fr] gap-6 items-start mx-60">
+    <div className="grid xl:grid-cols-[4fr_1fr] gap-6 items-start mx-60">
       <div className="flex flex-col gap-4 my-10 items-center w-full pr-18 h-[50vh] overflow-y-auto">
         <h2 className="text-xl font-semibold">Produkty w koszyku:</h2>
         {products && products.length > 0 ? (

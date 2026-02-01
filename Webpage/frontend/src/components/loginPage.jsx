@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/tokenHandler";
+import { getSessionId, clearSessionId } from "../utils/trackInteraction";
 
 function LoginPage() {
   const [login, setLogin] = useState("");
@@ -17,21 +18,18 @@ const handleSubmit = async (e) => {
 
       const response = await api.post("/auth/login", { login, password }, { withCredentials: true });
       sessionStorage.setItem("access_token", response.data.access_token);
+      clearSessionId(); // czyścimy poprzednie sessionID
+      getSessionId(); // ustawiam sessionID po zalogowaniu
       window.dispatchEvent(new Event("loginStatusChange")); // powiadamiam navbarUserMenu o zmianie stanu logowania
       navigate("/");
 
-    setMessage(response.data.message);
-    setMessageType("success");
-    setLogin(""); //czyszcze pola
-    setPassword("");
-    e.target.reset(); //aby nie pozostawała czerwona ramka ro zmianie hasła
-    } catch (err) {
-    console.error(err);
-    setMessageType("error");
-    setLogin("");
-    setPassword("");
-    e.target.reset();
-    setMessage(err.response?.data?.error || "Błąd podczas logowania");
+      } catch (err) {
+      console.error(err);
+      setMessageType("error");
+      setLogin("");
+      setPassword("");
+      e.target.reset();
+      setMessage(err.response?.data?.error || "Błąd podczas logowania");
 
     }
   };

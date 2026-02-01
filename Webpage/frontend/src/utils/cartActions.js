@@ -1,5 +1,6 @@
 import api, { isAuthenticated } from "../api/tokenHandler";
 import { getCart, getItem, setItem, updateQuantity, removeItem, saveCart, clearCart as clearLocalCart } from "./tempCartStorage";
+import { trackInteraction } from "./trackInteraction";
 
   // Funkcja dodawania produktu do koszyka. ardument "product" to obiekt zawierający id, quantity, unit_price_with_discount
   // change to zmiana ilości (dodatnia lub ujemna)
@@ -23,6 +24,7 @@ export async function addToCart(product, change) {
         quantity_db: product.quantity,
         unit_price_with_discount: product.unit_price_with_discount,
       });
+      trackInteraction(product.id, 'AddToCart');
     } else {
       updateQuantity(product.id, change);
     }

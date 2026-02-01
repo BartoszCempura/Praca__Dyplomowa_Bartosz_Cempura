@@ -1,4 +1,5 @@
 import api, { isAuthenticated } from "../api/tokenHandler";
+import { trackInteraction } from "./trackInteraction";
 
 
 export async function getWishlist() {
@@ -33,6 +34,7 @@ export async function addToWishlist(id) {
 
   try {
     await api.post("/commerce/wishlists", {product_id: id});
+     trackInteraction(id, 'AddToWishlist');
     window.dispatchEvent(new Event("wishlistChange"));
   } catch (err) {
     console.error(err);

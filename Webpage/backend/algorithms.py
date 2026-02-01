@@ -116,18 +116,22 @@ def get_top_accessories_for_product(product_id):
 
 ## ############################################################### Recommends similar products based on attributes/features  ######################################################################
 
-@algorithms_bp.route('/products-similar/<int:product_id>', methods=['GET'])
-def get_similar_products(product_id):
+@algorithms_bp.route('/products-similar/<string:slug>', methods=['GET']) ## used - productDetails
+def get_similar_products(slug):
 
     """-------------------------------Zwraca 5 produktów podobnych do przeglądanego-------------------------------"""
 
     try:
-        if not Products.query.get(product_id):
-            return jsonify({"error": "Brak produktu o tym ID"}), 400
+        product = Products.query.filter_by(slug=slug).first()
+        if not product:
+            return jsonify({"error": "Brak produktu o tym slugu"}), 400
 
         recommendations = (
             ProductRecommendations.query
-            .filter_by(product_id=product_id)
+            .filter(
+                (ProductRecommendations.product_id == product.id) | 
+                (ProductRecommendations.recommended_product_id == product.id)
+            )
             .order_by(ProductRecommendations.score.desc())
             .limit(5)
             .all()
@@ -138,9 +142,16 @@ def get_similar_products(product_id):
 
         result = []
         for recommendation in recommendations:
-            recommended_product = Products.query.get(recommendation.recommended_product_id)
+
+            if recommendation.product_id == product.id:
+                other_product_id = recommendation.recommended_product_id  
+            else:
+                other_product_id = recommendation.product_id 
+            
+            recommended_product = Products.query.get(other_product_id)
             if recommended_product:
-                result.append({"product": recommended_product.to_json_user_view()})
+                result.append(recommended_product.to_json_user_view())
+
 
         return jsonify(result), 200
 

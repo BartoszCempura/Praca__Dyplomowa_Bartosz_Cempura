@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/tokenHandler";
 import { clearCart } from "../utils/cartActions";
+import { clearSessionId } from "../utils/trackInteraction";
 
 function NavbarUserMenu() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -51,6 +52,7 @@ useEffect(() => {
     sessionStorage.removeItem("access_token");
     window.dispatchEvent(new Event("loginStatusChange"));
     setIsLoggedIn(false);
+    clearSessionId();
     navigate("/login");
   };
 

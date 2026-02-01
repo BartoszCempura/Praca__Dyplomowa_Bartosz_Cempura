@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getCart, clearCart } from "../utils/tempCartStorage";
 import AddressCard from "./addressCard";
 import ProductCard from "./productCard";
+import { trackInteraction } from "../utils/trackInteraction";
 
 function CartPartTwo() {
     const navigate = useNavigate();
@@ -132,6 +133,9 @@ function CartPartTwo() {
       const result = await closePurchase(payLoad);
       if (result.success) {
         clearCart();
+        products.forEach(product => {
+            trackInteraction(product.product_id, 'Purchase');
+        }); 
         navigate("/");
       }
     }
@@ -139,7 +143,7 @@ function CartPartTwo() {
     return (
         <>
         {step === "form" && (
-            <div className="container grid grid-cols-[4fr_1fr] items-start gap-6 mx-60">
+            <div className="container grid xl:grid-cols-[4fr_1fr] items-start gap-6 mx-60">
                 <div className="flex flex-col items-center gap-6 my-10 w-full pr-18 bg-base-100">
 
                     {/* Wybór adresów dostawy i rozliczenia */}
@@ -314,7 +318,7 @@ function CartPartTwo() {
             </div>
         )} 
         {step === "summary" && (
-            <div className="container grid grid-cols-[4fr_1fr] items-start gap-6 mx-60">
+            <div className="container grid xl:grid-cols-[4fr_1fr] items-start gap-6 mx-60">
                 <div className="flex flex-col items-center gap-6 my-10 w-full pr-18 bg-base-100">
 
                     <h2 className="text-xl font-semibold">Produkty w koszyku:</h2>

@@ -18,11 +18,6 @@ def add_product_interaction():
 
     try:
 
-
-    ## jeżeli użytkownik zalogowany to sprawdzam czy jest jakaś interakcja z przed max 30 minut. Jak nie ma to tworze session_id = None (baza wygeneruje UUID)
-    ## jeżeli użytkownik niezalogowany to biorę anonymous_id z frontendu który posłuży do identyfikacji użytkownika bez jego logowania(jeżeli nie ma to ignoruje interakcję)
-    ## anonymous_id generowane w fontendzie przez funkcje Javascript i przechowywane w localStorage
-
         user_id = get_jwt_identity()
         data = request.get_json()
 
@@ -31,51 +26,29 @@ def add_product_interaction():
 
         interaction_type = data.get('type')
         product_id = data.get('product_id')
-        anonymous_id = data.get('anonymous_id')
+        session_id = data.get('session_id')
 
         # Wymagane minimum
-        if not product_id or not interaction_type:
-            return '', 204
-
+        if not product_id or not interaction_type or not session_id:
+            return '', 400
+        
         if interaction_type not in ['View', 'AddToCart', 'Purchase', 'Review', 'AddToWishlist']:
-            return '', 204
-
-        session_id = None
-        date_for_new_session = datetime.now(timezone.utc) - timedelta(minutes=30)
-
-        if user_id:
-            # Zalogowany użytkownik
-            last_interaction = (
-                UserProductInteractions.query
-                .filter(
-                    UserProductInteractions.user_id == user_id,
-                    UserProductInteractions.created_at > date_for_new_session
-                )
-                .order_by(UserProductInteractions.created_at.desc())
-                .first()
-            )
-            if last_interaction:
-                session_id = last_interaction.session_id
-        else:
-            # Użytkownik anonimowy
-            if not anonymous_id:
-                return '', 204  # nie mamy jak go śledzić
-
-            last_interaction = (
-                UserProductInteractions.query
-                .filter(
-                    UserProductInteractions.anonymous_id == anonymous_id,
-                    UserProductInteractions.created_at > date_for_new_session
-                )
-                .order_by(UserProductInteractions.created_at.desc())
-                .first()
-            )
-            if last_interaction:
-                session_id = last_interaction.session_id
+            return '', 400
+        
+        # Zapobiega duplikatom w krótkim czasie       
+        if session_id:
+            five_seconds_ago = datetime.now(timezone.utc) - timedelta(seconds=5)
+            duplicate = UserProductInteractions.query.filter(
+                UserProductInteractions.session_id == session_id,
+                UserProductInteractions.product_id == product_id,
+                UserProductInteractions.type == interaction_type,
+                UserProductInteractions.created_at > five_seconds_ago
+            ).first()
+            if duplicate:
+                return '', 204
 
         new_interaction = UserProductInteractions(
             user_id=user_id,
-            anonymous_id=anonymous_id if not user_id else None,
             product_id=product_id,
             type=interaction_type,
             session_id=session_id

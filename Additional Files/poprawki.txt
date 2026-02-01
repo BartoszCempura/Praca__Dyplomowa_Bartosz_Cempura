@@ -37,3 +37,8 @@ dodaj odliczanie do końca promocji
 zmień położenie przycisków przewijania produktów w promocji
 
 Jest coś takiego jak storage event api aby się local storrage synchronizowało na kartach - czy warto??
+
+
+Dodawanie interaction działą, teraz trzeba dodać troche danych do bazy ay móc wygenerować wynik i zwrócić sobie produkty na główną strone. 
+
+Trzeba sprawdzić działanie samego elnpointu zwracającego wynik
