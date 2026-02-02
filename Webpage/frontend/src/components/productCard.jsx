@@ -182,6 +182,37 @@ function ProductCard({ id, name, slug, categorySlug, image, unit_price, unit_pri
     );
   }
 
+if (variant === "topProducts") {
+  return (
+    <div className="w-72 flex items-stretch gap-4 bg-base-200 shadow-md border border-gray-900 rounded-lg hover:shadow-black/40 transition-shadow duration-100">
+
+      {/* Zdjęcie produktu */}
+      <figure className="w-24 h-24 flex-shrink-0">
+        <Link to={`/product/${slug}`}>
+          <img src={image} alt={name} className="w-full h-full object-cover rounded-lg" />
+        </Link>
+      </figure>
+
+      <div className="flex flex-col flex-1 gap-2 min-w-0 p-2">
+        
+        {/* Nazwa produktu */}
+        <Link to={`/product/${slug}`} className="block">
+          <h2 className="text-base font-semibold line-clamp-2 break-words">
+            {name}
+          </h2>
+        </Link>
+        
+        {/* Cena produktu */}
+        <span className="text-sm font-medium text-amber-500 whitespace-nowrap mt-auto">
+          {/* ↑ ZMIENIONE: text-sm, dodane text-amber-500 */}
+          {unit_price_with_discount} PLN
+        </span>
+      </div>
+    </div>
+  );
+}
+
+
   return null;
 }
 

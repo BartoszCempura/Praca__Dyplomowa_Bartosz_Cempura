@@ -68,7 +68,7 @@ function TopProducts() {
   }, [products, offset]);
 
   return (
-    <div ref={containerRef} className="container w-full overflow-hidden mx-auto">
+    <div ref={containerRef} className="w-full overflow-hidden mx-auto">
       <div className="flex flex-col justify-center items-center">
         <h1 className="text-4xl font-bold mb-5">
           Top produkty tego miesiąca
@@ -78,12 +78,12 @@ function TopProducts() {
             {/* Pojemnik z produktami */}
             <div
               ref={trackRef}
-              className="flex gap-10 transition-transform duration-500 ease-in-out mt-5 mb-5 justify-start"
+              className="flex gap-6 transition-transform duration-500 ease-in-out mt-5 mb-5 justify-start"
               style={{ transform: `translate3d(${offset}px, 0, 0)` }}
             >
-              {products.map((p, index) => (
+              {products.map((p) => (
                 <div key={p.id} className="flex-shrink-0">
-                  <ProductCard id={p.id} variant="catalog" {...p} />
+                  <ProductCard id={p.id} variant="topProducts" {...p} />
                 </div>
               ))}
             </div>

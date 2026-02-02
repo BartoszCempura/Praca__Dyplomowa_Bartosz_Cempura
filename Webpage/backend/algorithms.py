@@ -36,7 +36,7 @@ def get_top_products():
                 (UserProductInteractions.type == 'AddToWishlist', 2),
                 else_=0
             )
-        )
+        ).label('score')
 
         # z UserProductInteractions pobieral tylko product_id i wartość wagi dla typu interakcji
         # filtrowanie interakcji z ostatniego tygodnia
@@ -47,7 +47,7 @@ def get_top_products():
         product_scores = (
             UserProductInteractions.query.with_entities(
                 UserProductInteractions.product_id,
-                weighted_score
+                weighted_score.label('score')
             )
             .filter(UserProductInteractions.created_at >= one_week_ago)
             .group_by(UserProductInteractions.product_id)
@@ -63,13 +63,16 @@ def get_top_products():
         for product_id, score in product_scores:
             product = Products.query.get(product_id)
             if product:
-                if user and user.role == 'admin':
-                    top_products.append({
-                        "product": product.to_json(),
-                        "popularity_score": score
-                    })
-                else:
-                    top_products.append(product.to_json_user_view())
+                try:
+                    if user and user.role == 'admin':
+                        product_data = product.to_json()
+                        product_data['popularity_score'] = float(score)
+                        top_products.append(product_data)
+                    else:
+                        top_products.append(product.to_json_user_view())
+                except AttributeError as e:
+                    print(f"[ERROR] Product {product_id} missing method: {str(e)}")
+                    continue
 
         return jsonify(top_products), 200
 
