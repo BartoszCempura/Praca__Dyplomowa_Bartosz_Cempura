@@ -100,13 +100,13 @@ const handleResetFilters = () => {
       </aside>
 
       {/* Produkty */}
-      <div className="flex flex-wrap justify-center gap-6 my-10 mr-5">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(384px,1fr))] gap-6 my-10 mr-5">
         {products.length > 0 ? (
           products.map(p => (
             <ProductCard key={p.id} categorySlug={p.category_slug} variant="catalog" {...p} />
           ))
         ) : (
-          <span>
+          <span className="text-center">
             Brak produktów spełniających kryteria
           </span>
         )}

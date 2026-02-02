@@ -1,4 +1,5 @@
 import PromotionSlider from "./promotionSlider";
+import TopProducts from "./topProducts";
 import { useEffect, useRef } from "react";
 
 function Home() {
@@ -94,15 +95,13 @@ function Home() {
         </div>
       </div>
 
-      <div className="grid grid-cols-[30%_70%] items-center my-10 gap-4">
+      <div className="container grid grid-cols-[30%_70%] items-center my-10 gap-4 mx-auto">
         <div className="bg-base-100 p-4 text-center shadow-md">
           <h1 className="text-4xl font-bold">Bestseller</h1>
         </div>
-        <div className="bg-base-100 p-4 text-center shadow-md">
-          <h1 className="text-4xl font-bold">Top produkty tego miesiąca</h1>
-        </div>
+        <TopProducts/>
       </div>
-
+      
       <PromotionSlider promotionId={1} />
 
     </>

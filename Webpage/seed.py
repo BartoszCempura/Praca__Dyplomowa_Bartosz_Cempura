@@ -10,18 +10,26 @@ def reset_sequences():
     db.session.execute(text("ALTER SEQUENCE catalog.product_attributes_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE catalog.promotions_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE catalog.attribute_weights_id_seq RESTART WITH 1"))
+    db.session.execute(text("ALTER SEQUENCE commerce.transactions_id_seq RESTART WITH 1"))
+    db.session.execute(text("ALTER SEQUENCE commerce.transaction_products_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE analytics.user_product_interactions_id_seq RESTART WITH 1"))
+    #db.session.execute(text("ALTER SEQUENCE commerce.delivery_methods_id_seq RESTART WITH 1"))
+    #db.session.execute(text("ALTER SEQUENCE commerce.payment_methods_id_seq RESTART WITH 1"))
     db.session.commit()
 
 
 def reset_database():
     db.session.query(ProductPromotions).delete()
     db.session.query(ProductAttributes).delete()
+    db.session.query(TransactionProducts).delete()
+    db.session.query(Transactions).delete()
     db.session.query(Products).delete()
     db.session.query(Promotions).delete()
     db.session.query(Attributes).delete()
     db.session.query(Categories).delete()
     db.session.query(AttributeWeights).delete()
+    #db.session.query(PaymentMethods).delete()
+    #db.session.query(DeliveryMethods).delete()
     db.session.commit()
 
 def seed_main_categories():
@@ -767,7 +775,7 @@ def seed_products():
     db.session.commit()
     print(f"Dodano {added_count} nowych produktów.")
 
-def set_attribute_weights():
+def seed_attribute_weights():
     added_count = 0
     print("Dodawanie wag atrybutów...")
     attributes_weights = [
@@ -870,7 +878,7 @@ def set_attribute_weights():
     db.session.commit()
     print(f"Ustawiono {added_count} nowych wag atrybutów.")
 
-def set_delivery_methods(): ## nie używane obecnie
+def seed_delivery_methods(): ## nie używane obecnie
     added_count = 0
     print("Dodawanie metod dostawy...")
     delivery_methods = [
@@ -887,7 +895,7 @@ def set_delivery_methods(): ## nie używane obecnie
     db.session.commit()
     print(f"Dodano {added_count} nowych metod dostawy.")
 
-def set_payment_methods(): ## nie używane obecnie
+def seed_payment_methods(): ## nie używane obecnie
     added_count = 0
     print("Dodawanie metod płatności...")
     payment_methods = [
@@ -906,6 +914,84 @@ def set_payment_methods(): ## nie używane obecnie
     db.session.commit()
     print(f"Dodano {added_count} nowych metod płatności.")  
 
+def seed_promotions():
+    added_count = 0
+    print("Dodawanie promocji...")
+    promotions = [
+        {"name": "Wietrzenie magazynów", "discount_percent": 25, "start_date": "2025-11-25T00:00:00", "end_date": "2026-11-25T23:59:59"},
+    ]
+
+    for data in promotions:
+        istnieje = Promotions.query.filter_by(name=data["name"]).first()
+        if not istnieje:
+            new_promotion = Promotions(name=data["name"], discount_percent=data["discount_percent"], start_date=data["start_date"], end_date=data["end_date"])
+            db.session.add(new_promotion)
+            added_count += 1
+    db.session.commit()
+    print(f"Dodano {added_count} nowych promocji.")
+
+def seed_product_in_promoton():
+    added_count = 0
+    print("Dodawanie produktów do promocji...")
+    
+    products_in_promotion = [
+        {"product_id": 22, "promotion_id": 1},
+        {"product_id": 28, "promotion_id": 1},
+        {"product_id": 33, "promotion_id": 1},
+        {"product_id": 16, "promotion_id": 1},
+        {"product_id": 41, "promotion_id": 1},
+        {"product_id": 7, "promotion_id": 1},
+        {"product_id": 55, "promotion_id": 1},
+        {"product_id": 35, "promotion_id": 1},
+        {"product_id": 3, "promotion_id": 1},
+    ]
+
+    for product_data in products_in_promotion:
+        product = Products.query.filter_by(id=product_data["product_id"]).first()
+        promotion = Promotions.query.filter_by(id=product_data["promotion_id"]).first()
+        if product and promotion:
+            istnieje = ProductPromotions.query.filter_by(product_id=product.id, promotion_id=promotion.id).first()
+            if not istnieje:
+                new_product_in_promotion = ProductPromotions(product_id=product.id, promotion_id=promotion.id)
+                db.session.add(new_product_in_promotion)
+                added_count += 1
+    db.session.commit()
+    print(f"Dodano {added_count} produktów do promocji.")
+
+def seed_transacion_products(): ## nie używane obecnie
+    added_count = 0
+    print("Dodawanie produktów do transakcji...")
+
+    transaction_products = [ 
+        {"transaction_id": 1, "product_id": 4, "quantity": 1, "unit_price": 2699.00},
+        {"transaction_id": 1, "product_id": 6, "quantity": 1, "unit_price": 4899.00}
+    ]
+    for data in transaction_products:
+        istnieje = TransactionProducts.query.filter_by(transaction_id=data["transaction_id"], product_id=data["product_id"]).first()
+        if not istnieje:
+            new_transaction_product = TransactionProducts(transaction_id=data["transaction_id"], product_id=data["product_id"], quantity=data["quantity"], unit_price=data["unit_price"])
+            db.session.add(new_transaction_product)
+            added_count += 1
+    db.session.commit()
+    print(f"Dodano {added_count} produktów do transakcji.")
+
+def seed_transactions(): ## nie używane obecnie
+    added_count = 0
+    print("Dodawanie transakcji...")
+    transactions = [
+        {"user_id": 1, "total_transaction_value": 7607.99, "billing_address_id": 46, "shipping_address_id": 46, "status": TransactionStatus.Pending, "delivery_method_id": 1, "payment_method_id": 1, "delivery_deadline": "2026-02-03", "created_at": "2026-02-01 23:39:25.202989+01", "updated_at": "2026-02-01 23:39:25.202989+01", "billing_address_data": {}, "shipping_address_data": {}},
+    ]
+
+    for data in transactions:
+        istnieje = Transactions.query.filter_by(user_id=data["user_id"], created_at=data["created_at"]).first()
+        if not istnieje:
+            new_transaction = Transactions(user_id=data["user_id"], total_transaction_value=data["total_amount"], billing_address_id=data["billing_address_id"], shipping_address_id=data["shipping_address_id"], status=data["status"], delivery_method_id=data["delivery_method_id"], payment_method_id=data["payment_method_id"], delivery_deadline=data["delivery_deadline"], created_at=data["created_at"], updated_at=data["updated_at"], billing_address_data=data["billing_address_data"], shipping_address_data=data["shipping_address_data"])
+            db.session.add(new_transaction)
+            added_count += 1
+    db.session.commit()
+    print(f"Dodano {added_count} nowych transakcji.")
+
+
 def seed_database():
     app = create_app()  # Utwórz instancję aplikacji
     
@@ -919,7 +1005,14 @@ def seed_database():
         seed_attributes()
         seed_products()
         seed_product_attributes()
-        set_attribute_weights()
+        seed_attribute_weights()
+        #seed_delivery_methods()
+        #seed_payment_methods()
+        seed_promotions()
+        seed_product_in_promoton()
+        #print("Uzupełnianie historycznyhc danych transakcji...")
+        #seed_transactions()
+        #seed_transacion_products()
 
 if __name__ == "__main__":
     seed_database()

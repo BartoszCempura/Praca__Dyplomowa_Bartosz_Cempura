@@ -44,57 +44,74 @@ function ProductCard({ id, name, slug, categorySlug, image, unit_price, unit_pri
   };
 
   if (variant === "catalog") {
-    return (
-      <div className="card card-side bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 w-100 grid grid-cols-2 border border-gray-900 relative">
+  return (
+    <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 w-96 h-48 border border-gray-900 relative">
+      {/* ↑ Usunięte: card-side i grid grid-cols-2 */}
+      
+      <button 
+        type="button" 
+        className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-base-200 transition-colors group" 
+        onClick={handleAddToWishlist}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className={`h-6 w-6 transition-colors duration-200 ${inWishList ? 'fill-amber-500 stroke-amber-500' : 'group-hover:stroke-amber-500'}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+      </button>
 
-        <button type="button" className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-base-200 transition-colors group" onClick={handleAddToWishlist}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className={`h-6 w-6 transition-colors duration-200 ${inWishList ? 'fill-amber-500 stroke-amber-500' : 'group-hover:stroke-amber-500'}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-          </svg>
-        </button>
-
+      {/* Grid layout dla obrazu i contentu */}
+      <div className="grid grid-cols-2 h-full">
         {/* Obraz produktu */}
-        <figure>
+        <figure className="overflow-hidden h-full">
           <Link to={`/product/${slug}`}>
-            <img src={image} alt={name} className="object-cover rounded-lg w-full h-full" />
+            <img src={image} alt={name} className="object-cover w-full h-full rounded-lg" />
           </Link>
         </figure>
 
-        <div className="card-body flex flex-col justify-between">
+        {/* Zawartość */}
+        <div className="card-body flex flex-col justify-between p-4">
           {/* kategoria */}
           <span className="text-sm text-gray-500">{categorySlug}</span>
+          
           {/* Nazwa */}
           <Link to={`/product/${slug}`}>
-            <h2 className="card-title">{name}</h2>
+            <h2 className="card-title text-base">{name}</h2>
           </Link>
-          {/* Cena lub przekreślona cena i cena promocyjna */}
+          
+          {/* Cena */}
           {unit_price_with_discount !== unit_price ? (
-            <div className="relative inline-block mb-1">
-              <span className="text-md font-semibold text-amber-500">{unit_price_with_discount} PLN</span>
-              <span className="absolute right-0 -top-1 line-through text-sm">{unit_price} PLN</span>
+            <div className="flex flex-col gap-1 mb-1">
+              <span className="text-lg font-semibold text-amber-500">{unit_price_with_discount} PLN</span>
+              <span className="line-through text-sm text-gray-500">{unit_price} PLN</span>
             </div>
           ) : (
-            <span className="text-md font-semibold">{unit_price_with_discount} PLN</span>
+            <span className="text-lg font-semibold">{unit_price_with_discount} PLN</span>
           )}
-          {/* Przycisk dodaj do koszyka i jego blokowanie jeżeli produkt jest już w koszyku */}
-          <div className="card-actions">
-            <button type="button" onClick={() => handleAddToCart(1)} className={isInCart ? "btn btn-in-cart w-full" : "btn btn-custom w-full"} disabled={isInCart}>
-              {isInCart ? "W koszyku" : "Dodaj do koszyka"}
+          
+          {/* Przycisk */}
+          <div className="card-actions mt-auto">
+            <button 
+              type="button" 
+              onClick={() => handleAddToCart(1)} 
+              className={isInCart ? "btn btn-in-cart w-full btn-sm" : "btn btn-custom w-full btn-sm"} 
+              disabled={isInCart}
+            >
+              {isInCart ? "W koszyku" : "Dodaj"}
             </button>
           </div>
-          
         </div>
-
       </div>
-    );
-  }
+
+    </div>
+  );
+}
+
 
   if (variant === "cart") {
     return (

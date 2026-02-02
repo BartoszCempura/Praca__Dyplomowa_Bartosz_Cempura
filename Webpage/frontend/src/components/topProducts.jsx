@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from "react";
-import { getProductsInPromotion } from "../utils/promotionsActions";
+import { getTopProducts } from "../utils/topProductsActions"
 import ProductCard from "./productCard";
 
-function PromotionSlider({ promotionId }) {
+function TopProducts() {
   const [products, setProducts] = useState([]);
   const [offset, setOffset] = useState(0);
 
@@ -19,12 +19,12 @@ function PromotionSlider({ promotionId }) {
   // ---- LOAD PRODUCTS ----
   useEffect(() => {
     async function load() {
-      const data = await getProductsInPromotion(promotionId);
+      const data = await getTopProducts();
       setProducts(data);
       setOffset(0); // reset offset on load
     }
     load();
-  }, [promotionId]);
+  }, []);
 
   // ---- SCROLL BUTTONS LOGIC ----
   const next = () => {
@@ -71,7 +71,7 @@ function PromotionSlider({ promotionId }) {
     <div ref={containerRef} className="container w-full overflow-hidden mx-auto">
       <div className="flex flex-col justify-center items-center">
         <h1 className="text-4xl font-bold mb-5">
-          Produkty w promocyjnych cenach
+          Top produkty tego miesiąca
         </h1>
 
         <div className="relative w-full">
@@ -112,4 +112,4 @@ function PromotionSlider({ promotionId }) {
   );
 }
 
-export default PromotionSlider;
+export default TopProducts;

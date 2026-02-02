@@ -69,7 +69,7 @@ def get_top_products():
                         "popularity_score": score
                     })
                 else:
-                    top_products.append({"product": product.to_json_user_view()})
+                    top_products.append(product.to_json_user_view())
 
         return jsonify(top_products), 200
 
