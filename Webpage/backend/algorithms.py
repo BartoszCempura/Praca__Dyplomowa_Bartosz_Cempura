@@ -74,7 +74,34 @@ def get_top_products():
                     print(f"[ERROR] Product {product_id} missing method: {str(e)}")
                     continue
 
-        return jsonify(top_products), 200
+        top_purchase = (
+            UserProductInteractions.query.with_entities(
+                UserProductInteractions.product_id,
+                func.count(UserProductInteractions.id).label('purchase_count')
+        ).filter(
+            UserProductInteractions.type == 'Purchase',
+            UserProductInteractions.created_at >= one_week_ago 
+        )
+        .group_by(UserProductInteractions.product_id)
+        .order_by(desc('purchase_count'))
+        .first()
+        )
+        top_purchase_product = None
+        if top_purchase:
+            product_id, purchase_count = top_purchase
+            product = Products.query.get(product_id)
+
+            if product:
+                try:
+                    top_purchase_product =  product.to_json_user_view()
+                    top_purchase_product['purchase_count'] = purchase_count
+                except AttributeError as e:
+                    print(f"[ERROR] Most purchased product: {str(e)}")
+
+        return jsonify({
+            'top_products': top_products,
+            'most_purchased_product': top_purchase_product
+        }), 200
 
     except Exception as e:
         print(f"[ERROR]: {str(e)}")

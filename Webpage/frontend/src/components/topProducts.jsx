@@ -13,14 +13,15 @@ function TopProducts() {
   const [canScrollPrev, setCanScrollPrev] = useState(false);
 
   const CARDS_TO_SHOW = 3;  // Ilość kart do pokazania
-  const CARD_WIDTH = 384;   // w-96 = 384px
+  const CARD_WIDTH = 320;   // w-96 = 384px
   const GAP = 40;  // gap-10 = 40px
+  
 
   // ---- LOAD PRODUCTS ----
   useEffect(() => {
     async function load() {
       const data = await getTopProducts();
-      setProducts(data);
+      setProducts(data.topProducts || []);
       setOffset(0); // reset offset on load
     }
     load();
@@ -32,7 +33,7 @@ function TopProducts() {
     const scrollAmount = (CARD_WIDTH + GAP) * CARDS_TO_SHOW;
     setOffset(prev => {
       const newOffset = prev - scrollAmount;
-      const maxOffset = -(trackRef.current.scrollWidth - containerRef.current.offsetWidth);
+      const maxOffset = -(trackRef.current.scrollWidth - containerRef.current.offsetWidth + 65);
       return Math.max(newOffset, maxOffset);
     });
   };
@@ -70,37 +71,38 @@ function TopProducts() {
   return (
     <div ref={containerRef} className="w-full overflow-hidden mx-auto">
       <div className="flex flex-col justify-center items-center">
-        <h1 className="text-4xl font-bold mb-5">
-          Top produkty tego miesiąca
-        </h1>
-
-        <div className="relative w-full">
+        <div className="relative w-full pl-8">
             {/* Pojemnik z produktami */}
             <div
               ref={trackRef}
-              className="flex gap-6 transition-transform duration-500 ease-in-out mt-5 mb-5 justify-start"
-              style={{ transform: `translate3d(${offset}px, 0, 0)` }}
+              className="grid grid-rows-2 transition-transform duration-500 ease-in-out"
+              style={{ 
+                transform: `translate3d(${offset}px, 0, 0)`,
+                gridAutoFlow: 'column',
+                gridAutoColumns: '320px', // Szerokość kolumny (w-96) 
+                columnGap: '40px', // gap-10
+                rowGap: '24px'// gap-6
+              }}
             >
               {products.map((p) => (
-                <div key={p.id} className="flex-shrink-0">
-                  <ProductCard id={p.id} variant="topProducts" {...p} />
-                </div>
+                <ProductCard key={p.id} id={p.id} variant="topProducts" {...p} />
               ))}
             </div>
 
+
             {/* Przyciski nawigacji - absolute positioning */}
-            <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between pointer-events-none">
+            <div className="absolute left-1 right-1 top-1/2 flex -translate-y-1/2 transform justify-between pointer-events-none">
               <button 
                 disabled={!canScrollPrev} 
                 onClick={prev} 
-                className="btn btn-circle pointer-events-auto"
+                className="btn btn-circle pointer-events-auto shadow-sm hover:shadow-amber-500 transition-shadow duration-100"
               >
                 ❮
               </button>
               <button 
                 disabled={!canScrollNext} 
                 onClick={next} 
-                className="btn btn-circle pointer-events-auto"
+                className="btn btn-circle pointer-events-auto shadow-sm hover:shadow-amber-500 transition-shadow duration-100"
               >
                 ❯
               </button>

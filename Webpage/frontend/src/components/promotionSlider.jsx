@@ -69,16 +69,33 @@ function PromotionSlider({ promotionId }) {
 
   return (
     <div ref={containerRef} className="container w-full overflow-hidden mx-auto">
-      <div className="flex flex-col justify-center items-center">
-        <h1 className="text-4xl font-bold mb-5">
-          Produkty w promocyjnych cenach
-        </h1>
-
+      <div className="flex flex-col">
         <div className="relative w-full">
+          <h1 className="text-4xl font-bold text-center">
+            Produkty w promocyjnych cenach
+          </h1>
+          {/* Przyciski nawigacji - absolute positioning */}
+            <div className="absolute left-1 right-1 top-1/2 flex -translate-y-1/2 transform justify-around pointer-events-none">
+              <button 
+                disabled={!canScrollPrev} 
+                onClick={prev} 
+                className="btn btn-circle pointer-events-auto shadow-sm hover:shadow-amber-500 transition-shadow duration-100"
+              >
+                ❮
+              </button>
+              <button 
+                disabled={!canScrollNext} 
+                onClick={next} 
+                className="btn btn-circle pointer-events-auto shadow-sm hover:shadow-amber-500 transition-shadow duration-100"
+              >
+                ❯
+              </button>
+            </div>
+        </div>
             {/* Pojemnik z produktami */}
             <div
               ref={trackRef}
-              className="flex gap-10 transition-transform duration-500 ease-in-out mt-5 mb-5 justify-start"
+              className="flex gap-10 transition-transform duration-500 ease-in-out my-10 justify-start"
               style={{ transform: `translate3d(${offset}px, 0, 0)` }}
             >
               {products.map((p, index) => (
@@ -88,27 +105,10 @@ function PromotionSlider({ promotionId }) {
               ))}
             </div>
 
-            {/* Przyciski nawigacji - absolute positioning */}
-            <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between pointer-events-none">
-              <button 
-                disabled={!canScrollPrev} 
-                onClick={prev} 
-                className="btn btn-circle pointer-events-auto"
-              >
-                ❮
-              </button>
-              <button 
-                disabled={!canScrollNext} 
-                onClick={next} 
-                className="btn btn-circle pointer-events-auto"
-              >
-                ❯
-              </button>
-            </div>
           </div>
 
       </div>
-    </div>
+
   );
 }
 

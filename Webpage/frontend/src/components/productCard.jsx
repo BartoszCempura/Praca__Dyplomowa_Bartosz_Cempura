@@ -212,8 +212,47 @@ if (variant === "topProducts") {
   );
 }
 
+if (variant === "bestseller") {
+  return (
+    <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 relative mx-10"
+    style={{ height: 'calc((96px * 2) + 24px)' }}>
+
+        {/* Obraz produktu */}
+        <figure className="overflow-hidden rounded-t-lg">
+          <Link to={`/product/${slug}`}>
+            <img src={image} alt={name} className="object-cover w-full h-full" />
+          </Link>
+        </figure>
+
+
+ 
+        </div>
+  );
+}
+
 
   return null;
 }
 
 export default ProductCard;
+
+
+        {/* Zawartość */}
+        <div className="card-body justify-between items-center p-4">  
+    
+            {/* Nazwa */}
+            <Link to={`/product/${slug}`}>
+              <h2 className="card-title text-base">{name}</h2>
+            </Link>
+            
+            {/* Cena */}
+            {unit_price_with_discount !== unit_price ? (
+              <div className="flex flex-col gap-1 mb-1">
+                <span className="text-lg font-semibold text-amber-500">{unit_price_with_discount} PLN</span>
+                <span className="line-through text-sm text-gray-500">{unit_price} PLN</span>
+              </div>
+            ) : (
+              <span className="text-lg font-semibold">{unit_price_with_discount} PLN</span>
+            )}
+          </div>
+       
