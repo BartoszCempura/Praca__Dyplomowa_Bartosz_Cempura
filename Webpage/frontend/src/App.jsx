@@ -1,5 +1,5 @@
 import './App.css'
-import {Navbar, Menu, ProductCatalog, SearchProducts, Home, ProductDetails, Footer, LoginPage, UserProfile, DaneDoZamowien, UserCreateAccount, CartPartOne, CartPartTwo, Wishlist} from "./utils/"
+import {Navbar, Menu, ProductCatalog, SearchProducts, Home, ProductDetails, Footer, LoginPage, UserProfile, DaneDoZamowien, UserCreateAccount, CartPartOne, CartPartTwo, Wishlist, AdminDashboard} from "./utils/"
 import { Routes, Route, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { getSessionId } from "./utils/trackInteraction";
@@ -18,6 +18,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<UserCreateAccount />} />
         <Route path="/user" element={<UserProfile />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/dane-do-zamowien" element={<DaneDoZamowien />} />
         <Route path="/" element={<Home />} />
         <Route path="/cart" element={<CartPartOne />} />

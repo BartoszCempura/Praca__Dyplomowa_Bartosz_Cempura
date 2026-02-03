@@ -39,4 +39,6 @@ zmień położenie przycisków przewijania produktów w promocji
 Jest coś takiego jak storage event api aby się local storrage synchronizowało na kartach - czy warto??
 
 
+Wykonać kokpit !!!!!
 
+Jakieś dane z wykresami co się sprzedaje, suma dochodu z miesiąca, Może zakładki u szczytu z typami rzeczy które można zrobić ??

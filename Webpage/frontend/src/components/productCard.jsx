@@ -6,7 +6,7 @@ import { useWishlist } from "../utils/useWhishlist";
 import { addToCart, removeFromCart } from "../utils/cartActions";
 import { addToWishlist, removeFromWishlist} from "../utils/wishlistActions";
 
-function ProductCard({ id, name, slug, categorySlug, image, unit_price, unit_price_with_discount, variant, quantity }) {
+function ProductCard({ id, name, slug, category_slug, image, unit_price, unit_price_with_discount, variant, quantity }) {
   const [ localQuantity, setLocalQuantity ] = useState(1);
   const inWishList = useWishlist(id);
   const isInCart = useCart(id);
@@ -77,7 +77,7 @@ function ProductCard({ id, name, slug, categorySlug, image, unit_price, unit_pri
         {/* Zawartość */}
         <div className="card-body flex flex-col justify-between p-4">
           {/* kategoria */}
-          <span className="text-sm text-gray-500">{categorySlug}</span>
+          <span className="text-sm text-gray-500">{category_slug}</span>
           
           {/* Nazwa */}
           <Link to={`/product/${slug}`}>
@@ -204,7 +204,6 @@ if (variant === "topProducts") {
         
         {/* Cena produktu */}
         <span className="text-sm font-medium text-amber-500 whitespace-nowrap mt-auto">
-          {/* ↑ ZMIENIONE: text-sm, dodane text-amber-500 */}
           {unit_price_with_discount} PLN
         </span>
       </div>
@@ -214,19 +213,25 @@ if (variant === "topProducts") {
 
 if (variant === "bestseller") {
   return (
-    <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 relative mx-10"
+    <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 relative mx-10 group"
     style={{ height: 'calc((96px * 2) + 24px)' }}>
-
-        {/* Obraz produktu */}
-        <figure className="overflow-hidden rounded-t-lg">
+        <figure className="overflow-hidden rounded-lg h-full">
           <Link to={`/product/${slug}`}>
             <img src={image} alt={name} className="object-cover w-full h-full" />
           </Link>
         </figure>
-
-
- 
+        <div className="absolute bottom-0 left-0 right-0
+        h-1/4 bg-base-200/95 text-white
+        flex justify-center items-end gap-6 p-4
+        opacity-0 group-hover:opacity-100
+        transition-opacity duration-200">
+          {/*<span className="text-base">{category_slug}</span>*/}
+          <Link to={`/product/${slug}`}>
+              <h2 className="card-title text-base">{name}</h2>
+          </Link>
+          <span className="text-base font-semibold text-amber-500">{unit_price_with_discount} PLN</span>
         </div>
+      </div>
   );
 }
 
@@ -236,23 +241,3 @@ if (variant === "bestseller") {
 
 export default ProductCard;
 
-
-        {/* Zawartość */}
-        <div className="card-body justify-between items-center p-4">  
-    
-            {/* Nazwa */}
-            <Link to={`/product/${slug}`}>
-              <h2 className="card-title text-base">{name}</h2>
-            </Link>
-            
-            {/* Cena */}
-            {unit_price_with_discount !== unit_price ? (
-              <div className="flex flex-col gap-1 mb-1">
-                <span className="text-lg font-semibold text-amber-500">{unit_price_with_discount} PLN</span>
-                <span className="line-through text-sm text-gray-500">{unit_price} PLN</span>
-              </div>
-            ) : (
-              <span className="text-lg font-semibold">{unit_price_with_discount} PLN</span>
-            )}
-          </div>
-       

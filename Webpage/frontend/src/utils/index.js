@@ -13,3 +13,4 @@ export { default as CartPartOne } from "../components/cartPartOne";
 export { default as CartPartTwo } from "../components/cartPartTwo";
 export { default as Wishlist } from "../components/wishlist";
 export { default as DaneDoZamowien } from "../components/daneDoZamowien"
+export { default as AdminDashboard } from "../components/adminDashboard"
