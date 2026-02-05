@@ -27,7 +27,7 @@ function Menu() {
   }, []);
 
  return (
-  <div className="flex justify-center bg-base-200 shadow-sm relative z-40"> 
+  <div className="flex justify-center bg-base-200 shadow-md relative z-40"> 
   {/* Warto by było dodac skłądanie menu do jednej ikony dla lepszej responsywności */}
     {categories.map((category) => (
       <div key={category.id} className="dropdown dropdown-hover">

@@ -89,7 +89,7 @@ function Navbar() {
   };
 
   return (
-    <div className="navbar bg-base-200 grid grid-cols-3 items-center px-8 py-4 shadow-md z-50 relative">
+    <div className="navbar bg-base-200 grid grid-cols-3 items-center px-8 py-4 shadow-lg z-50 relative">
       <div className="flex justify-start">
         <div className="flex items-center">
           <a href="/">

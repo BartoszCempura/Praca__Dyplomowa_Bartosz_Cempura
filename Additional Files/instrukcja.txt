@@ -49,6 +49,7 @@ Tworze folder Frontend
         cd frontend
         npm install
         npm install react-router-dom
+        npm install recharts
     Instalacja Tailwind css wraz z Vite plugin oraz kolekcji klas daisyUI
         npm install tailwindcss@latest @tailwindcss/vite@latest daisyui@latest
 
@@ -77,5 +78,3 @@ W pliku vite.config.js dodaje konfiguracje proxy aby nie pisać pełnej ścieżk
   },
 
 
-musze zrobić z nazwy produktu slug i wtedy będe mógł go używać w URL
-modyfikowałem endpoint product_details - zamiast product is dałem name

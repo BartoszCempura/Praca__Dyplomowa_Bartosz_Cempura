@@ -11,7 +11,7 @@ algorithms_bp = Blueprint('algorithms', __name__, url_prefix='/api/algorithms')
 ## ############################################################### Popular Products Algorithm ######################################################################
 
 
-@algorithms_bp.route('/top-products', methods=['GET'])
+@algorithms_bp.route('/top-products', methods=['GET']) ## used - kokpit wykres i strona główna
 @jwt_required(optional=True)
 def get_top_products():
 
@@ -47,12 +47,12 @@ def get_top_products():
         product_scores = (
             UserProductInteractions.query.with_entities(
                 UserProductInteractions.product_id,
-                weighted_score.label('score')
+                weighted_score
             )
             .filter(UserProductInteractions.created_at >= one_week_ago)
             .group_by(UserProductInteractions.product_id)
             .order_by(desc(weighted_score))
-            .limit(10)
+            .limit(20)
             .all()
         )
 
@@ -98,9 +98,34 @@ def get_top_products():
                 except AttributeError as e:
                     print(f"[ERROR] Most purchased product: {str(e)}")
 
+        top_viewed = (
+            UserProductInteractions.query.with_entities(
+                UserProductInteractions.product_id,
+                func.count(UserProductInteractions.id).label('view_count')
+        ).filter(
+            UserProductInteractions.type == 'View',
+            UserProductInteractions.created_at >= one_week_ago 
+        )
+        .group_by(UserProductInteractions.product_id)
+        .order_by(desc('view_count'))
+        .first()
+        )
+        top_viewed_product = None
+        if top_viewed:
+            product_id, view_count = top_viewed
+            product = Products.query.get(product_id)
+
+            if product:
+                try:
+                    top_viewed_product =  product.to_json_user_view()
+                    top_viewed_product['view_count'] = view_count
+                except AttributeError as e:
+                    print(f"[ERROR] Most purchased product: {str(e)}")
+
         return jsonify({
             'top_products': top_products,
-            'most_purchased_product': top_purchase_product
+            'most_purchased_product': top_purchase_product,
+            'top_viewed_product': top_viewed_product
         }), 200
 
     except Exception as e:

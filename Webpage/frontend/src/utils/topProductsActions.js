@@ -6,7 +6,8 @@ export async function getTopProducts() {
 
     return {
       topProducts: response.data.top_products || [],
-      mostPurchased: response.data.most_purchased_product || null
+      mostPurchased: response.data.most_purchased_product || null,
+      mostViewed: response.data.top_viewed_product || null
     };
 
   } catch (err) {
