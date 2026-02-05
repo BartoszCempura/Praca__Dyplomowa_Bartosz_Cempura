@@ -1,15 +1,26 @@
 import { useEffect, useState} from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { getTopProducts } from "../utils/topProductsActions"
-import { getTransactions } from "../utils/transactionsActions"
+import { getTransactions, setTransactionStatus } from "../utils/transactionsActions"
 
 function AdminDashboard() {
-  const [chartData, setChartData] = useState([]);
-  const [topViewed, setTopViewed] = useState(null);
-  const [mostPurchased, setMoustPurchased] = useState(null);
   const [kokpitSection, setKokpitSection ] = useState("products_popularity");
   const [loading, setLoading] = useState(false);
 
+  const [chartData, setChartData] = useState([]);
+  const [topViewed, setTopViewed] = useState(null);
+  const [mostPurchased, setMoustPurchased] = useState(null);
+  
+  const [transactions, setTransactions] = useState([])
+  const [pagination, setPagination] = useState({});
+  const [filters, setFilters] = useState({
+    status: '',
+    date_from: '',
+    date_to: '',
+    page: 1,
+    limit: 20
+  });
+  // elementy dla wykresów
   useEffect(() => {
     if (kokpitSection === "products_popularity") {
       loadPopularityData();
@@ -63,7 +74,47 @@ const CustomTooltip = ({ active, payload }) => {
 
   return null;
 };
+  // elementy dla transakcji
+  useEffect(() => {
+      loadTransactions();
+    }, [filters]);
 
+  const loadTransactions = async () => {
+      setLoading(true);
+      
+      try {
+        const data = await getTransactions(filters);
+        
+        setTransactions(data.transactions);
+        setPagination({
+          total: data.total,
+          page: data.page,
+          pages: data.pages,
+          hasNext: data.hasNext,
+          hasPrev: data.hasPrev
+        });
+        
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const handleFilterChange = async (id, status) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value,
+      page: 1 // Reset to first page when filters change
+    }));
+  };
+
+    const handleStatusChange = async (id, status) => {
+      const success = await setTransactionStatus (id, status);
+      if (success) {
+        loadTransactions();
+      }
+    };
 
   return (
     <>
@@ -186,7 +237,169 @@ const CustomTooltip = ({ active, payload }) => {
           )}
 
           {kokpitSection === "transaction_edit" && (
-            <p>Trwają prace</p>
+            <div className="py-15 px-20">
+
+              {/* Filters */}
+              <div className="mb-6 flex gap-6">
+
+                <div className="mb-6">
+                  <label className="label">Filtruj po statusie</label>
+                  <select 
+                    className="select select-bordered" 
+                    value={filters.status}
+                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                  >
+                    <option value="">Wszystkie</option>
+                    <option value="Pending">Oczekujące</option>
+                    <option value="Shipped">Wysłane</option>
+                    <option value="Completed">Zakończone</option>
+                    <option value="Cancelled">Anulowane</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="label">Data od</label>
+                  <input type="date" className="input input-bordered" value={filters.date_from}
+                    onChange={(e) => handleDateChange('date_from', e.target.value)}/>
+                </div>
+
+                <div>
+                  <label className="label">Data do</label>
+                  <input type="date" className="input input-bordered" value={filters.date_to}
+                    onChange={(e) => handleDateChange('date_to', e.target.value)}/>
+                </div>
+
+                <button className="btn btn-error text-white self-center" onClick={() =>
+                 setFilters({
+                    status: '',
+                    date_from: '',
+                    date_to: '',
+                    page: 1,
+                    limit: 20
+                  })}>
+                  Wyczyść
+                </button>
+
+              </div>
+
+              {/* Loading */}
+              {loading ? (
+                <div className="flex justify-center py-20">
+                  <span className="loading loading-spinner loading-lg"></span>
+                </div>
+              ) : (
+                <>
+                  {/* Transactions List */}
+                  <div className="space-y-4">
+                    {transactions.length === 0 ? (
+                      <p className="text-center text-gray-500 py-10">Brak transakcji</p>
+                    ) : (
+                      transactions.map((transaction) => (
+                        <div key={transaction.id} className="card bg-base-200 shadow">
+                          <div className="card-body">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="font-bold">Transakcja #{transaction.id}</h3>
+                                <p className="text-sm text-gray-500">
+                                  {transaction.created_at}
+                                </p>
+                                <p className="text-sm">Użytkownik: {transaction.user_id}</p>
+                              </div>
+                              <select
+                                className="select select-bordered select-sm"
+                                value={transaction.status}
+                                onChange={(e) => handleFilterChange("status", e.target.value)}
+                              >
+                                <option value="Pending">Oczekujące</option>
+                                <option value="Shipped">Wysłane</option>
+                                <option value="Completed">Zakończone</option>
+                                <option value="Cancelled">Anulowane</option>
+                              </select>
+                            </div>
+
+                            <div className="divider"></div>
+
+                            {/* Products */}
+                            <div className="space-y-2">
+                              <h4 className="font-semibold">Produkty:</h4>
+                              {transaction.producty.map((product) => (
+                                <div key={product.id} className="flex justify-between text-sm">
+                                  <span>ID: {product.product_id}</span>
+                                  <span>Ilość: {product.quantity}</span>
+                                  <span>{product.unit_price_with_discount} zł</span>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="divider"></div>
+
+                            {/* Total */}
+                            <div className="flex justify-between items-center">
+                              <span className="font-bold">Razem:</span>
+                              <span className="text-xl font-bold text-primary">
+                                {transaction.total_transaction_value} zł
+                              </span>
+                            </div>
+
+                            {/* Addresses */}
+                            <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
+                              <div>
+                                <p className="font-semibold">Adres wysyłki:</p>
+                                <p>{transaction.shipping_address_data.first_name} {transaction.shipping_address_data.last_name}</p>
+                                <p>{transaction.shipping_address_data.street_name} {transaction.shipping_address_data.building_number}</p>
+                                <p>{transaction.shipping_address_data.zip_code} {transaction.shipping_address_data.city}</p>
+                              </div>
+                              <div>
+                                <p className="font-semibold">Adres rozliczeniowy:</p>
+                                <p>{transaction.billing_address_data.first_name} {transaction.billing_address_data.last_name}</p>
+                                <p>{transaction.billing_address_data.street_name} {transaction.billing_address_data.building_number}</p>
+                                <p>{transaction.billing_address_data.zip_code} {transaction.billing_address_data.city}</p>
+                              </div>
+                            </div>
+
+                            {transaction.notes && (
+                              <div className="mt-4 p-3 bg-base-300 rounded">
+                                <p className="text-sm"><strong>Notatki:</strong> {transaction.notes}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Pagination */}
+                  {pagination.pages > 1 && (
+                    <div className="flex justify-center items-center gap-4 mt-8">
+                      <button 
+                        className="btn btn-sm"
+                        disabled={!pagination.hasPrev}
+                        onClick={() => handlePageChange(filters.page - 1)}
+                      >
+                        ← Poprzednia
+                      </button>
+
+                      <span className="text-sm">
+                        Strona {pagination.page} z {pagination.pages}
+                      </span>
+
+                      <button 
+                        className="btn btn-sm"
+                        disabled={!pagination.hasNext}
+                        onClick={() => handlePageChange(filters.page + 1)}
+                      >
+                        Następna →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Stats */}
+                  <div className="text-center text-sm text-gray-500 mt-4">
+                    Wyświetlono {transactions.length} z {pagination.total} transakcji
+                  </div>
+                </>
+              )}
+            </div>
           )}
 
         </div>

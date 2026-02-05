@@ -22,3 +22,18 @@ export async function getTransactions(filters = {}) {
     throw err;
   }
 }
+
+export async function setTransactionStatus(transactionId, status) {
+try {
+    const payload = { status };
+
+    const response = await api.put(
+      `/commerce/admin/transactions/${transactionId}`,
+      payload
+    );
+    return true;
+} catch (err) {
+    console.error(err);
+    return false;
+}
+}

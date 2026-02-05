@@ -273,6 +273,7 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
     def to_json(self):
         return {
             **self._base_json(),
+            "slug": self.slug,
             "category_id": self.category_id,
             "description": self.description,
             "created_at": self.created_at.isoformat() if self.created_at else None,
@@ -583,18 +584,18 @@ class Transactions (db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    shipping_address = db.relationship('UserAddress', foreign_keys=[shipping_address_id])
+    shipping_address = db.relationship('UserAddress', foreign_keys=[shipping_address_id]) ## potrzebne?? 
+    biling_address = db.relationship('UserAddress', foreign_keys=[billing_address_id])  ## potrzebne?? 
     delivery_method = db.relationship('DeliveryMethods', foreign_keys=[delivery_method_id])
     payment_method = db.relationship('PaymentMethods', foreign_keys=[payment_method_id])
+
 
     def to_json(self):
         return {
             "id": self.id,
             "user_id": self.user_id,
             "total_transaction_value": self.total_transaction_value,
-            "billing_address_id": self.billing_address_id,
-            "billing_address_data": self.billing_address_data,
-            "shipping_address_id": self.shipping_address_id,          
+            "billing_address_data": self.billing_address_data,      
             "shipping_address_data": self.shipping_address_data,
             "status": self.status.value,
             "delivery_method_id": self.delivery_method_id, # ze względu na typ kolumny Date, będzie tu przechowywana data dostawy bez uwzględnienia godzin, minut i sekund

@@ -215,9 +215,9 @@ if (variant === "bestseller") {
   return (
     <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 relative mx-10 group"
     style={{ height: 'calc((96px * 2) + 24px)' }}>
-        <figure className="overflow-hidden rounded-lg h-full">
+        <figure className="overflow-hidden rounded-lg h-full bg-white">
           <Link to={`/product/${slug}`}>
-            <img src={image} alt={name} className="object-cover w-full h-full" />
+            <img src={image} alt={name} className="object-cover scale-[0.4]" />
           </Link>
         </figure>
         <div className="absolute bottom-0 left-0 right-0
