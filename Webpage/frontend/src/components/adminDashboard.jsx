@@ -12,7 +12,13 @@ function AdminDashboard() {
   const [mostPurchased, setMoustPurchased] = useState(null);
   
   const [transactions, setTransactions] = useState([])
-  const [pagination, setPagination] = useState({});
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    pages: 1,
+    hasNext: false,
+    hasPrev: false
+  });
   const [filters, setFilters] = useState({
     status: '',
     date_from: '',
@@ -20,6 +26,7 @@ function AdminDashboard() {
     page: 1,
     limit: 20
   });
+
   // elementy dla wykresów
   useEffect(() => {
     if (kokpitSection === "products_popularity") {
@@ -74,6 +81,7 @@ const CustomTooltip = ({ active, payload }) => {
 
   return null;
 };
+
   // elementy dla transakcji
   useEffect(() => {
       loadTransactions();
@@ -101,18 +109,25 @@ const CustomTooltip = ({ active, payload }) => {
       }
     };
 
-    const handleFilterChange = async (id, status) => {
+    const handleFilterChange = (field, value) => {
     setFilters(prev => ({
       ...prev,
       [field]: value,
-      page: 1 // Reset to first page when filters change
+      page: 1 
+    }));
+  };
+
+  const handlePageChange = (newPage) => {
+    setFilters(prev => ({
+      ...prev,
+      page: newPage
     }));
   };
 
     const handleStatusChange = async (id, status) => {
       const success = await setTransactionStatus (id, status);
       if (success) {
-        loadTransactions();
+        await loadTransactions();
       }
     };
 
@@ -260,13 +275,13 @@ const CustomTooltip = ({ active, payload }) => {
                 <div>
                   <label className="label">Data od</label>
                   <input type="date" className="input input-bordered" value={filters.date_from}
-                    onChange={(e) => handleDateChange('date_from', e.target.value)}/>
+                    onChange={(e) => handleFilterChange('date_from', e.target.value)}/>
                 </div>
 
                 <div>
                   <label className="label">Data do</label>
                   <input type="date" className="input input-bordered" value={filters.date_to}
-                    onChange={(e) => handleDateChange('date_to', e.target.value)}/>
+                    onChange={(e) => handleFilterChange('date_to', e.target.value)}/>
                 </div>
 
                 <button className="btn btn-error text-white self-center" onClick={() =>
@@ -290,34 +305,45 @@ const CustomTooltip = ({ active, payload }) => {
               ) : (
                 <>
                   {/* Transactions List */}
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {transactions.length === 0 ? (
                       <p className="text-center text-gray-500 py-10">Brak transakcji</p>
                     ) : (
                       transactions.map((transaction) => (
                         <div key={transaction.id} className="card bg-base-200 shadow">
                           <div className="card-body">
+
                             <div className="flex justify-between items-start">
-                              <div>
-                                <h3 className="font-bold">Transakcja #{transaction.id}</h3>
-                                <p className="text-sm text-gray-500">
-                                  {transaction.created_at}
-                                </p>
-                                <p className="text-sm">Użytkownik: {transaction.user_id}</p>
+
+                              {/* Nagłówek */}
+                              <div className="flex gap-6">
+                                <div className="flex flex-col">
+                                  <p className="font-bold">Transakcja <span className="text-gray-500">#{transaction.id}</span></p>
+                                  <p className="font-bold">
+                                    Rejestracja: <span className="text-gray-500">{transaction.created_at}</span>
+                                  </p>
+                                </div>
+                                <div className="flex flex-col">
+                                  <p className="font-bold">Użytkownik: <span className="text-gray-500">{transaction.user.first_name} {transaction.user.last_name}</span></p>
+                                  <p className="font-bold">Kontakt: <span className="text-gray-500">Tel: {transaction.user.phone_number} Email: {transaction.user.email}</span></p>
+                                </div>
                               </div>
+
+                              {/* Status */}
                               <select
                                 className="select select-bordered select-sm"
                                 value={transaction.status}
-                                onChange={(e) => handleFilterChange("status", e.target.value)}
+                                onChange={(e) => handleStatusChange(transaction.id, e.target.value)}
                               >
                                 <option value="Pending">Oczekujące</option>
                                 <option value="Shipped">Wysłane</option>
                                 <option value="Completed">Zakończone</option>
                                 <option value="Cancelled">Anulowane</option>
                               </select>
+                              
                             </div>
 
-                            <div className="divider"></div>
+                            <div className="divider my-0"></div>
 
                             {/* Products */}
                             <div className="space-y-2">
@@ -331,18 +357,10 @@ const CustomTooltip = ({ active, payload }) => {
                               ))}
                             </div>
 
-                            <div className="divider"></div>
-
-                            {/* Total */}
-                            <div className="flex justify-between items-center">
-                              <span className="font-bold">Razem:</span>
-                              <span className="text-xl font-bold text-primary">
-                                {transaction.total_transaction_value} zł
-                              </span>
-                            </div>
+                            <div className="divider my-0"></div>
 
                             {/* Addresses */}
-                            <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
+                            <div className="grid grid-cols-2 gap-5 text-sm">
                               <div>
                                 <p className="font-semibold">Adres wysyłki:</p>
                                 <p>{transaction.shipping_address_data.first_name} {transaction.shipping_address_data.last_name}</p>
@@ -357,8 +375,18 @@ const CustomTooltip = ({ active, payload }) => {
                               </div>
                             </div>
 
+                            <div className="divider my-0"></div>
+
+                            {/* Total */}
+                            <div className="flex justify-center items-center my-4">
+                              <span className="font-bold text-xl mr-5">Należność:</span>
+                              <span className="text-xl font-bold text-orange-400 ml-5">
+                                {transaction.total_transaction_value} zł
+                              </span>
+                            </div>
+
                             {transaction.notes && (
-                              <div className="mt-4 p-3 bg-base-300 rounded">
+                              <div className="mt-3 p-5 bg-base-300 rounded">
                                 <p className="text-sm"><strong>Notatki:</strong> {transaction.notes}</p>
                               </div>
                             )}

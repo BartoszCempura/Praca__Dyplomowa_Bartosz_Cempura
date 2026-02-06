@@ -39,10 +39,6 @@ zmień położenie przycisków przewijania produktów w promocji
 Jest coś takiego jak storage event api aby się local storrage synchronizowało na kartach - czy warto??
 
 
-zastanów się nad modelem dla transakcji, przydało by się aby zwracał już gotowe dane zamiast kombinować z joinami
+nie działa poprawnie filtrowanie po dacie - może format daty jest nie poprawny?? 
 
-nie działajha jeszcze filtry dla transakcji, działają zmiany stausu, 
-
-dodaj dane użytkownika - json może do modelu, 
-
-trzeba zrobić jak przy rozliczeniu, jak adres dostawy jest taki sam jak rozliczenia aby pojawiał się tylko jeden 
+dodać zwijanie listy prodyktów dla zwięźlejszej listy

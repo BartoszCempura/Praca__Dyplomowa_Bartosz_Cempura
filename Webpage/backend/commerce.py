@@ -4,6 +4,7 @@ from backend.models import DeliveryMethods, PaymentMethods, Carts, CartProducts,
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from backend.utils import role_required, str_date
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload 
 from decimal import Decimal
 
 commerce_bp = Blueprint('commerce', __name__, url_prefix='/api/commerce')
@@ -543,57 +544,88 @@ def get_all_user_transactions():
     try:
         user_id = get_jwt_identity()
         user = User.query.get(user_id) # tę sama funkcjonalnośc może używać admin ale dla wszystkich tranzakcji w bazie danych
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
         status = request.args.get('status')
         raw_date_from = request.args.get('date_from')
         raw_date_to = request.args.get('date_to')
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('limit', 20, type=int)
 
-        transakcje = Transactions.query
+        transakcje = Transactions.query.options(
+            joinedload(Transactions.user),
+            joinedload(Transactions.delivery_method),
+            joinedload(Transactions.payment_method)
+        )
         if user.role != 'admin':
             transakcje = transakcje.filter_by(user_id=user_id)
 
         if status:
-            transakcje = transakcje.filter_by(status=status)
+            try:
+                status_enum = TransactionStatus[status]
+                transakcje = transakcje.filter_by(status=status_enum)
+            except KeyError:
+                return jsonify({'error': 'Nieprawidłowy status'}), 400
+            
         if raw_date_from:
             date_from = str_date(raw_date_from)
             if date_from:       
                 transakcje = transakcje.filter(Transactions.updated_at >= date_from)
+            else:
+                return jsonify({"error": "Invalid date_from format"}), 400
+            
         if raw_date_to:
             date_to = str_date(raw_date_to)
             if date_to:    
                 date_to = date_to.replace(hour=23, minute=59, second=59)
                 transakcje = transakcje.filter(Transactions.updated_at <= date_to)
+            else:
+                return jsonify({"error": "Invalid date_to format"}), 400
+            
+        transakcje = transakcje.order_by(Transactions.created_at.desc())
 
-        pagination = transakcje.order_by(Transactions.updated_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        pagination = transakcje.paginate(page=page, per_page=per_page, error_out=False)
 
         transakcje = pagination.items
 
         if not transakcje:
-            return jsonify({"error": "Brak transakcji dla konta użytkownika"}), 400
+            return jsonify({
+                "transakcje": [],
+                "pagination": {
+                    "total": 0,
+                    "page": page,
+                    "pages": 0,
+                    "per_page": per_page,
+                    "has_next": False,
+                    "has_prev": False
+                },
+                "message": "Brak transakcji"
+            }), 200
 
         response_data = []
         for transakcja in transakcje:
-            produkty = TransactionProducts.query.filter_by(transaction_id=transakcja.id).all()
             if user.role != 'admin':
                 data = transakcja.to_json_user_view()
-                data["producty"] = [p.to_json_user_view() for p in produkty]
+                data["producty"] = [p.to_json_user_view() for p in transakcja.products]
             else:
                 data = transakcja.to_json()
-                data["producty"] = [p.to_json() for p in produkty]
+                data["producty"] = [p.to_json() for p in transakcja.products]
+
             response_data.append(data)
 
         return jsonify({
             "transakcje": response_data,
-            "total": pagination.total,
-            "page": pagination.page,
-            "pages": pagination.pages,
-            "has_next": pagination.has_next,
-            "has_prev": pagination.has_prev,
-            "next_page": pagination.next_num if pagination.has_next else None,
-            "prev_page": pagination.prev_num if pagination.has_prev else None
+            "pagination": {
+                "total": pagination.total,
+                "page": pagination.page,
+                "pages": pagination.pages,
+                "per_page": per_page,
+                "has_next": pagination.has_next,
+                "has_prev": pagination.has_prev,
+                "next_page": pagination.next_num if pagination.has_next else None,
+                "prev_page": pagination.prev_num if pagination.has_prev else None
+            }
         }), 200
         
 

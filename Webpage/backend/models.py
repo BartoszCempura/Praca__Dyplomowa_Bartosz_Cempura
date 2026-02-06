@@ -584,22 +584,28 @@ class Transactions (db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    shipping_address = db.relationship('UserAddress', foreign_keys=[shipping_address_id]) ## potrzebne?? 
-    biling_address = db.relationship('UserAddress', foreign_keys=[billing_address_id])  ## potrzebne?? 
+    user = db.relationship('User', foreign_keys=[user_id])
     delivery_method = db.relationship('DeliveryMethods', foreign_keys=[delivery_method_id])
     payment_method = db.relationship('PaymentMethods', foreign_keys=[payment_method_id])
+    products = db.relationship('TransactionProducts', foreign_keys='TransactionProducts.transaction_id', lazy='selectin')
 
 
     def to_json(self):
         return {
             "id": self.id,
             "user_id": self.user_id,
+            "user": {
+                "first_name": self.user.first_name,
+                "last_name": self.user.last_name,
+                "email": self.user.email,
+                "phone_number": self.user.phone_number
+            } if self.user else None,
             "total_transaction_value": self.total_transaction_value,
             "billing_address_data": self.billing_address_data,      
             "shipping_address_data": self.shipping_address_data,
             "status": self.status.value,
-            "delivery_method_id": self.delivery_method_id, # ze względu na typ kolumny Date, będzie tu przechowywana data dostawy bez uwzględnienia godzin, minut i sekund
-            "payment_method_id": self.payment_method_id,
+            "delivery_method": self.delivery_method.name,
+            "payment_method": self.payment_method.name,
             "delivery_deadline": self.delivery_deadline,
             "notes": self.notes,
             "created_at": self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
