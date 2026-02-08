@@ -138,19 +138,16 @@ const CustomTooltip = ({ active, payload }) => {
         {kokpitSection === "products_popularity" && (
              <div className="flex flex-col gap-6 items-center">
               <h2 className="text-2xl font-bold">Popularność produktów</h2>
-              <p className="text-gray-500">Top 20 produktów z ostatniego tygodnia</p>
             </div>
           )}
         {kokpitSection === "sales_list" && (
              <div className="flex flex-col gap-6 items-center">
               <h2 className="text-2xl font-bold">Wyniki sprzedaży</h2>
-              <p>Lista produktów wraz z ilością sprzedanych sztuk - dodatkowo filtracjaod do wg daty</p>
             </div>
           )}
         {kokpitSection === "transaction_edit" && (
              <div className="flex flex-col gap-6 items-center">
               <h2 className="text-2xl font-bold">Transakcje</h2>
-              <p>Lista transakcji - filtrowana po dacie z możliwością edycji</p>
             </div>
           )}
       </div>
@@ -343,53 +340,61 @@ const CustomTooltip = ({ active, payload }) => {
                               
                             </div>
 
-                            <div className="divider my-0"></div>
+                            <div className="divider my-1"></div>
+                            
+                            <div tabIndex={0} className="collapse bg-base-100 border-base-300 border">
+                              <div className="collapse-title font-semibold my-0 text-center">Szczeguły</div>
+                                <div className="collapse-content text-sm">
 
-                            {/* Products */}
-                            <div className="space-y-2">
-                              <h4 className="font-semibold">Produkty:</h4>
-                              {transaction.producty.map((product) => (
-                                <div key={product.id} className="flex justify-between text-sm">
-                                  <span>ID: {product.product_id}</span>
-                                  <span>Ilość: {product.quantity}</span>
-                                  <span>{product.unit_price_with_discount} zł</span>
-                                </div>
-                              ))}
-                            </div>
+                                  <div className="divider mt-0"></div>
 
-                            <div className="divider my-0"></div>
+                                  {/* Products */}
+                                  <div className="space-y-2 mx-5">
+                                    <h4 className="font-semibold">Produkty:</h4>
+                                    {transaction.producty.map((product) => (
+                                      <div key={product.id} className="grid grid-cols-3 text-sm">
+                                        <span className="text-start">ID: {product.product_id}</span>
+                                        <span className="text-center">Ilość: {product.quantity}</span>
+                                        <span className="text-end">{product.unit_price_with_discount} zł</span>
+                                      </div>
+                                    ))}
+                                  </div>
 
-                            {/* Addresses */}
-                            <div className="grid grid-cols-2 gap-5 text-sm">
-                              <div>
-                                <p className="font-semibold">Adres wysyłki:</p>
-                                <p>{transaction.shipping_address_data.first_name} {transaction.shipping_address_data.last_name}</p>
-                                <p>{transaction.shipping_address_data.street_name} {transaction.shipping_address_data.building_number}</p>
-                                <p>{transaction.shipping_address_data.zip_code} {transaction.shipping_address_data.city}</p>
+                                  <div className="divider mb-3"></div>
+
+                                  {/* Addresses */}
+                                  <div className="grid grid-cols-2 gap-5 text-sm mx-5">
+                                    <div className="text-end">
+                                      <p className="font-semibold">Adres wysyłki:</p>
+                                      <p>{transaction.shipping_address_data.first_name} {transaction.shipping_address_data.last_name}</p>
+                                      <p>{transaction.shipping_address_data.street_name} {transaction.shipping_address_data.building_number}</p>
+                                      <p>{transaction.shipping_address_data.zip_code} {transaction.shipping_address_data.city}</p>
+                                    </div>
+                                    <div className="text-start">
+                                      <p className="font-semibold">Adres rozliczeniowy:</p>
+                                      <p>{transaction.billing_address_data.first_name} {transaction.billing_address_data.last_name}</p>
+                                      <p>{transaction.billing_address_data.street_name} {transaction.billing_address_data.building_number}</p>
+                                      <p>{transaction.billing_address_data.zip_code} {transaction.billing_address_data.city}</p>
+                                    </div>
+                                  </div>
+
+                                  <div className="divider mb-3"></div>
+
+                                  {/* Total */}
+                                  <div className="flex justify-center items-center mb-6 gap-5">
+                                    <span className="font-bold text-xl test-end">Należność:</span>
+                                    <span className="text-xl font-bold text-orange-400 text-start">
+                                      {transaction.total_transaction_value} zł
+                                    </span>
+                                  </div>
+
+                                  {transaction.notes && (
+                                    <div className="mt-3 p-5 bg-base-300 rounded">
+                                      <p className="text-sm"><strong>Notatki:</strong> {transaction.notes}</p>
+                                    </div>
+                                  )}
                               </div>
-                              <div>
-                                <p className="font-semibold">Adres rozliczeniowy:</p>
-                                <p>{transaction.billing_address_data.first_name} {transaction.billing_address_data.last_name}</p>
-                                <p>{transaction.billing_address_data.street_name} {transaction.billing_address_data.building_number}</p>
-                                <p>{transaction.billing_address_data.zip_code} {transaction.billing_address_data.city}</p>
-                              </div>
                             </div>
-
-                            <div className="divider my-0"></div>
-
-                            {/* Total */}
-                            <div className="flex justify-center items-center my-4">
-                              <span className="font-bold text-xl mr-5">Należność:</span>
-                              <span className="text-xl font-bold text-orange-400 ml-5">
-                                {transaction.total_transaction_value} zł
-                              </span>
-                            </div>
-
-                            {transaction.notes && (
-                              <div className="mt-3 p-5 bg-base-300 rounded">
-                                <p className="text-sm"><strong>Notatki:</strong> {transaction.notes}</p>
-                              </div>
-                            )}
                           </div>
                         </div>
                       ))

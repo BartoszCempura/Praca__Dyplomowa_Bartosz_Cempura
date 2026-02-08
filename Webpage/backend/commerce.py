@@ -571,7 +571,7 @@ def get_all_user_transactions():
         if raw_date_from:
             date_from = str_date(raw_date_from)
             if date_from:       
-                transakcje = transakcje.filter(Transactions.updated_at >= date_from)
+                transakcje = transakcje.filter(Transactions.created_at >= date_from)
             else:
                 return jsonify({"error": "Invalid date_from format"}), 400
             
@@ -579,7 +579,7 @@ def get_all_user_transactions():
             date_to = str_date(raw_date_to)
             if date_to:    
                 date_to = date_to.replace(hour=23, minute=59, second=59)
-                transakcje = transakcje.filter(Transactions.updated_at <= date_to)
+                transakcje = transakcje.filter(Transactions.created_at <= date_to)
             else:
                 return jsonify({"error": "Invalid date_to format"}), 400
             
