@@ -481,7 +481,7 @@ def closing_purchase():
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@commerce_bp.route('/admin/transactions/<int:transaction_id>', methods=['PUT'])
+@commerce_bp.route('/admin/transactions/<int:transaction_id>', methods=['PUT']) ## used - kokpit modyfiacja statusu transakcji
 @jwt_required()
 @role_required('admin')
 def modify_transaction_status(transaction_id):
@@ -509,17 +509,16 @@ def modify_transaction_status(transaction_id):
                     if product:
                         product.quantity += transaction_product.quantity  # zwracamy produkty na stan magazynowy
 
-                db.session.delete(transaction)
-                db.session.commit()
-                return jsonify({'message': 'Transakcja anulowana i usunięta pomyślnie'}), 200
-
+                return jsonify({'message': 'Transakcja anulowana pomyślnie'}), 200
+            
+        
+        # nie zaimplementowano
         if new_notes and new_notes != transaction.notes:
             changes.append("Dodano notatkę")
             transaction.notes += f" Admin: {new_notes}"
 
         if not changes:
             return jsonify({'error': 'Nie wprowadzono żadnych zmian'}), 409
-        
         
 
         db.session.commit()
@@ -535,7 +534,7 @@ def modify_transaction_status(transaction_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@commerce_bp.route('/transactions', methods=['GET'])
+@commerce_bp.route('/transactions', methods=['GET']) ## used - kokpit transakcje
 @jwt_required()
 def get_all_user_transactions():
 

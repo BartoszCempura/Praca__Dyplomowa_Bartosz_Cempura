@@ -7,11 +7,17 @@ export async function getTopProducts() {
     return {
       topProducts: response.data.top_products || [],
       mostPurchased: response.data.most_purchased_product || null,
+      purchasedThisWeek: response.data.product_purchase_history || [],
       mostViewed: response.data.top_viewed_product || null
     };
 
   } catch (err) {
     console.error(err);
-    return [];
+    return {
+      topProducts: [],
+      mostPurchased: null,
+      purchasedThisWeek: [],
+      mostViewed: null
+    };
   }
 }

@@ -74,7 +74,7 @@ def get_top_products():
                     print(f"[ERROR] Product {product_id} missing method: {str(e)}")
                     continue
 
-        top_purchase = (
+        purchase_calculation = (
             UserProductInteractions.query.with_entities(
                 UserProductInteractions.product_id,
                 func.count(UserProductInteractions.id).label('purchase_count')
@@ -84,8 +84,12 @@ def get_top_products():
         )
         .group_by(UserProductInteractions.product_id)
         .order_by(desc('purchase_count'))
-        .first()
         )
+
+        top_purchase = purchase_calculation.first()
+
+        #all_purchases = purchase_calculation.all()
+
         top_purchase_product = None
         if top_purchase:
             product_id, purchase_count = top_purchase
@@ -97,6 +101,47 @@ def get_top_products():
                     top_purchase_product['purchase_count'] = purchase_count
                 except AttributeError as e:
                     print(f"[ERROR] Most purchased product: {str(e)}")
+        """
+        product_purchased_this_week = []
+        for product_id, purchase_count in all_purchases:
+            product = Products.query.get(product_id)
+
+            if product:
+                try:
+                    single_product_data =  product.to_json_user_view()
+                    single_product_data['purchase_count'] = purchase_count
+                    product_purchased_this_week.append(single_product_data)
+                except AttributeError as e:
+                    print(f"[ERROR] Product {product_id}: {str(e)}")
+        """
+        daily_purchases = (
+            UserProductInteractions.query.with_entities(
+                UserProductInteractions.product_id,
+                func.date(UserProductInteractions.created_at).label('purchase_date'),
+                func.count(UserProductInteractions.id).label('daily_count')
+            )
+            .filter(
+                UserProductInteractions.type == 'Purchase',
+                UserProductInteractions.created_at >= one_week_ago
+            )
+            .group_by (
+                UserProductInteractions.product_id,
+                func.date(UserProductInteractions.created_at)
+            )
+            .order_by('purchase_date')
+            .all()
+        )
+        product_purchase_history = []
+        for product_id, purchase_date, daily_count in daily_purchases:
+            product = Products.query.get(product_id)
+            if product:
+                try:
+                    product_data = product.to_json_user_view()
+                    product_data['date'] = purchase_date.strftime('%Y-%m-%d')
+                    product_data['count'] = daily_count
+                    product_purchase_history.append(product_data)
+                except AttributeError as e:
+                    print(f"[ERROR] Product {product_id}: {str(e)}")
 
         top_viewed = (
             UserProductInteractions.query.with_entities(
@@ -125,6 +170,8 @@ def get_top_products():
         return jsonify({
             'top_products': top_products,
             'most_purchased_product': top_purchase_product,
+            'product_purchase_history': product_purchase_history,
+            #'product_purchased_this_week': product_purchased_this_week,
             'top_viewed_product': top_viewed_product
         }), 200
 

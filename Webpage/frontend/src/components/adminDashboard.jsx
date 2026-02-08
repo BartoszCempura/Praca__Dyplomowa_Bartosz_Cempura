@@ -1,5 +1,5 @@
 import { useEffect, useState} from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
 import { getTopProducts } from "../utils/topProductsActions"
 import { getTransactions, setTransactionStatus } from "../utils/transactionsActions"
 
@@ -8,8 +8,14 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(false);
 
   const [chartData, setChartData] = useState([]);
+
   const [topViewed, setTopViewed] = useState(null);
+
   const [mostPurchased, setMoustPurchased] = useState(null);
+
+  const [purchasedThisWeek, setPurchasedThisWeek] = useState([])
+  const [selectedProductId, setSelectedProductId] = useState(null)
+  const [selectedProductData, setSelectedProductData] = useState([])
   
   const [transactions, setTransactions] = useState([])
   const [pagination, setPagination] = useState({
@@ -27,44 +33,57 @@ function AdminDashboard() {
     limit: 20
   });
 
-  // elementy dla wykresów
+  // operacje z użyciem algorytmu popularności
   useEffect(() => {
-    if (kokpitSection === "products_popularity") {
-      loadPopularityData();
+    if (kokpitSection === "products_popularity" || kokpitSection === "sales_list") {
+      loadChartData();
     }
   }, [kokpitSection]);
 
-  const loadPopularityData = async () => {
-  setLoading(true);
-  
-  try {
-    const data = await getTopProducts();
+  const loadChartData = async () => {
+    setLoading(true);
     
-    if (data.topProducts.length === 0) {
-      setChartData([]);
-      return;
-    }
-    
-    const rechartsData = data.topProducts.map((product) => ({
-      name: product.name,
-      score: parseFloat(product.popularity_score || 0),
-      id: product.id
-    }));
+    try {
+      const data = await getTopProducts();
+      
+      if (data.topProducts.length === 0) {
+        setChartData([]);
+        return;
+      }
 
-    const top_viewed = data.mostViewed
-    setTopViewed(top_viewed)
-    const most_puchased = data.mostPurchased
-    setMoustPurchased(most_puchased)
-    
-    setChartData(rechartsData);
-    
-  } catch (err) {
-    console.error(err);
-    setChartData([]);
-  } finally {
-    setLoading(false);
-  }
-};
+      if (data.purchasedThisWeek.length === 0) {
+        setPurchasedThisWeek([]);
+        return;
+      }
+      
+      const rechartsData = data.topProducts.map((product) => ({
+        name: product.name,
+        score: parseFloat(product.popularity_score || 0),
+        id: product.id
+      }));
+
+      setChartData(rechartsData);
+
+      setTopViewed(data.mostViewed)
+   
+      setMoustPurchased(data.mostPurchased)
+
+      setPurchasedThisWeek(data.purchasedThisWeek)
+
+      if (data.purchasedThisWeek.length > 0) {
+        const firstProductId = data.purchasedThisWeek[0].id;
+        setSelectedProductId(firstProductId);
+        loadProductChartData(firstProductId);
+      }
+      
+    } catch (err) {
+      console.error(err);
+      setChartData([]);
+      setPurchasedThisWeek([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -78,7 +97,6 @@ const CustomTooltip = ({ active, payload }) => {
       </div>
     );
   }
-
   return null;
 };
 
@@ -109,7 +127,7 @@ const CustomTooltip = ({ active, payload }) => {
       }
     };
 
-    const handleFilterChange = (field, value) => {
+  const handleFilterChange = (field, value) => {
     setFilters(prev => ({
       ...prev,
       [field]: value,
@@ -124,12 +142,47 @@ const CustomTooltip = ({ active, payload }) => {
     }));
   };
 
-    const handleStatusChange = async (id, status) => {
-      const success = await setTransactionStatus (id, status);
+  const handleStatusChange = async (id, status) => {
+    const success = await setTransactionStatus (id, status);
       if (success) {
         await loadTransactions();
       }
     };
+  
+  const handleProductChange = (productId) => {
+    setSelectedProductId(productId);
+    loadProductChartData(productId);
+  }
+
+  const loadProductChartData = async (productId) => {
+    setLoading(true);
+  try {
+    const productHistory = purchasedThisWeek.filter(
+    item => item.id === parseInt(productId)  // 'id' zamiast 'product_id'
+    );
+    
+    const chartData = productHistory.map(item => ({
+      date: item.date,
+      sold: item.count
+    }));
+    
+    setSelectedProductData(chartData);
+    } catch (err) {
+      console.error(err);
+      setSelectedProductData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const uniqueProducts = [];
+  const seenIds = new Set();
+  purchasedThisWeek.forEach(item => {
+    if (!seenIds.has(item.id)) {
+      seenIds.add(item.id);
+      uniqueProducts.push(item);
+    }
+  });
 
   return (
     <>
@@ -142,7 +195,7 @@ const CustomTooltip = ({ active, payload }) => {
           )}
         {kokpitSection === "sales_list" && (
              <div className="flex flex-col gap-6 items-center">
-              <h2 className="text-2xl font-bold">Wyniki sprzedaży</h2>
+              <h2 className="text-2xl font-bold">Wyniki sprzedaży produktów</h2>
             </div>
           )}
         {kokpitSection === "transaction_edit" && (
@@ -180,7 +233,7 @@ const CustomTooltip = ({ active, payload }) => {
             </nav>
         </aside>
 
-        <div className="">
+        <main className="">
 
            {kokpitSection === "products_popularity" && (
 
@@ -193,7 +246,7 @@ const CustomTooltip = ({ active, payload }) => {
               ) : chartData.length === 0 ? (
                 <div className="text-center py-20">
                   <p className="text-xl text-gray-500">Brak danych</p>
-                  <button onClick={loadPopularityData} className="btn btn-custom mt-4">
+                  <button onClick={loadChartData} className="btn btn-custom mt-4">
                     Odśwież
                   </button>
                 </div>
@@ -235,7 +288,7 @@ const CustomTooltip = ({ active, payload }) => {
 
                   {/* Przyciski */}
                   <div className="flex justify-center gap-4 pt-10 border-t">
-                    <button onClick={loadPopularityData} className="btn btn-custom">
+                    <button onClick={loadChartData} className="btn btn-custom">
                       Odśwież
                     </button>
                   </div>
@@ -245,7 +298,88 @@ const CustomTooltip = ({ active, payload }) => {
           )}
           
           {kokpitSection === "sales_list" && (
-            <p>Trwają prace</p>
+            <div className="flex flex-col gap-6 p-20">
+
+              <div className="mb-6 flex gap-6">
+                  <label className="label">Wybierz produkt:</label>
+                  <select className="select select-bordered"
+                  value={selectedProductId || ''}
+                  onChange={(e) => handleProductChange(e.target.value)}
+                  >
+                    {uniqueProducts.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name}
+                    </option>
+                    ))}
+                  </select>
+              </div>
+              {/* Loading */}
+              {loading ? (
+                <div className="flex justify-center items-center h-96">
+                  <span className="loading loading-bars loading-lg text-primary"></span>
+                </div>
+              ) : purchasedThisWeek.length === 0 ? (
+                <div className="text-center py-20">
+                  <p className="text-xl text-gray-500">Brak danych</p>
+                  <button onClick={loadChartData} className="btn btn-custom mt-4">
+                    Odśwież
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* wykres */}
+                  <div className="w-full rounded-xl p-5 border">
+                    <div className="w-full rounded-xl p-5 border">
+                      <LineChart
+                        style={{ 
+                          width: '100%', 
+                          maxWidth: '700px', 
+                          height: '100%', 
+                          maxHeight: '70vh', 
+                          aspectRatio: 1.618 
+                        }}
+                        data={selectedProductData}
+                        margin={{
+                          top: 5,
+                          right: 0,
+                          left: 0,
+                          bottom: 5,
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="date" 
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis 
+                          width="auto"
+                          label={{ value: 'Ilość zakupów', angle: -90, position: 'insideLeft' }}
+                        />
+                        <Tooltip />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="sold" 
+                          stroke="#00E0FF" 
+                          strokeWidth={2}
+                          activeDot={{ r: 8 }}
+                        />
+                      </LineChart>
+                    </div>
+
+                  </div>
+
+                  {/* Przyciski */}
+                  <div className="flex justify-center gap-4 pt-10 border-t">
+                    <button onClick={loadChartData} className="btn btn-custom">
+                      Odśwież
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
 
           {kokpitSection === "transaction_edit" && (
@@ -307,7 +441,7 @@ const CustomTooltip = ({ active, payload }) => {
                       <p className="text-center text-gray-500 py-10">Brak transakcji</p>
                     ) : (
                       transactions.map((transaction) => (
-                        <div key={transaction.id} className="card bg-base-200 shadow">
+                        <div key={transaction.id} className="card bg-base-200">
                           <div className="card-body">
 
                             <div className="flex justify-between items-start">
@@ -327,16 +461,19 @@ const CustomTooltip = ({ active, payload }) => {
                               </div>
 
                               {/* Status */}
-                              <select
-                                className="select select-bordered select-sm"
-                                value={transaction.status}
-                                onChange={(e) => handleStatusChange(transaction.id, e.target.value)}
-                              >
-                                <option value="Pending">Oczekujące</option>
-                                <option value="Shipped">Wysłane</option>
-                                <option value="Completed">Zakończone</option>
-                                <option value="Cancelled">Anulowane</option>
-                              </select>
+                              
+                                <select
+                                  className="select select-bordered select-sm"
+                                  value={transaction.status}
+                                  onChange={(e) => handleStatusChange(transaction.id, e.target.value)}
+                                  disabled={transaction.status === 'Cancelled' || transaction.status === 'Completed'}
+                                >
+                                  <option value="Pending">Oczekujące</option>
+                                  <option value="Shipped">Wysłane</option>
+                                  <option value="Completed">Zakończone</option>
+                                  <option value="Cancelled">Anulowane</option>
+                                </select>
+          
                               
                             </div>
 
@@ -435,7 +572,7 @@ const CustomTooltip = ({ active, payload }) => {
             </div>
           )}
 
-        </div>
+        </main>
        
       </div>
     </>
