@@ -34,9 +34,7 @@ Trzeba przeanalizować slider dla promocji, możliwe przebudować uprościć - d
 api nie powinno zwracać adresów typu other. Other jest tylko dla poja wypałnienia przy finalizacji zakupu.
 
 dodaj odliczanie do końca promocji
-zmień położenie przycisków przewijania produktów w promocji
 
-Trzeba zrobić tak aby przy zakupie produktu interakcja purchase dodawała się tyle razy ile jest kupowanych produktów
 
 Trzeba napisac kod seed który bedzie dawał dane dla interakcji i zakupów - bo powiązane z interakcjami różne daty w zakresie tygodnia  - najlepiej aby były generowane losowo od dzisiaj - pod egzamin??
  (w zasadzie nie trzeba bo tu nie ma bezpośredniegopzwiązkua chyba nikt nie bedzie tego sprawdzał)

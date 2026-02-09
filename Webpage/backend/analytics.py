@@ -35,8 +35,8 @@ def add_product_interaction():
         if interaction_type not in ['View', 'AddToCart', 'Purchase', 'Review', 'AddToWishlist']:
             return '', 400
         
-        # Zapobiega duplikatom w krótkim czasie       
-        if session_id:
+        # Zapobiega duplikatom w krótkim czasie z pominięciem dla purchase ( pętla w cartPartTwo)   
+        if session_id and interaction_type != 'Purchase':
             five_seconds_ago = datetime.now(timezone.utc) - timedelta(seconds=5)
             duplicate = UserProductInteractions.query.filter(
                 UserProductInteractions.session_id == session_id,

@@ -134,7 +134,9 @@ function CartPartTwo() {
       if (result.success) {
         clearCart();
         products.forEach(product => {
-            trackInteraction(product.product_id, 'Purchase');
+            for (let i = 0; i < product.quantity; i++) {
+                trackInteraction(product.product_id, 'Purchase');
+            }         
         }); 
         navigate("/");
       }
@@ -156,7 +158,7 @@ function CartPartTwo() {
                                     <AddressCard variant="summary" {...shippingAdress} handleOpenModal={handleOpenModal}/>
                                 ) : (
                                     <div id="3" className="card justify-center items-center bg-base-200 flex-grow shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-6 gap-4 w-full">
-                                        <p>Nie zdefiniowano adresu rozliczeniowego</p>
+                                        <p>Nie zdefiniowano adresu dostawy</p>
                                         <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
                                             Dodaj
                                         </button>
@@ -178,8 +180,8 @@ function CartPartTwo() {
                                 ) : (
                                     shippingAdress && billingAdress.id === shippingAdress.id ? (
                                         <div className="card justify-center items-center bg-base-200 flex-grow shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 p-5 gap-4 w-full">
-                                            <p>Domyślnie dla transakcji adresem rozliczeniowym jest adres dostawy</p>
-                                            <button className="btn btn-custom btn-block" onClick={() => handleOpenModal("Billing")}>
+                                            <p className="mt-auto">Domyślnie dla transakcji adresem rozliczeniowym jest adres dostawy</p>
+                                            <button className="btn btn-custom btn-block mt-auto" onClick={() => handleOpenModal("Billing")}>
                                                 Zmień adres
                                             </button>
                                         </div>
@@ -260,15 +262,18 @@ function CartPartTwo() {
 
                 <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900 mt-21">
                     <div className="card-body items-center">
-                    <span className="text-info mb-2">
-                        Wartość: {cartValue.toFixed(2)} zł
-                    </span>
-                    <div className="card-actions">
-                        <button className="btn btn-custom btn-block" onClick={() => setStep("summary")}>Przejdź dalej</button>
-                    </div>
-                    <div className="card-actions">
-                        <button className="btn btn-custom btn-block" onClick={() => navigate(-1)}>Powrót</button>
-                    </div>
+                        <div className="radial-progress text-amber-500 mb-2" style={{ "--value": 60 } /* as React.CSSProperties */ } aria-valuenow={60} role="progressbar">
+                            60%
+                        </div>
+                        <span className="text-info mb-2">
+                            Wartość: {cartValue.toFixed(2)} zł
+                        </span>
+                        <div className="card-actions">
+                            <button className="btn btn-custom btn-block" onClick={() => setStep("summary")}>Przejdź dalej</button>
+                        </div>
+                        <div className="card-actions">
+                            <button className="btn btn-custom btn-block" onClick={() => navigate(-1)}>Powrót</button>
+                        </div>
                     </div>
                 </aside>  
 
@@ -283,35 +288,49 @@ function CartPartTwo() {
                             </button>
                         </form>
 
-                        <h3 className="font-bold text-lg text-center mb-4">Wybierz adres:</h3>
+                        <h3 className="font-bold text-lg text-center mb-6">Wybierz adres:</h3>
                         { modal === "Billing" ? (
-                        <div className={`grid gap-4 p-4 ${billingAdresses.length < 2 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2" }`}>
-                            {billingAdresses.map((address) => (
-                                <div 
-                                    key={address.id}
-                                    className={`cursor-pointer rounded-lg hover:bg-base-200 ${
-                                        billingAdress?.id === address.id ? "ring-2 ring-amber-500" : ""
-                                    }`}
-                                    onClick={() => handleSelectBillingAdress(address.id)}
-                                >
-                                    <AddressCard variant="modal" {...address} />
-                                </div>
-                            ))}
+                        <div className="flex flex-col items-center">
+                            <div className={`grid gap-6 ${billingAdresses.length < 2 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2" }`}>
+                                {billingAdresses.map((address) => (
+                                    <div 
+                                        key={address.id}
+                                        className={`cursor-pointer rounded-lg hover:bg-base-200 ${
+                                            billingAdress?.id === address.id ? "ring-2 ring-amber-500" : ""
+                                        }`}
+                                        onClick={() => handleSelectBillingAdress(address.id)}
+                                    >
+                                        <AddressCard variant="modal" {...address} />
+                                    </div>
+                                    ))}
+                                    <div className="flex justify-center">
+                                        <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
+                                                        Dodaj
+                                        </button>
+                                    </div>
+                            </div>
                         </div>
                         ):(
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                            {shippingAdresses.map((address) => (
-                                <div 
-                                    key={address.id}
-                                    className={`cursor-pointer rounded-lg hover:bg-base-200 ${
-                                        shippingAdress?.id === address.id ? "ring-2 ring-amber-500" : ""
-                                    }`}
-                                    onClick={() => handleSelectShippingAdress(address.id)}
-                                >
-                                    <AddressCard variant="modal" {...address} />
+                            <div className="flex flex-col items-center">
+                                <div className={`grid gap-6 ${shippingAdresses.length < 2 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2" }`}>
+                                {shippingAdresses.map((address) => (
+                                    <div 
+                                        key={address.id}
+                                        className={`cursor-pointer rounded-lg hover:bg-base-200 ${
+                                            shippingAdress?.id === address.id ? "ring-2 ring-amber-500" : ""
+                                        }`}
+                                        onClick={() => handleSelectShippingAdress(address.id)}
+                                    >
+                                        <AddressCard variant="modal" {...address} />
+                                    </div>
+                                    ))}
+                                    <div className="flex justify-center">
+                                        <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
+                                                        Dodaj
+                                        </button>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
                         )}
                     </div>
                 </dialog>
@@ -406,15 +425,18 @@ function CartPartTwo() {
 
                 <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900 mt-23">
                     <div className="card-body items-center">
-                    <span className="text-info mb-2">
-                        Wartość: {cartValue.toFixed(2)} zł
-                    </span>
-                    <div className="card-actions">
-                        <button className="btn btn-custom btn-block" onClick={handleClosePurchase}>Kupuję</button>
-                    </div>
-                    <div className="card-actions">
-                        <button className="btn btn-custom btn-block" onClick={() => setStep("form")}>Powrót</button>
-                    </div>
+                        <div className="radial-progress text-amber-500 mb-2" style={{ "--value": 90 } /* as React.CSSProperties */ } aria-valuenow={90} role="progressbar">
+                                90%
+                        </div>
+                        <span className="text-info mb-2">
+                            Wartość: {cartValue.toFixed(2)} zł
+                        </span>
+                        <div className="card-actions">
+                            <button className="btn btn-custom btn-block" onClick={handleClosePurchase}>Kupuję</button>
+                        </div>
+                        <div className="card-actions">
+                            <button className="btn btn-custom btn-block" onClick={() => setStep("form")}>Powrót</button>
+                        </div>
                     </div>
                 </aside>
 
