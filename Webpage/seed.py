@@ -991,6 +991,133 @@ def seed_transactions(): ## nie używane obecnie
     db.session.commit()
     print(f"Dodano {added_count} nowych transakcji.")
 
+def seed_product_interactions():
+    added_count = 0
+    print("Dodawanie interakcji z produktami...")
+    
+    products_in_promotion = [
+        {"user_id": None, "product_id": 22, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 10:32:33.679189+01"},
+        {"user_id": None, "product_id": 1, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 10:32:41.933702+01"},
+        {"user_id": None, "product_id": 22, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 10:33:40.418613+01"},
+        {"user_id": None, "product_id": 35, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 10:39:48.550745+01"},
+        {"user_id": None, "product_id": 28, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 10:46:09.074711+01"},
+        {"user_id": None, "product_id": 1, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 11:08:10.599418+01"},
+        {"user_id": None, "product_id": 22, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 11:09:00.482689+01"},
+        {"user_id": None, "product_id": 1, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 11:18:54.693258+01"},
+        {"user_id": None, "product_id": 8, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 11:24:39.321644+01"},
+        {"user_id": None, "product_id": 5, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 12:07:33.868652+01"},
+
+        {"user_id": 1, "product_id": 40, "type": "AddToCart", "session_id": "268fb041-2274-4140-8fb7-0f74b8bddf61", "created_at": "2026-02-02 14:31:45.317954+01"},
+        {"user_id": 1, "product_id": 33, "type": "View", "session_id": "38719846-fa91-47d4-9f54-73a77853c8cc", "created_at": "2026-02-02 15:27:35.893453+01"},
+        {"user_id": 1, "product_id": 23, "type": "View", "session_id": "b7c0093d-d97a-45e7-af3e-14b81b15ac96", "created_at": "2026-02-03 11:15:45.558588+01"},
+        {"user_id": 1, "product_id": 29, "type": "View", "session_id": "b7c0093d-d97a-45e7-af3e-14b81b15ac96", "created_at": "2026-02-03 11:15:50.5046+01"},
+        {"user_id": 1, "product_id": 26, "type": "View", "session_id": "b7c0093d-d97a-45e7-af3e-14b81b15ac96", "created_at": "2026-02-03 11:15:59.348804+01"},
+        {"user_id": 1, "product_id": 27, "type": "View", "session_id": "b7c0093d-d97a-45e7-af3e-14b81b15ac96", "created_at": "2026-02-03 11:16:06.863314+01"},
+        {"user_id": 1, "product_id": 26, "type": "View", "session_id": "b7c0093d-d97a-45e7-af3e-14b81b15ac96", "created_at": "2026-02-03 11:16:08.94276+01"},
+        {"user_id": 1, "product_id": 40, "type": "Purchase", "session_id": "93b7fe2f-3f31-4242-9f8a-b7a2d4b106af", "created_at": "2026-02-03 13:30:08.223679+01"},
+        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "a876e53c-5862-48ef-9069-43535560ae0a", "created_at": "2026-02-03 14:22:06.919686+01"},
+        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "a876e53c-5862-48ef-9069-43535560ae0a", "created_at": "2026-02-03 14:26:02.319026+01"},
+
+        {"user_id": 1, "product_id": 28, "type": "View", "session_id": "a876e53c-5862-48ef-9069-43535560ae0a", "created_at": "2026-02-03 14:44:36.078306+01"},
+        {"user_id": 1, "product_id": 28, "type": "View", "session_id": "d73b56f1-4650-496f-a6b2-dedac84f5a57", "created_at": "2026-02-03 18:27:00.842361+01"},
+        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "d73b56f1-4650-496f-a6b2-dedac84f5a57", "created_at": "2026-02-03 18:27:45.770403+01"},
+        {"user_id": 1, "product_id": 3, "type": "View", "session_id": "d73b56f1-4650-496f-a6b2-dedac84f5a57", "created_at": "2026-02-03 18:27:51.253583+01"},
+        {"user_id": 1, "product_id": 8, "type": "View", "session_id": "d73b56f1-4650-496f-a6b2-dedac84f5a57", "created_at": "2026-02-03 19:12:21.082532+01"},
+        {"user_id": 1, "product_id": 55, "type": "View", "session_id": "d73b56f1-4650-496f-a6b2-dedac84f5a57", "created_at": "2026-02-03 19:13:36.083971+01"},
+        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "d73b56f1-4650-496f-a6b2-dedac84f5a57", "created_at": "2026-02-03 19:25:53.37808+01"},
+        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "d73b56f1-4650-496f-a6b2-dedac84f5a57", "created_at": "2026-02-03 19:27:29.97806+01"},
+        {"user_id": 1, "product_id": 28, "type": "View", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:21:10.822898+01"},
+        {"user_id": 1, "product_id": 58, "type": "View", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:21:30.603943+01"},
+
+        {"user_id": 1, "product_id": 58, "type": "AddToCart", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:21:36.5568+01"},
+        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:39:13.539336+01"},
+        {"user_id": 1, "product_id": 58, "type": "View", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:40:51.048238+01"},
+        {"user_id": 1, "product_id": 58, "type": "AddToWishlist", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:41:03.758736+01"},
+        {"user_id": None, "product_id": 28, "type": "View", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 09:47:06.093696+01"},
+        {"user_id": None, "product_id": 28, "type": "View", "session_id": "8eb679c8-d4fd-4f3e-92e6-1357553a8128", "created_at": "2026-02-05 09:47:15.45636+01"},
+        {"user_id": 1, "product_id": 28, "type": "AddToCart", "session_id": "8eb679c8-d4fd-4f3e-92e6-1357553a8128", "created_at": "2026-02-05 09:47:31.507679+01"},
+        {"user_id": 1, "product_id": 28, "type": "View", "session_id": "02502a90-bbc3-413d-90d2-c87ecb782dcc", "created_at": "2026-02-05 09:47:36.335046+01"},
+        {"user_id": 1, "product_id": 1, "type": "View", "session_id": "02502a90-bbc3-413d-90d2-c87ecb782dcc", "created_at": "2026-02-05 09:47:59.461735+01"},
+        {"user_id": 1, "product_id": 6, "type": "View", "session_id": "02502a90-bbc3-413d-90d2-c87ecb782dcc", "created_at": "2026-02-05 09:49:02.628984+01"},
+
+        {"user_id": 1, "product_id": 1, "type": "View", "session_id": "02502a90-bbc3-413d-90d2-c87ecb782dcc", "created_at": "2026-02-05 09:49:14.822859+01"},
+        {"user_id": 1, "product_id": 6, "type": "View", "session_id": "02502a90-bbc3-413d-90d2-c87ecb782dcc", "created_at": "2026-02-05 09:49:20.946398+01"},
+        {"user_id": 1, "product_id": 1, "type": "View", "session_id": "02502a90-bbc3-413d-90d2-c87ecb782dcc", "created_at": "2026-02-05 09:49:23.625258+01"},
+        {"user_id": 1, "product_id": 6, "type": "View", "session_id": "02502a90-bbc3-413d-90d2-c87ecb782dcc", "created_at": "2026-02-05 09:49:26.482301+01"},
+        {"user_id": 1, "product_id": 1, "type": "View", "session_id": "02502a90-bbc3-413d-90d2-c87ecb782dcc", "created_at": "2026-02-05 09:49:28.634313+01"},
+        {"user_id": None, "product_id": 40, "type": "View", "session_id": "02502a90-bbc3-413d-90d2-c87ecb782dcc", "created_at": "2026-02-05 13:36:10.653283+01"},
+        {"user_id": 1, "product_id": 58, "type": "AddToCart", "session_id": "37c88041-dbdb-498f-8630-99d113c37544", "created_at": "2026-02-05 14:52:08.82993+01"},
+        {"user_id": 1, "product_id": 6, "type": "AddToCart", "session_id": "bbb9d543-eb97-4070-9440-e2f74b9c29b2", "created_at": "2026-02-05 21:31:26.347305+01"},
+        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "f66f20fe-8a04-467e-9c43-6f57f92093ce", "created_at": "2026-02-05 21:36:14.580037+01"},
+        {"user_id": 1, "product_id": 11, "type": "View", "session_id": "f66f20fe-8a04-467e-9c43-6f57f92093ce", "created_at": "2026-02-05 21:41:17.010271+01"},
+
+        {"user_id": None, "product_id": 40, "type": "View", "session_id": "f66f20fe-8a04-467e-9c43-6f57f92093ce", "created_at": "2026-02-05 21:46:23.635688+01"},
+        {"user_id": 1, "product_id": 28, "type": "View", "session_id": "02adfad1-b985-4449-bd6c-19c239a3326b", "created_at": "2026-02-05 21:49:41.787289+01"},
+        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "43697a31-8545-40a0-900e-e69463c9de6a", "created_at": "2026-02-05 21:49:45.12311+01"},
+        {"user_id": 1, "product_id": 58, "type": "View", "session_id": "43697a31-8545-40a0-900e-e69463c9de6a", "created_at": "2026-02-05 21:49:52.850183+01"},
+        {"user_id": 2, "product_id": 11, "type": "View", "session_id": "43697a31-8545-40a0-900e-e69463c9de6a", "created_at": "2026-02-06 12:10:30.823328+01"},
+        {"user_id": 2, "product_id": 11, "type": "AddToCart", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:10:32.1019+01"},
+        {"user_id": 2, "product_id": 28, "type": "View", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:10:41.30344+01"},
+        {"user_id": 2, "product_id": 28, "type": "AddToCart", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:10:42.333798+01"},
+        {"user_id": 2, "product_id": 36, "type": "View", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:10:52.954963+01"},
+        {"user_id": 2, "product_id": 36, "type": "AddToCart", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:10:54.55803+01"},
+
+        {"user_id": 2, "product_id": 46, "type": "View", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:11:00.121218+01"},
+        {"user_id": 2, "product_id": 46, "type": "AddToCart", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:11:00.967451+01"},
+        {"user_id": 2, "product_id": 52, "type": "View", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:11:05.96448+01"},
+        {"user_id": 2, "product_id": 52, "type": "AddToCart", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:11:07.16088+01"},
+        {"user_id": 2, "product_id": 11, "type": "Purchase", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:11:56.940616+01"},
+        {"user_id": 2, "product_id": 28, "type": "Purchase", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:11:56.949837+01"},
+        {"user_id": 2, "product_id": 36, "type": "Purchase", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:11:56.95289+01"},
+        {"user_id": 2, "product_id": 46, "type": "Purchase", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:11:56.956427+01"},
+        {"user_id": 2, "product_id": 52, "type": "Purchase", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:11:57.035784+01"},
+        {"user_id": 1, "product_id": 11, "type": "View", "session_id": "18bffbdf-e85f-4652-b445-8b34876c874f", "created_at": "2026-02-08 20:35:22.214722+01"},
+
+        {"user_id": 1, "product_id": 11, "type": "AddToCart", "session_id": "18bffbdf-e85f-4652-b445-8b34876c874f", "created_at": "2026-02-08 20:35:24.119032+01"},
+        {"user_id": 1, "product_id": 46, "type": "AddToCart", "session_id": "18bffbdf-e85f-4652-b445-8b34876c874f", "created_at": "2026-02-08 20:35:29.484796+01"},
+        {"user_id": 1, "product_id": 52, "type": "AddToCart", "session_id": "18bffbdf-e85f-4652-b445-8b34876c874f", "created_at": "2026-02-08 20:35:34.944413+01"},
+        {"user_id": 1, "product_id": 11, "type": "Purchase", "session_id": "18bffbdf-e85f-4652-b445-8b34876c874f", "created_at": "2026-02-08 20:36:17.366683+01"},
+        {"user_id": 1, "product_id": 52, "type": "Purchase", "session_id": "18bffbdf-e85f-4652-b445-8b34876c874f", "created_at": "2026-02-08 20:36:17.373953+01"},
+        {"user_id": 1, "product_id": 46, "type": "Purchase", "session_id": "18bffbdf-e85f-4652-b445-8b34876c874f", "created_at": "2026-02-08 20:36:17.378131+01"},
+        {"user_id": 1, "product_id": 52, "type": "Purchase", "session_id": "18bffbdf-e85f-4652-b445-8b34876c874f", "created_at": "2026-02-08 20:36:17.373953+01"},
+        {"user_id": 2, "product_id": 58, "type": "AddToCart", "session_id": "d0cabffd-f7a2-45e2-9aab-cda5fca14b88", "created_at": "2026-02-09 10:43:51.932104+01"},
+        {"user_id": 1, "product_id": 58, "type": "View", "session_id": "475ec301-2f6f-41a9-a120-c979367a47c3", "created_at": "2026-02-09 10:44:31.475709+01"},
+        {"user_id": 1, "product_id": 58, "type": "AddToCart", "session_id": "475ec301-2f6f-41a9-a120-c979367a47c3", "created_at": "2026-02-09 10:44:33.288834+01"},
+
+       {"user_id": 2, "product_id": 58, "type": "View", "session_id": "41076b83-1b93-41fd-9933-3ddf695a90e0", "created_at": "2026-02-09 10:48:55.982848+01"},
+        {"user_id": 2, "product_id": 58, "type": "AddToCart", "session_id": "41076b83-1b93-41fd-9933-3ddf695a90e0", "created_at": "2026-02-09 10:48:57.349284+01"},
+        {"user_id": 2, "product_id": 58, "type": "Purchase", "session_id": "098aa619-7d81-4024-b126-3e16c39096ba", "created_at": "2026-02-09 12:01:31.710334+01"},
+        {"user_id": 2, "product_id": 5, "type": "View", "session_id": "098aa619-7d81-4024-b126-3e16c39096ba", "created_at": "2026-02-09 12:09:51.543363+01"},
+        {"user_id": 2, "product_id": 5, "type": "AddToCart", "session_id": "098aa619-7d81-4024-b126-3e16c39096ba", "created_at": "2026-02-09 12:09:52.697905+01"},
+        {"user_id": 2, "product_id": 58, "type": "Purchase", "session_id": "098aa619-7d81-4024-b126-3e16c39096ba", "created_at": "2026-02-09 12:01:31.710334+01"},
+        {"user_id": 2, "product_id": 5, "type": "Purchase", "session_id": "098aa619-7d81-4024-b126-3e16c39096ba", "created_at": "2026-02-09 12:25:58.985618+01"},
+        {"user_id": None, "product_id": 43, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:55:57.378796+01"},
+        {"user_id": None, "product_id": 13, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:56:22.847139+01"},
+        {"user_id": None, "product_id": 26, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:56:38.201824+01"},
+
+        {"user_id": None, "product_id": 17, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:56:51.665143+01"},
+        {"user_id": None, "product_id": 20, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:57:03.586971+01"},
+        {"user_id": None, "product_id": 4, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:57:19.549344+01"},
+        {"user_id": None, "product_id": 7, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:57:29.389426+01"},
+        {"user_id": None, "product_id": 54, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:57:42.132529+01"},
+        {"user_id": None, "product_id": 61, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:57:55.849374+01"},
+        {"user_id": None, "product_id": 56, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:58:07.436551+01"},
+        {"user_id": None, "product_id": 59, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:58:14.553151+01"},
+        {"user_id": None, "product_id": 46, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:58:27.251438+01"},
+        {"user_id": None, "product_id": 32, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:58:38.063414+01"}
+    ]
+
+    for product_data in products_in_promotion:
+        product = Products.query.filter_by(id=product_data["product_id"]).first()
+        promotion = Promotions.query.filter_by(id=product_data["promotion_id"]).first()
+        if product and promotion:
+            istnieje = ProductPromotions.query.filter_by(product_id=product.id, promotion_id=promotion.id).first()
+            if not istnieje:
+                new_product_in_promotion = ProductPromotions(product_id=product.id, promotion_id=promotion.id)
+                db.session.add(new_product_in_promotion)
+                added_count += 1
+    db.session.commit()
+    print(f"Dodano {added_count} produktów do promocji.")
 
 def seed_database():
     app = create_app()  # Utwórz instancję aplikacji
