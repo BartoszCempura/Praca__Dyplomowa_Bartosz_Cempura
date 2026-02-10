@@ -158,7 +158,7 @@ const CustomTooltip = ({ active, payload }) => {
     setLoading(true);
   try {
     const productHistory = purchasedThisWeek.filter(
-    item => item.id === parseInt(productId)  // 'id' zamiast 'product_id'
+    item => item.id === parseInt(productId)
     );
     
     const chartData = productHistory.map(item => ({
@@ -328,14 +328,12 @@ const CustomTooltip = ({ active, payload }) => {
               ) : (
                 <>
                   {/* wykres */}
-                  <div className="w-full rounded-xl p-5 border">
                     <div className="w-full rounded-xl p-5 border">
                       <LineChart
                         style={{ 
                           width: '100%', 
                           maxWidth: '700px', 
-                          height: '100%', 
-                          maxHeight: '70vh', 
+                          height: '100%',
                           aspectRatio: 1.618 
                         }}
                         data={selectedProductData}
@@ -349,7 +347,7 @@ const CustomTooltip = ({ active, payload }) => {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="date" 
-                          angle={-45}
+                          angle={0}
                           textAnchor="end"
                           height={80}
                         />
@@ -365,14 +363,13 @@ const CustomTooltip = ({ active, payload }) => {
                           stroke="#00E0FF" 
                           strokeWidth={2}
                           activeDot={{ r: 8 }}
+                          legendType="none"
                         />
                       </LineChart>
                     </div>
 
-                  </div>
-
                   {/* Przyciski */}
-                  <div className="flex justify-center gap-4 pt-10 border-t">
+                  <div className="flex justify-center gap-4 pt-10">
                     <button onClick={loadChartData} className="btn btn-custom">
                       Odśwież
                     </button>

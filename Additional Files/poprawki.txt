@@ -36,7 +36,8 @@ api nie powinno zwracać adresów typu other. Other jest tylko dla poja wypałni
 dodaj odliczanie do końca promocji
 
 
-Trzeba napisac kod seed który bedzie dawał dane dla interakcji i zakupów - bo powiązane z interakcjami różne daty w zakresie tygodnia  - najlepiej aby były generowane losowo od dzisiaj - pod egzamin??
- (w zasadzie nie trzeba bo tu nie ma bezpośredniegopzwiązkua chyba nikt nie bedzie tego sprawdzał)
+Powięksozno seed- i zmeiniono dla algorytmu zakres sprawdzanych dat do 30 - trzeba by pozmieniac nazwy funkcji, albo pozmieniać wartości seed tak aby zmieścić te 200 w tydzień
+
+zmienić rozmiar wykresu i dostosować go wizualnie
 
  Poprawić wygląd chart liniowego
