@@ -10,8 +10,8 @@ def reset_sequences():
     db.session.execute(text("ALTER SEQUENCE catalog.product_attributes_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE catalog.promotions_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE catalog.attribute_weights_id_seq RESTART WITH 1"))
-    db.session.execute(text("ALTER SEQUENCE commerce.transactions_id_seq RESTART WITH 1"))
-    db.session.execute(text("ALTER SEQUENCE commerce.transaction_products_id_seq RESTART WITH 1"))
+    #db.session.execute(text("ALTER SEQUENCE commerce.transactions_id_seq RESTART WITH 1"))
+    #b.session.execute(text("ALTER SEQUENCE commerce.transaction_products_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE analytics.user_product_interactions_id_seq RESTART WITH 1"))
     #db.session.execute(text("ALTER SEQUENCE commerce.delivery_methods_id_seq RESTART WITH 1"))
     #db.session.execute(text("ALTER SEQUENCE commerce.payment_methods_id_seq RESTART WITH 1"))
@@ -28,8 +28,11 @@ def reset_database():
     db.session.query(Attributes).delete()
     db.session.query(Categories).delete()
     db.session.query(AttributeWeights).delete()
+    db.session.query(UserProductInteractions).delete()
     #db.session.query(PaymentMethods).delete()
     #db.session.query(DeliveryMethods).delete()
+    #db.session.query(TransactionProducts).delete()
+    #db.session.query(Transactions).delete()
     db.session.commit()
 
 def seed_main_categories():
@@ -995,7 +998,7 @@ def seed_product_interactions():
     added_count = 0
     print("Dodawanie interakcji z produktami...")
     
-    products_in_promotion = [
+    products_interactions = [
         {"user_id": None, "product_id": 22, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 10:32:33.679189+01"},
         {"user_id": None, "product_id": 1, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 10:32:41.933702+01"},
         {"user_id": None, "product_id": 22, "type": "View", "session_id": "abe8f4e0-934f-4783-a171-50ebafbd2c2b", "created_at": "2026-02-02 10:33:40.418613+01"},
@@ -1015,7 +1018,7 @@ def seed_product_interactions():
         {"user_id": 1, "product_id": 27, "type": "View", "session_id": "b7c0093d-d97a-45e7-af3e-14b81b15ac96", "created_at": "2026-02-03 11:16:06.863314+01"},
         {"user_id": 1, "product_id": 26, "type": "View", "session_id": "b7c0093d-d97a-45e7-af3e-14b81b15ac96", "created_at": "2026-02-03 11:16:08.94276+01"},
         {"user_id": 1, "product_id": 40, "type": "Purchase", "session_id": "93b7fe2f-3f31-4242-9f8a-b7a2d4b106af", "created_at": "2026-02-03 13:30:08.223679+01"},
-        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "a876e53c-5862-48ef-9069-43535560ae0a", "created_at": "2026-02-03 14:22:06.919686+01"},
+        {"user_id": 1, "product_id": 40, "type": "Purchase", "session_id": "a876e53c-5862-48ef-9069-43535560ae0a", "created_at": "2026-02-03 14:22:06.919686+01"},
         {"user_id": 1, "product_id": 40, "type": "View", "session_id": "a876e53c-5862-48ef-9069-43535560ae0a", "created_at": "2026-02-03 14:26:02.319026+01"},
 
         {"user_id": 1, "product_id": 28, "type": "View", "session_id": "a876e53c-5862-48ef-9069-43535560ae0a", "created_at": "2026-02-03 14:44:36.078306+01"},
@@ -1030,7 +1033,7 @@ def seed_product_interactions():
         {"user_id": 1, "product_id": 58, "type": "View", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:21:30.603943+01"},
 
         {"user_id": 1, "product_id": 58, "type": "AddToCart", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:21:36.5568+01"},
-        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:39:13.539336+01"},
+        {"user_id": 1, "product_id": 40, "type": "Purchase", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:39:13.539336+01"},
         {"user_id": 1, "product_id": 58, "type": "View", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:40:51.048238+01"},
         {"user_id": 1, "product_id": 58, "type": "AddToWishlist", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 06:41:03.758736+01"},
         {"user_id": None, "product_id": 28, "type": "View", "session_id": "4af49a36-99dd-465f-bb80-1f34a5d6826c", "created_at": "2026-02-05 09:47:06.093696+01"},
@@ -1053,7 +1056,7 @@ def seed_product_interactions():
 
         {"user_id": None, "product_id": 40, "type": "View", "session_id": "f66f20fe-8a04-467e-9c43-6f57f92093ce", "created_at": "2026-02-05 21:46:23.635688+01"},
         {"user_id": 1, "product_id": 28, "type": "View", "session_id": "02adfad1-b985-4449-bd6c-19c239a3326b", "created_at": "2026-02-05 21:49:41.787289+01"},
-        {"user_id": 1, "product_id": 40, "type": "View", "session_id": "43697a31-8545-40a0-900e-e69463c9de6a", "created_at": "2026-02-05 21:49:45.12311+01"},
+        {"user_id": 1, "product_id": 40, "type": "Purchase", "session_id": "43697a31-8545-40a0-900e-e69463c9de6a", "created_at": "2026-02-05 21:49:45.12311+01"},
         {"user_id": 1, "product_id": 58, "type": "View", "session_id": "43697a31-8545-40a0-900e-e69463c9de6a", "created_at": "2026-02-05 21:49:52.850183+01"},
         {"user_id": 2, "product_id": 11, "type": "View", "session_id": "43697a31-8545-40a0-900e-e69463c9de6a", "created_at": "2026-02-06 12:10:30.823328+01"},
         {"user_id": 2, "product_id": 11, "type": "AddToCart", "session_id": "cc66baf9-c027-481b-80de-857b7af0bbf5", "created_at": "2026-02-06 12:10:32.1019+01"},
@@ -1084,7 +1087,7 @@ def seed_product_interactions():
         {"user_id": 1, "product_id": 58, "type": "View", "session_id": "475ec301-2f6f-41a9-a120-c979367a47c3", "created_at": "2026-02-09 10:44:31.475709+01"},
         {"user_id": 1, "product_id": 58, "type": "AddToCart", "session_id": "475ec301-2f6f-41a9-a120-c979367a47c3", "created_at": "2026-02-09 10:44:33.288834+01"},
 
-       {"user_id": 2, "product_id": 58, "type": "View", "session_id": "41076b83-1b93-41fd-9933-3ddf695a90e0", "created_at": "2026-02-09 10:48:55.982848+01"},
+        {"user_id": 2, "product_id": 58, "type": "View", "session_id": "41076b83-1b93-41fd-9933-3ddf695a90e0", "created_at": "2026-02-09 10:48:55.982848+01"},
         {"user_id": 2, "product_id": 58, "type": "AddToCart", "session_id": "41076b83-1b93-41fd-9933-3ddf695a90e0", "created_at": "2026-02-09 10:48:57.349284+01"},
         {"user_id": 2, "product_id": 58, "type": "Purchase", "session_id": "098aa619-7d81-4024-b126-3e16c39096ba", "created_at": "2026-02-09 12:01:31.710334+01"},
         {"user_id": 2, "product_id": 5, "type": "View", "session_id": "098aa619-7d81-4024-b126-3e16c39096ba", "created_at": "2026-02-09 12:09:51.543363+01"},
@@ -1107,17 +1110,41 @@ def seed_product_interactions():
         {"user_id": None, "product_id": 32, "type": "View", "session_id": "2802c929-d7eb-4d67-acfb-f0d081a436e1", "created_at": "2026-02-09 13:58:38.063414+01"}
     ]
 
-    for product_data in products_in_promotion:
-        product = Products.query.filter_by(id=product_data["product_id"]).first()
-        promotion = Promotions.query.filter_by(id=product_data["promotion_id"]).first()
-        if product and promotion:
-            istnieje = ProductPromotions.query.filter_by(product_id=product.id, promotion_id=promotion.id).first()
-            if not istnieje:
-                new_product_in_promotion = ProductPromotions(product_id=product.id, promotion_id=promotion.id)
-                db.session.add(new_product_in_promotion)
-                added_count += 1
+    date_change = [-7 , -7, -7, -7, -7, -7, -7, -7, -7, -7, -7, -7, 
+                   -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6,
+                   -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,
+                   -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                   ]
+    # kod zmienia wartoś daty created_at tak aby była aktualna i aby można było wykożystać te dane w algorymach ograniczonych wynikami do 7 dni wstecz
+    for i, interaction_data in enumerate(products_interactions):
+
+        original_date = datetime.fromisoformat(interaction_data["created_at"])
+        
+        now = datetime.now(timezone.utc)
+
+        new_date = now.replace(
+            hour=original_date.hour,
+            minute=original_date.minute,
+            second=original_date.second,
+            microsecond=original_date.microsecond
+        )
+        
+        new_date = new_date + timedelta(days=date_change[i])
+        
+        new_product_interaction = UserProductInteractions(
+            user_id=interaction_data["user_id"],
+            product_id=interaction_data["product_id"],
+            type=interaction_data["type"],
+            session_id=interaction_data["session_id"],
+            created_at=new_date
+        )
+        db.session.add(new_product_interaction)
+        added_count += 1
+
     db.session.commit()
-    print(f"Dodano {added_count} produktów do promocji.")
+    print(f"Dodano {added_count} interakcji z produktami")
 
 def seed_database():
     app = create_app()  # Utwórz instancję aplikacji
@@ -1140,6 +1167,7 @@ def seed_database():
         #print("Uzupełnianie historycznyhc danych transakcji...")
         #seed_transactions()
         #seed_transacion_products()
+        seed_product_interactions()
 
 if __name__ == "__main__":
     seed_database()
