@@ -10,8 +10,8 @@ def reset_sequences():
     db.session.execute(text("ALTER SEQUENCE catalog.product_attributes_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE catalog.promotions_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE catalog.attribute_weights_id_seq RESTART WITH 1"))
-    #db.session.execute(text("ALTER SEQUENCE commerce.transactions_id_seq RESTART WITH 1"))
-    #b.session.execute(text("ALTER SEQUENCE commerce.transaction_products_id_seq RESTART WITH 1"))
+    db.session.execute(text("ALTER SEQUENCE commerce.transactions_id_seq RESTART WITH 1"))
+    db.session.execute(text("ALTER SEQUENCE commerce.transaction_products_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE analytics.user_product_interactions_id_seq RESTART WITH 1"))
     #db.session.execute(text("ALTER SEQUENCE commerce.delivery_methods_id_seq RESTART WITH 1"))
     #db.session.execute(text("ALTER SEQUENCE commerce.payment_methods_id_seq RESTART WITH 1"))
@@ -31,8 +31,6 @@ def reset_database():
     db.session.query(UserProductInteractions).delete()
     #db.session.query(PaymentMethods).delete()
     #db.session.query(DeliveryMethods).delete()
-    #db.session.query(TransactionProducts).delete()
-    #db.session.query(Transactions).delete()
     db.session.commit()
 
 def seed_main_categories():
@@ -961,34 +959,125 @@ def seed_product_in_promoton():
     db.session.commit()
     print(f"Dodano {added_count} produktów do promocji.")
 
-def seed_transacion_products(): ## nie używane obecnie
+def seed_transacion_products():
     added_count = 0
     print("Dodawanie produktów do transakcji...")
 
     transaction_products = [ 
-        {"transaction_id": 1, "product_id": 4, "quantity": 1, "unit_price": 2699.00},
-        {"transaction_id": 1, "product_id": 6, "quantity": 1, "unit_price": 4899.00}
+        {"transaction_id": 1, "product_id": 7, "quantity": 1, "unit_price_with_discount": 4499.25},
+        {"transaction_id": 1, "product_id": 37, "quantity": 1, "unit_price_with_discount": 269.00},
+        {"transaction_id": 1, "product_id": 40, "quantity": 1, "unit_price_with_discount": 259.00},
+        {"transaction_id": 1, "product_id": 51, "quantity": 1, "unit_price_with_discount": 179.00},
+        {"transaction_id": 1, "product_id": 58, "quantity": 1, "unit_price_with_discount": 60.00},
+        {"transaction_id": 2, "product_id": 33, "quantity": 1, "unit_price_with_discount": 201.75},
+        {"transaction_id": 2, "product_id": 58, "quantity": 1, "unit_price_with_discount": 60.00}
     ]
+
     for data in transaction_products:
         istnieje = TransactionProducts.query.filter_by(transaction_id=data["transaction_id"], product_id=data["product_id"]).first()
         if not istnieje:
-            new_transaction_product = TransactionProducts(transaction_id=data["transaction_id"], product_id=data["product_id"], quantity=data["quantity"], unit_price=data["unit_price"])
+            new_transaction_product = TransactionProducts(transaction_id=data["transaction_id"], product_id=data["product_id"], quantity=data["quantity"], unit_price_with_discount=data["unit_price_with_discount"])
             db.session.add(new_transaction_product)
             added_count += 1
     db.session.commit()
     print(f"Dodano {added_count} produktów do transakcji.")
 
-def seed_transactions(): ## nie używane obecnie
+def seed_transactions(): 
     added_count = 0
     print("Dodawanie transakcji...")
     transactions = [
-        {"user_id": 1, "total_transaction_value": 7607.99, "billing_address_id": 46, "shipping_address_id": 46, "status": TransactionStatus.Pending, "delivery_method_id": 1, "payment_method_id": 1, "delivery_deadline": "2026-02-03", "created_at": "2026-02-01 23:39:25.202989+01", "updated_at": "2026-02-01 23:39:25.202989+01", "billing_address_data": {}, "shipping_address_data": {}},
+        {
+            "user_id": 1,
+            "total_transaction_value": 5276.24,
+            "billing_address_id": 46,
+            "shipping_address_id": 46,
+            "status": "Pending",
+            "delivery_method_id": 1,
+            "payment_method_id": 4,
+            "delivery_deadline": "2026-02-13",
+            "notes": "Proszę zadzwonić pod numer 2 domofonu ",
+            "created_at": "2026-02-11 13:42:44.592662+01",
+            "updated_at": "2026-02-11 13:42:44.592662+01",
+            "billing_address_data": {
+                "id": 46,
+                "nip": None,
+                "city": "Radom",
+                "type": "Default",
+                "title": "Adres Mamy",
+                "user_id": 1,
+                "zip_code": "26-603",
+                "last_name": "Rogalska",
+                "first_name": "Antonina",
+                "flat_number": None,
+                "street_name": "Strzemienna",
+                "company_name": "",
+                "building_number": "15"
+            },
+            "shipping_address_data": {
+                "id": 46,
+                "nip": None,
+                "city": "Radom",
+                "type": "Default",
+                "title": "Adres Mamy",
+                "user_id": 1,
+                "zip_code": "26-603",
+                "last_name": "Rogalska",
+                "first_name": "Antonina",
+                "flat_number": None,
+                "street_name": "Strzemienna",
+                "company_name": "",
+                "building_number": "15"
+            }
+        },
+        {
+            "user_id": 2,
+            "total_transaction_value": 271.74,
+            "billing_address_id": 52,
+            "shipping_address_id": 52,
+            "status": "Pending",
+            "delivery_method_id": 1,
+            "payment_method_id": 4,
+            "delivery_deadline": "2026-02-13",
+            "notes": "lubie plack",
+            "created_at": "2026-02-11 13:45:20.152394+01",
+            "updated_at": "2026-02-11 13:45:20.152394+01",
+            "billing_address_data": {
+                "id": 52,
+                "nip": None,
+                "city": "Bodzanów",
+                "type": "Default",
+                "title": "Dom",
+                "user_id": 2,
+                "zip_code": "09-470",
+                "last_name": "Kowalczyk",
+                "first_name": "Aleksander",
+                "flat_number": 24,
+                "street_name": "Ostateczna",
+                "company_name": "",
+                "building_number": "13"
+            },
+            "shipping_address_data": {
+                "id": 52,
+                "nip": None,
+                "city": "Bodzanów",
+                "type": "Default",
+                "title": "Dom",
+                "user_id": 2,
+                "zip_code": "09-470",
+                "last_name": "Kowalczyk",
+                "first_name": "Aleksander",
+                "flat_number": 24,
+                "street_name": "Ostateczna",
+                "company_name": "",
+                "building_number": "13"
+            }
+        }
     ]
 
     for data in transactions:
         istnieje = Transactions.query.filter_by(user_id=data["user_id"], created_at=data["created_at"]).first()
         if not istnieje:
-            new_transaction = Transactions(user_id=data["user_id"], total_transaction_value=data["total_amount"], billing_address_id=data["billing_address_id"], shipping_address_id=data["shipping_address_id"], status=data["status"], delivery_method_id=data["delivery_method_id"], payment_method_id=data["payment_method_id"], delivery_deadline=data["delivery_deadline"], created_at=data["created_at"], updated_at=data["updated_at"], billing_address_data=data["billing_address_data"], shipping_address_data=data["shipping_address_data"])
+            new_transaction = Transactions(user_id=data["user_id"], total_transaction_value=data["total_transaction_value"], billing_address_id=data["billing_address_id"], shipping_address_id=data["shipping_address_id"], status=data["status"], delivery_method_id=data["delivery_method_id"], payment_method_id=data["payment_method_id"], delivery_deadline=data["delivery_deadline"], notes=data["notes"], created_at=data["created_at"], updated_at=data["updated_at"], billing_address_data=data["billing_address_data"], shipping_address_data=data["shipping_address_data"])
             db.session.add(new_transaction)
             added_count += 1
     db.session.commit()
@@ -1217,7 +1306,24 @@ def seed_product_interactions():
         {"user_id": 1, "product_id": 15, "type": "AddToCart", "session_id": "c2e9b7a3-6d4f-4a88-91e2-7b5c1d8a903e", "created_at": "2026-02-18 13:27:41.338519+01"},
         {"user_id": 2, "product_id": 15, "type": "Purchase", "session_id": "c2e9b7a3-6d4f-4a88-91e2-7b5c1d8a903e", "created_at": "2026-02-18 13:42:55.771204+01"},
         {"user_id": 1, "product_id": 27, "type": "View", "session_id": "c2e9b7a3-6d4f-4a88-91e2-7b5c1d8a903e", "created_at": "2026-02-18 13:57:18.992683+01"},
-        {"user_id": 2, "product_id": 27, "type": "AddToCart", "session_id": "c2e9b7a3-6d4f-4a88-91e2-7b5c1d8a903e", "created_at": "2026-02-18 14:11:44.456230+01"}
+        {"user_id": 2, "product_id": 27, "type": "AddToCart", "session_id": "c2e9b7a3-6d4f-4a88-91e2-7b5c1d8a903e", "created_at": "2026-02-18 14:11:44.456230+01"},
+
+        {"user_id": 1, "product_id": 7, "type": "AddToCart", "session_id": "5a0fafe2-67b3-4d3f-8a8a-396b5e07bcf1", "created_at": "2026-02-11 13:41:10.95148+01"},
+        {"user_id": 1, "product_id": 37, "type": "AddToCart", "session_id": "5a0fafe2-67b3-4d3f-8a8a-396b5e07bcf1", "created_at": "2026-02-11 13:41:32.097731+01"},
+        {"user_id": 1, "product_id": 40, "type": "AddToCart", "session_id": "5a0fafe2-67b3-4d3f-8a8a-396b5e07bcf1", "created_at": "2026-02-11 13:41:38.240587+01"},
+        {"user_id": 1, "product_id": 51, "type": "AddToCart", "session_id": "5a0fafe2-67b3-4d3f-8a8a-396b5e07bcf1", "created_at": "2026-02-11 13:41:46.982099+01"},
+        {"user_id": 1, "product_id": 58, "type": "AddToCart", "session_id": "5a0fafe2-67b3-4d3f-8a8a-396b5e07bcf1", "created_at": "2026-02-11 13:41:51.726935+01"},
+        {"user_id": 1, "product_id": 7, "type": "Purchase", "session_id": "5a0fafe2-67b3-4d3f-8a8a-396b5e07bcf1", "created_at": "2026-02-11 13:42:46.16957+01"},
+        {"user_id": 1, "product_id": 37, "type": "Purchase", "session_id": "5a0fafe2-67b3-4d3f-8a8a-396b5e07bcf1", "created_at": "2026-02-11 13:42:46.178265+01"},
+        {"user_id": 1, "product_id": 40, "type": "Purchase", "session_id": "5a0fafe2-67b3-4d3f-8a8a-396b5e07bcf1", "created_at": "2026-02-11 13:42:46.180404+01"},
+        {"user_id": 1, "product_id": 51, "type": "Purchase", "session_id": "5a0fafe2-67b3-4d3f-8a8a-396b5e07bcf1", "created_at": "2026-02-11 13:42:46.185365+01"},
+        {"user_id": 1, "product_id": 58, "type": "Purchase", "session_id": "5a0fafe2-67b3-4d3f-8a8a-396b5e07bcf1", "created_at": "2026-02-11 13:42:46.193906+01"},
+
+        {"user_id": 2, "product_id": 33, "type": "AddToCart", "session_id": "95985958-b22f-4d2f-8b08-db9e0090c6f6", "created_at": "2026-02-11 13:43:45.124826+01"},
+        {"user_id": 2, "product_id": 58, "type": "View", "session_id": "95985958-b22f-4d2f-8b08-db9e0090c6f6", "created_at": "2026-02-11 13:43:53.595117+01"},
+        {"user_id": 2, "product_id": 58, "type": "AddToCart", "session_id": "95985958-b22f-4d2f-8b08-db9e0090c6f6", "created_at": "2026-02-11 13:43:57.114423+01"},
+        {"user_id": 2, "product_id": 33, "type": "Purchase", "session_id": "95985958-b22f-4d2f-8b08-db9e0090c6f6", "created_at": "2026-02-11 13:45:22.932621+01"},
+        {"user_id": 2, "product_id": 58, "type": "Purchase", "session_id": "95985958-b22f-4d2f-8b08-db9e0090c6f6", "created_at": "2026-02-11 13:45:22.937694+01"}
 
 ]
 
@@ -1229,7 +1335,7 @@ def seed_product_interactions():
                    -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,
                    -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
                    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,    
-                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                    ]
     # kod zmienia wartoś daty created_at tak aby była aktualna i aby można było wykożystać te dane w algorymach ograniczonych wynikami do 7 dni wstecz
     for i, interaction_data in enumerate(products_interactions):
@@ -1278,9 +1384,9 @@ def seed_database():
         #seed_payment_methods()
         seed_promotions()
         seed_product_in_promoton()
-        #print("Uzupełnianie historycznyhc danych transakcji...")
-        #seed_transactions()
-        #seed_transacion_products()
+        print("Uzupełnianie historycznyhc danych transakcji...")
+        seed_transactions()
+        seed_transacion_products()
         seed_product_interactions()
 
 if __name__ == "__main__":

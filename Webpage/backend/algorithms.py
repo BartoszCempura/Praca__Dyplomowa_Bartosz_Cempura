@@ -88,7 +88,7 @@ def get_top_products():
 
         top_purchase = purchase_calculation.first()
 
-        #all_purchases = purchase_calculation.all()
+        all_purchases = purchase_calculation.all()
 
         top_purchase_product = None
         if top_purchase:
@@ -101,8 +101,8 @@ def get_top_products():
                     top_purchase_product['purchase_count'] = purchase_count
                 except AttributeError as e:
                     print(f"[ERROR] Most purchased product: {str(e)}")
-        """
-        product_purchased_this_week = []
+
+        products_purchased_this_week = []
         for product_id, purchase_count in all_purchases:
             product = Products.query.get(product_id)
 
@@ -110,10 +110,10 @@ def get_top_products():
                 try:
                     single_product_data =  product.to_json_user_view()
                     single_product_data['purchase_count'] = purchase_count
-                    product_purchased_this_week.append(single_product_data)
+                    products_purchased_this_week.append(single_product_data)
                 except AttributeError as e:
                     print(f"[ERROR] Product {product_id}: {str(e)}")
-        """
+
         daily_purchases = (
             UserProductInteractions.query.with_entities(
                 UserProductInteractions.product_id,
@@ -171,7 +171,7 @@ def get_top_products():
             'top_products': top_products,
             'most_purchased_product': top_purchase_product,
             'product_purchase_history': product_purchase_history,
-            #'product_purchased_this_week': product_purchased_this_week,
+            'products_purchased_this_week': products_purchased_this_week,
             'top_viewed_product': top_viewed_product
         }), 200
 

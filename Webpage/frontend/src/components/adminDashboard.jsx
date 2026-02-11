@@ -13,7 +13,10 @@ function AdminDashboard() {
 
   const [mostPurchased, setMoustPurchased] = useState(null);
 
-  const [purchasedThisWeek, setPurchasedThisWeek] = useState([])
+  const [howManyPorchased, setHowManyPorchased] = useState([]);
+  const [selectedProductPurchaseCount, setSelectedProductPurchaseCount] = useState(0);
+
+  const [productPurchaseHistory, setproductPurchaseHistory] = useState([])
   const [selectedProductId, setSelectedProductId] = useState(null)
   const [selectedProductData, setSelectedProductData] = useState([])
   
@@ -51,8 +54,13 @@ function AdminDashboard() {
         return;
       }
 
-      if (data.purchasedThisWeek.length === 0) {
-        setPurchasedThisWeek([]);
+      if (data.product_purchase_history.length === 0) {
+        setproductPurchaseHistory([]);
+        return;
+      }
+
+      if (data.products_purchased_this_week.length === 0) {
+        setHowManyPorchased([]);
         return;
       }
       
@@ -68,18 +76,25 @@ function AdminDashboard() {
    
       setMoustPurchased(data.mostPurchased)
 
-      setPurchasedThisWeek(data.purchasedThisWeek)
+      setHowManyPorchased(data.products_purchased_this_week)
 
-      if (data.purchasedThisWeek.length > 0) {
-        const firstProductId = data.purchasedThisWeek[0].id;
+      setSelectedProductPurchaseCount
+
+      setproductPurchaseHistory(data.product_purchase_history)
+
+      if (data.product_purchase_history.length > 0) {
+        const firstProductId = data.product_purchase_history[0].id;
         setSelectedProductId(firstProductId);
         loadProductChartData(firstProductId);
+
+        const firstProductSaleData = data.products_purchased_this_week.find(p =>p.id === firstProductId);
+        setSelectedProductPurchaseCount(firstProductSaleData?.purchase_count || 0);
       }
       
     } catch (err) {
       console.error(err);
       setChartData([]);
-      setPurchasedThisWeek([]);
+      setproductPurchaseHistory([]);
     } finally {
       setLoading(false);
     }
@@ -87,15 +102,28 @@ function AdminDashboard() {
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
-    const { name, id, score } = payload[0].payload;
+    const data = payload[0].payload;
 
-    return (
-      <div className="bg-base-200 p-3 rounded-lg shadow border border-gray-700">
-        <p className="text-sm text-gray-400">ID: {id}</p>
-        <p className="font-semibold">{name}</p>
-        <p className="text-amber-500">Score: {score}</p>
-      </div>
-    );
+    if (kokpitSection === "products_popularity") {
+      const { name, id, score } = data;
+      return (
+        <div className="bg-base-200 p-3 rounded-lg shadow border border-gray-700">
+          <p className="text-sm text-gray-400">ID: {id}</p>
+          <p className="font-semibold">{name}</p>
+          <p className="text-amber-500">Score: {score}</p>
+        </div>
+        );
+      }
+
+    if (kokpitSection === "sales_list") {
+      const {date, sold } = data;
+      return (
+        <div className="bg-base-200 p-3 rounded-lg shadow border border-gray-700">
+          <p className="font-semibold">{date}</p>
+          <p className="text-amber-500">Sprzedano: {sold}</p>
+        </div>
+        );
+      }
   }
   return null;
 };
@@ -152,19 +180,51 @@ const CustomTooltip = ({ active, payload }) => {
   const handleProductChange = (productId) => {
     setSelectedProductId(productId);
     loadProductChartData(productId);
+
+    const purchaseData = howManyPorchased.find(p => p.id === parseInt(productId));
+    setSelectedProductPurchaseCount(purchaseData?.purchase_count || 0);
   }
 
   const loadProductChartData = async (productId) => {
     setLoading(true);
   try {
-    const productHistory = purchasedThisWeek.filter(
-    item => item.id === parseInt(productId)
-    );
-    
-    const chartData = productHistory.map(item => ({
-      date: item.date,
-      sold: item.count
-    }));
+    const productHistory = [];
+    for (let item of productPurchaseHistory) {
+      if (item.id === parseInt(productId)) {
+        productHistory.push(item);
+      }
+    }
+
+    if (!productHistory.length) {
+      setSelectedProductData([]);
+      return;
+    }
+
+    productHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    const startDate = new Date(productHistory[0].date);
+    const endDate = new Date(productHistory[productHistory.length - 1].date);
+
+    const salesByDate = {};
+    for (let item of productHistory) {
+      salesByDate[item.date] = item.count;
+    }
+
+    const chartData = [];
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      
+      chartData.push({
+        date: dateStr,
+        sold: salesByDate[dateStr] || 0
+      });
+
+      currentDate.setDate(currentDate.getDate() + 1);
+
+    }
+
     
     setSelectedProductData(chartData);
     } catch (err) {
@@ -177,7 +237,7 @@ const CustomTooltip = ({ active, payload }) => {
 
   const uniqueProducts = [];
   const seenIds = new Set();
-  purchasedThisWeek.forEach(item => {
+  productPurchaseHistory.forEach(item => {
     if (!seenIds.has(item.id)) {
       seenIds.add(item.id);
       uniqueProducts.push(item);
@@ -318,7 +378,7 @@ const CustomTooltip = ({ active, payload }) => {
                 <div className="flex justify-center items-center h-96">
                   <span className="loading loading-bars loading-lg text-primary"></span>
                 </div>
-              ) : purchasedThisWeek.length === 0 ? (
+              ) : productPurchaseHistory.length === 0 ? (
                 <div className="text-center py-20">
                   <p className="text-xl text-gray-500">Brak danych</p>
                   <button onClick={loadChartData} className="btn btn-custom mt-4">
@@ -329,47 +389,34 @@ const CustomTooltip = ({ active, payload }) => {
                 <>
                   {/* wykres */}
                     <div className="w-full rounded-xl p-5 border">
-                      <LineChart
-                        style={{ 
-                          width: '100%', 
-                          maxWidth: '700px', 
-                          height: '100%',
-                          aspectRatio: 1.618 
-                        }}
-                        data={selectedProductData}
-                        margin={{
-                          top: 5,
-                          right: 0,
-                          left: 0,
-                          bottom: 5,
-                        }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="date" 
-                          angle={0}
-                          textAnchor="end"
-                          height={80}
-                        />
-                        <YAxis 
-                          width="auto"
-                          label={{ value: 'Ilość zakupów', angle: -90, position: 'insideLeft' }}
-                        />
-                        <Tooltip />
-                        <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="sold" 
-                          stroke="#00E0FF" 
-                          strokeWidth={2}
-                          activeDot={{ r: 8 }}
-                          legendType="none"
-                        />
-                      </LineChart>
+                      <ResponsiveContainer width="100%" aspect={2}>
+                        <LineChart data={selectedProductData} margin={{ top: 15, right: 50, left: 0, bottom: 15}}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis heiht="auto" dataKey="date" dy={15}/>
+                          <YAxis width="auto" label={{ value: 'Ilość zakupów', angle: -90, position: 'insideLeft' }}/>
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="sold" 
+                            stroke="#00E0FF" 
+                            strokeWidth={2}
+                            activeDot={{ r: 8 }}
+                            legendType="none"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="flex justify-center gap-4 text-center mt-10">
+                      <div className="stat">
+                        <div className="stat-title">Ilość sprzedanych sztuk w przeciągu 7 dni</div>
+                        <div className="stat-value text-primary">{selectedProductPurchaseCount}</div>
+                      </div>               
                     </div>
 
                   {/* Przyciski */}
-                  <div className="flex justify-center gap-4 pt-10">
+                  <div className="flex justify-center gap-4 pt-10 border-t">
                     <button onClick={loadChartData} className="btn btn-custom">
                       Odśwież
                     </button>
