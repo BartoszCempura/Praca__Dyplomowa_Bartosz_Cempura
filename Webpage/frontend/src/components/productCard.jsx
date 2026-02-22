@@ -46,7 +46,6 @@ function ProductCard({ id, name, slug, category_slug, image, unit_price, unit_pr
   if (variant === "catalog") {
   return (
     <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 w-96 h-48 border border-gray-900 relative">
-      {/* ↑ Usunięte: card-side i grid grid-cols-2 */}
       
       <button 
         type="button" 
@@ -160,6 +159,7 @@ function ProductCard({ id, name, slug, category_slug, image, unit_price, unit_pr
     return (
       <div className="w-full flex items-center gap-6 bg-base-200 shadow-md border border-gray-900 rounded-lg p-4 hover:shadow-black/40 transition-shadow duration-100">
         {/* Zdjęcie produktu */}
+        
         <figure className="w-24 h-24 flex-shrink-0">
             <img src={image} alt={name} className="w-full h-full object-cover rounded-lg" />
         </figure>

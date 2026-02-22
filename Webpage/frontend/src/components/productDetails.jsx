@@ -1,6 +1,8 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../api/tokenHandler";
+import { useWishlist } from "../utils/useWhishlist";
+import { addToWishlist, removeFromWishlist} from "../utils/wishlistActions";
 import { useCart} from "../utils/useCart";
 import { addToCart } from "../utils/cartActions";
 import ProductCard from "./productCard";
@@ -11,6 +13,7 @@ function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [attributes, setAttributes] = useState([]);
+  const inWishList = useWishlist(product?.id);
   const isInCart  = useCart(product?.id);
 
   useEffect(() => {
@@ -42,6 +45,14 @@ function ProductDetails() {
     }, change);
   };
 
+  const handleAddToWishlist = () => {
+      if (!inWishList) {
+        addToWishlist(product?.id);
+      } else {
+        removeFromWishlist(product?.id);
+      }
+    };
+
   return (
     <>
       <div className="hero bg-base-100 min-h-screen py-12">
@@ -50,7 +61,23 @@ function ProductDetails() {
 
           {/* Obraz produktu */}
           {/* Rating nie jest zapisywany - do rozwinięcia */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center relative">
+            <button 
+              type="button" 
+              className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-transparent transition-colors group" 
+              onClick={handleAddToWishlist}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`h-11 w-11 transition-colors text-base-200 duration-200 ${inWishList ? 'fill-amber-500 stroke-amber-500' : 'group-hover:stroke-amber-500'}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+            </button>
             <img src={product.image} alt={product.name} className="max-w-sm rounded-lg shadow-2xl" />
             <div className="rating rating-xl mt-4 gap-2">
               <input type="radio" name="rating-5" className="mask mask-star-2 bg-orange-400" aria-label="1 star" />

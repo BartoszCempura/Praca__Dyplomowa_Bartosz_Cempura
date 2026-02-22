@@ -269,7 +269,7 @@ function CartPartTwo() {
                             Wartość: {cartValue.toFixed(2)} zł
                         </span>
                         <div className="card-actions">
-                            <button className="btn btn-custom btn-block" onClick={() => setStep("summary")}>Przejdź dalej</button>
+                            <button className="btn btn-custom btn-block" onClick={() => setStep("summary")} disabled={!shippingAdress}>Przejdź dalej</button>
                         </div>
                         <div className="card-actions">
                             <button className="btn btn-custom btn-block" onClick={() => navigate(-1)}>Powrót</button>

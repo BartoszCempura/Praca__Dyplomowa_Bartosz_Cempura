@@ -93,7 +93,7 @@ useEffect(() => {
           {user?.role === "admin" && (
             <li><a onClick={handleAdmin}>Kokpit</a></li>
           )}
-          <li><a onClick={handleAdressess}>Dane do zamówień</a></li>
+          <li><a onClick={handleAdressess}>Dane adresowe</a></li>
           <li><a onClick={handleLogout} className="cursor-pointer">Wyloguj</a></li>
         </ul>
       ) : (
