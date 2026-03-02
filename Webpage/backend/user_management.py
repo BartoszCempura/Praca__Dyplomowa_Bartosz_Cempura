@@ -10,7 +10,7 @@ user_management_bp = Blueprint('user_management', __name__, url_prefix='/api/use
 
 ## ###################################################################### Użytkownicy ######################################################################
 
-@user_management_bp.route('/user', methods=['POST']) ## used
+@user_management_bp.route('/user', methods=['POST']) ## used - createAccountPage
 def register():
 
     """-------------------------------Tworzenie konta nowego użytkownika-------------------------------"""
@@ -64,8 +64,7 @@ def register():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-
-@user_management_bp.route('/user', methods=['PUT']) ## used
+@user_management_bp.route('/user', methods=['PUT']) ## used - userProfile
 @jwt_required()
 def change_password():
 
@@ -77,7 +76,7 @@ def change_password():
     user = User.query.filter_by(id=current_user_id).first()
 
     if not user:
-        return jsonify({'error': 'User not found'}), 404
+        return jsonify({'error': 'Nie znaleziono użytkownika'}), 404
  
     if not data.get('old_password') or not data.get('new_password'):
         return jsonify({'error': 'Oba pola są wymagane'}), 400
@@ -93,8 +92,7 @@ def change_password():
 
     return jsonify({'message': 'Hasło zostało zmienione pomyślnie'}), 200
 
-
-@user_management_bp.route('/user', methods=['GET']) ## used
+@user_management_bp.route('/user', methods=['GET']) ## used - userProfile
 @jwt_required()
 def get_current_user():
 
@@ -105,7 +103,7 @@ def get_current_user():
         user = User.query.get(current_user_id)
 
         if not user:
-            return jsonify({'error': 'User not found'}), 404
+            return jsonify({'error': 'Nie znaleziono użytkownika'}), 404
 
         return jsonify(user.to_json()), 200
 
@@ -113,9 +111,7 @@ def get_current_user():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-
-
-@user_management_bp.route('/user', methods=['DELETE']) ## used
+@user_management_bp.route('/user', methods=['DELETE']) ## used - userProfile
 @jwt_required()
 def delete_user():
 
@@ -128,13 +124,13 @@ def delete_user():
         user = User.query.filter_by(id=current_user_id).first()
 
         if not user:
-            return jsonify({'error': 'User does not exist'}), 404
+            return jsonify({'error': 'Nie znaleziono użytkownika'}), 404
         
         if not data.get('password'):
-            return jsonify({'error': 'password is required'}), 400
+            return jsonify({'error': 'Wymagane podanie hasła'}), 400
         
         if not user.check_password(data['password']):
-            return jsonify({'error': 'Invalid password'}), 401
+            return jsonify({'error': 'Nieprawidłowe hasło'}), 401
 
         # Przechowujemy informacje o użytkowniku przed usunięciem
         # aby móc zwrócić ją w odpowiedzi
@@ -154,7 +150,9 @@ def delete_user():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
+
 ## ###################################################################### Adresy dostawy ######################################################################
+
 
 @user_management_bp.route('/addresses', methods=['POST']) ## used - daneDoZamowien
 @jwt_required()
@@ -196,7 +194,7 @@ def register_address():
             address_type = AddressType(type_str)
         except ValueError:
             return jsonify({'error': f'Nieprawidłowy typ adresu: {type_str}'}), 400
-        
+        # w frontendzie nie ma możliwości dodania ponownie Default więc ten błąd raczej się nie pojawi, ale dla pewności lepiej go obsłużyć, żeby nie było sytuacji że mamy dwa adresy default
         if address_type == AddressType.Default:
             if_default_check = UserAddress.query.filter(
                 UserAddress.type == 'Default',
@@ -231,8 +229,7 @@ def register_address():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
     
-
-@user_management_bp.route('/addresses', methods=['GET']) ## used - daneDoZamowien
+@user_management_bp.route('/addresses', methods=['GET']) ## used - daneDoZamowien, cartPartTwo
 @jwt_required()
 def get_all_addresses():
 
@@ -255,7 +252,7 @@ def get_all_addresses():
 @jwt_required()
 def update_address_type(address_id):
 
-    """-------------------------------Zmiana typu adresu-------------------------------"""
+    """-------------------------------Zmiana typu adresu z wysyłkowego na domyślny-------------------------------"""
     
     try:
         current_user_id = get_jwt_identity()
@@ -317,19 +314,19 @@ def delete_address(address_id):
         ).first() # po stronie frontend numer ID adresu musi być przekazany do przycisku x
 
         if not address:
-            return jsonify({'error': 'Address does not exist'}), 404
+            return jsonify({'error': 'Brak takiego adresu'}), 404
 
         db.session.delete(address)
         db.session.commit()
 
-        return jsonify({'message': 'Address deleted successfully'}), 200
+        return jsonify({'message': 'Adres został pomyślnie usunięty'}), 200
 
     except Exception as e:
         db.session.rollback()
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
     
-    
+
 ###################################################### endpointy dla administaratora ###########################################################
 
 
@@ -342,9 +339,16 @@ def delete_user_by_id(user_id):
 # trzeba tutaj dodać sprawdzenie czy użytkownik jest administratorem !!
     try:
         user = User.query.get(user_id)
-        
+        data = request.get_json()
+
         if not user:
-            return jsonify({'error': 'User not found'}), 404
+            return jsonify({'error': 'Nie znaleziono użytkownika'}), 404
+        
+        if not data.get('password'):
+            return jsonify({'error': 'Wymagane podanie hasła'}), 400
+        
+        if not user.check_password(data['password']):
+            return jsonify({'error': 'Nieprawidłowe hasło'}), 401
         
         # Przechowujemy informacje o użytkowniku przed usunięciem
         # aby móc zwrócić ją w odpowiedzi
@@ -355,15 +359,11 @@ def delete_user_by_id(user_id):
         db.session.delete(user)
         db.session.commit()
         
-        return jsonify({
-            'message': 'User deleted successfully',
-            'deleted_user': user_info
-        }), 200
+        return jsonify({'message': f'Użytkownik {user_info["login"]} został pomyślnie usunięty'}), 200
         
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Internal server error'}), 500
-    
     
 @user_management_bp.route('/admin/user', methods=['GET'])
 @jwt_required()
@@ -379,4 +379,4 @@ def get_all_users():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-## trzeba dodać endpoint dla admina pozwalający na nadawanie admina innym użytkownikom, albo inny statuskonta dla innych zadań np dodawania produktów itp
+## TODO: trzeba dodać endpoint dla admina pozwalający na nadawanie admina innym użytkownikom, albo inny statuskonta dla innych zadań np dodawania produktów itp

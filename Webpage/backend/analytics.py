@@ -10,7 +10,8 @@ analytics_bp = Blueprint('analytics', __name__, url_prefix='/api/analytics')
 
 ## ###################################################################### Interakcje z produktami ######################################################################
 
-@analytics_bp.route('/user-product-interactions', methods=['POST'])
+
+@analytics_bp.route('/user-product-interactions', methods=['POST']) ## used - trackInteraction -> cartPartTwo, productCard, productDetails
 @jwt_required(optional=True)
 def add_product_interaction():
 
@@ -65,8 +66,8 @@ def add_product_interaction():
         return jsonify({'error': 'Internal server error'}), 500
 
 
-
 ## ###################################################################### Review ######################################################################
+
 
 @analytics_bp.route('/product-reviews', methods=['POST'])
 @jwt_required()

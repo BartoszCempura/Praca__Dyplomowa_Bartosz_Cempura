@@ -172,6 +172,8 @@ class Categories(db.Model): # model reprezentujący kategorię w bazie danych
         self.parent_id = parent_id
         self.isused = isused
 
+    children = db.relationship("Categories",  backref=db.backref("parent", remote_side=[id])) 
+
     def to_json(self):
         return {
             "id": self.id,

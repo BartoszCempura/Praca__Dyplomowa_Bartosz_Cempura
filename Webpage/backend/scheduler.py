@@ -204,7 +204,6 @@ def calculate_product_similarity():
             print(f"Error in calculate_product_similarity job: {str(e)}")
             raise
 
-
 def should_run_scheduler():
 
     """-------------------------------Metoda do określenia warunków uruchomienia procesu scheduler-------------------------------"""
@@ -216,7 +215,6 @@ def should_run_scheduler():
     
         
     return True
-
 
 def init_scheduler(app):
 
@@ -246,9 +244,8 @@ def init_scheduler(app):
         scheduler.add_job(
             id='clear_expired_carts_job',
             func=clear_expired_carts,
-            trigger='cron',
-            hour=0,
-            minute=0,
+            trigger='interval',
+            hours=12,
             replace_existing=True,
             max_instances=1
     )

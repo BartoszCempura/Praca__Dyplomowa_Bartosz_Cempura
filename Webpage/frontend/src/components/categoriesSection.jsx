@@ -8,16 +8,10 @@ function Menu() {
   useEffect(() => {
     const getCategories = async () => {
       try {
-        const rootResponse = (await api.get("/catalog/categories")).data; // przetwarzam dane response na json
+        const response = await api.get("/catalog/categories");
+        const categories = response.data;
 
-        const categoriesWithTheirChildren = await Promise.all( //promise jest szybsze bo wykonuje wszystko na raz
-          rootResponse.map(async (rootCategory) => {
-            const childResponse = await api.get(`/catalog/categories/${rootCategory.id}`);
-            return { ...rootCategory, children: childResponse.data }; // spread operator (...) kopiuje wszystkie wlasciwosci rootCategory i dodaje nowe children
-          })
-        );
-
-        setCategories(categoriesWithTheirChildren);
+        setCategories(categories);
       } catch (err) {
         console.error("Ups nie udało się pobrać kategorii:", err);
       }
@@ -28,7 +22,7 @@ function Menu() {
 
  return (
   <div className="flex justify-center bg-base-200 shadow-md relative z-40"> 
-  {/* Warto by było dodac skłądanie menu do jednej ikony dla lepszej responsywności */}
+  {/*TODO:  Warto by było dodac skłądanie menu do jednej ikony dla lepszej responsywności */}
     {categories.map((category) => (
       <div key={category.id} className="dropdown dropdown-hover">
         {/* Warunek if/else czy kategoria ma podkategorie */}

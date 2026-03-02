@@ -2,7 +2,7 @@ import api, { isAuthenticated } from "../api/tokenHandler";
 import { getCart, getItem, setItem, updateQuantity, removeItem, saveCart, clearCart as clearLocalCart } from "./tempCartStorage";
 import { trackInteraction } from "./trackInteraction";
 
-  // Funkcja dodawania produktu do koszyka. ardument "product" to obiekt zawierający id, quantity, unit_price_with_discount
+  // Funkcja dodawania produktu do koszyka. argument "product" to obiekt zawierający id, quantity, unit_price_with_discount
   // change to zmiana ilości (dodatnia lub ujemna)
 
 export async function addToCart(product, change) {

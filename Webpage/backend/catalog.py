@@ -4,6 +4,7 @@ from backend.models import Categories, Attributes, Products, ProductAttributes, 
 from flask_jwt_extended import jwt_required
 from backend.utils import role_required
 from sqlalchemy import func
+from collections import defaultdict
 
 catalog_bp = Blueprint('catalog', __name__, url_prefix='/api/catalog')
 
@@ -21,30 +22,34 @@ def get_all_categories():
     categories = Categories.query.all()
     return jsonify([category.to_json() for category in categories])
 
+@catalog_bp.route('/categories', methods=['GET']) ## used - categporiesSection
+def get_categories_for_menu():
 
-@catalog_bp.route('/categories', methods=['GET']) ## used - kategorie główne dla menu
-def get_root_categories():
+    """-----------------------------Pobranie kategorii dla menu navbar-------------------------------"""
+    #rekurencyjnie budujemy drzewo kategorii, zaczynając od kategorii głównych (parent_id=None) i dla każdej kategorii pobieramy jej dzieci
+    def build_tree(parent_id=None): 
+        result = []
+        
+        for category in children_map[parent_id]:
+            result.append({
+                "id": category.id,
+                "name": category.name,
+                "slug": category.slug,
+                "isused": category.isused,
+                "children": build_tree(category.id) #rekurencyjne wywołanie funkcji dla dzieci danej kategorii
+            })
+        return result
 
-    """-------------------------------Pobranie kategorii głównych-------------------------------"""
+    categories = Categories.query.filter_by(isused=True).order_by(Categories.name).all()
 
-    categories = Categories.query.filter(
-        Categories.parent_id == None,
-        Categories.isused == True
-    ).all()
-    return jsonify([category.to_json() for category in categories])
+    children_map = defaultdict(list)
+    # grupujemy kategorie według parent_id, aby łatwo było znaleźć dzieci dla każdej kategorii
+    for category in categories:
+        children_map[category.parent_id].append(category)
 
+    tree = build_tree()
 
-@catalog_bp.route('/categories/<int:whose_child_id>', methods=['GET']) ## used - podkategorie 
-def get_child_categories(whose_child_id):
-
-    """-------------------------------Pobranie kategorii podrzędnych-------------------------------"""
-
-    children = Categories.query.filter(
-        Categories.parent_id == whose_child_id,
-        Categories.isused == True
-    ).all()
-    
-    return jsonify([child.to_json() for child in children])
+    return jsonify(tree)
 
 
 @catalog_bp.route('/admin/categories', methods=['POST'])
@@ -59,7 +64,7 @@ def add_category():
         data = request.get_json()
 
         if not data.get('name') or Categories.query.filter_by(name=data['name']).first():
-            return jsonify({"error": "Category name is required and must be unique"}), 400
+            return jsonify({"error": "Nazwa kategorii jest wymagana i musi być unikalna"}), 400
 
         new_category = Categories(
             name=data.get('name'), 
@@ -70,7 +75,7 @@ def add_category():
         db.session.add(new_category)
         db.session.commit()
 
-        return jsonify({'message': 'Category created successfully',
+        return jsonify({'message': 'Kategoria została pomyślnie utworzona',
                         'category': new_category.to_json()
                         }), 201
 
@@ -92,7 +97,7 @@ def delete_category(category_id):
         category = Categories.query.get(category_id)
   
         if not category:
-            return jsonify({"error": "Category not found"}), 404
+            return jsonify({"error": "Nie odnaleziono kategorii"}), 404
         
         category_name = {
             'name': category.name,
@@ -102,8 +107,7 @@ def delete_category(category_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Category deleted successfully",
-            "category": category_name
+            "message": f"Kategoria {category_name['name']} została pomyślnie usunięta"
         }), 200
 
     except Exception as e:
@@ -124,7 +128,7 @@ def modify_category(category_id):
         category = Categories.query.get(category_id)
 
         if not category:
-            return jsonify({"error": "Category not found"}), 404
+            return jsonify({"error": "Nie odnaleziono kategorii"}), 404
 
         data = request.get_json()
 
@@ -135,7 +139,7 @@ def modify_category(category_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Category modified successfully",
+            "message": "Kategoria została pomyślnie zmodyfikowana",
             "category": category.to_json()
         }), 200
 
@@ -160,7 +164,7 @@ def add_attribute():
         data = request.get_json()
 
         if not data.get('name') or Attributes.query.filter_by(name=data['name']).first():
-            return jsonify({"error": "Attribute name is required and must be unique"}), 400
+            return jsonify({"error": "Nazwa atrybutu jest wymagana i musi być unikalna"}), 400
 
         new_attribute = Attributes(
             name=data.get('name')
@@ -168,7 +172,7 @@ def add_attribute():
         db.session.add(new_attribute)
         db.session.commit()
 
-        return jsonify({'message': 'Attribute created successfully',
+        return jsonify({'message': 'Atrybut został pomyślnie utworzony',
                         'attribute': new_attribute.to_json()
                         }), 201
 
@@ -190,7 +194,7 @@ def delete_attribute(attribute_id):
         attribute = Attributes.query.get(attribute_id)
 
         if not attribute:
-            return jsonify({"error": "Attribute not found"}), 404
+            return jsonify({"error": "Nie odnaleziono atrybutu"}), 404
 
         attribute_name = {
             'name': attribute.name,
@@ -200,8 +204,7 @@ def delete_attribute(attribute_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Attribute deleted successfully",
-            "attribute": attribute_name
+            "message": f"Atrybut {attribute_name['name']} został pomyślnie usunięty"
         }), 200
 
     except Exception as e:
@@ -221,14 +224,14 @@ def get_all_attributes():
     return jsonify([attribute.to_json() for attribute in attributes])
 
 
-@catalog_bp.route('/attributes/<string:category_slug>', methods=['GET']) ## used - filtry printProducts
+@catalog_bp.route('/attributes/<string:category_slug>', methods=['GET']) ## used - filtry productCatalog
 def get_all_attributes_for_category(category_slug):
     
     """-----------------------------Pobranie wszystkich atrybutów i ich wartości (z liczbą wystąpień) dla danej kategorii-----------------------------"""
 
     category = Categories.query.filter_by(slug=category_slug).first()
     if not category:
-        return jsonify({"error": "Category not found"}), 404
+        return jsonify({"error": "Nie odnaleziono kategorii"}), 404
 
     product_ids = (
         Products.query
@@ -262,6 +265,7 @@ def get_all_attributes_for_category(category_slug):
 ## ###################################################################### Produkty ######################################################################
 
 
+
 @catalog_bp.route('/admin/products', methods=['POST'])
 @jwt_required()
 @role_required('admin')
@@ -282,7 +286,7 @@ def add_product():
             return jsonify({"error": "Invalid category"}), 400
 
         if not data.get('name') or Products.query.filter_by(name=data['name']).first():
-            return jsonify({"error": "Product name is required and must be unique"}), 400
+            return jsonify({"error": "Nazwa produktu jest wymagana i musi być unikalna"}), 400
 
         new_product = Products(
             category_id=data.get('category_id'),
@@ -295,7 +299,7 @@ def add_product():
         db.session.add(new_product)
         db.session.commit()
 
-        return jsonify({'message': 'Product created successfully',
+        return jsonify({'message': 'Produkt został pomyślnie dodany',
                         'product': new_product.to_json()
                         }), 201
 
@@ -318,7 +322,7 @@ def delete_product(product_id):
         category = Categories.query.get(product.category_id)
 
         if not product:
-            return jsonify({"error": "Product not found"}), 404
+            return jsonify({"error": "Nie odnaleziono produktu"}), 404
 
         product_name = {
             'name': product.name,
@@ -329,8 +333,7 @@ def delete_product(product_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Product deleted successfully",
-            "product": product_name
+            "message": f"Produkt {product_name['name']} z kategorii {product_name['category']} został pomyślnie usunięty"
         }), 200
 
     except Exception as e:
@@ -348,10 +351,9 @@ def get_all_products():
 
     products = Products.query.all()
     return jsonify([product.to_json() for product in products])
-# tutaj warto było by dodać paginacje
+#TODO: tutaj warto było by dodać paginacje
 
-
-@catalog_bp.route('/products/<string:category_slug>', methods=['GET']) ## used - pobiera produkty do printProducts
+@catalog_bp.route('/products/<string:category_slug>', methods=['GET']) ## used - productCatalog
 def get_products_by_category_slug(category_slug):
 
     """-----------------------------Pobieranie produktów po slug kategorii z paginacją i filtrami atrybutów-----------------------------"""
@@ -362,7 +364,7 @@ def get_products_by_category_slug(category_slug):
 
         category = Categories.query.filter_by(slug=category_slug, isused=True).first()
         if not category:
-            return jsonify({"error": "Category not found"}), 404
+            return jsonify({"error": "Nie odnaleziono kategorii"}), 404
 
         query = Products.query.filter_by(category_id=category.id)
 
@@ -401,7 +403,6 @@ def get_products_by_category_slug(category_slug):
         return jsonify({'error': 'Internal server error'}), 500
 
     
-
 @catalog_bp.route('/admin/products/<int:product_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
@@ -414,7 +415,7 @@ def modify_product(product_id):
         product = Products.query.get(product_id)
 
         if not product:
-            return jsonify({"error": "Product not found"}), 404
+            return jsonify({"error": "Nie odnaleziono produktu"}), 404
 
         data = request.get_json()
 
@@ -422,14 +423,14 @@ def modify_product(product_id):
 
         if category is not None:
             if not Categories.validate_category_id(category):
-                return jsonify({"error": "Invalid category"}), 400
+                return jsonify({"error": "Brak kategorii o tym id"}), 400
             product.category_id = category
         
         new_name = data.get('name', product.name) # jeżeli podano nazwe to sprawdzamy czy jest unikalna
         
         if new_name and new_name != product.name:
             if Products.query.filter_by(name=new_name).first():
-                return jsonify({"error": "Product name must be unique"}), 400
+                return jsonify({"error": "Nazwa produktu musi być unikalna"}), 400
             product.name = new_name
 
         product.category_id = category
@@ -442,7 +443,7 @@ def modify_product(product_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Product modified successfully",
+            "message": "Produkt został pomyślnie zmodyfikowany",
             "product": product.to_json()
         }), 200
 
@@ -452,7 +453,7 @@ def modify_product(product_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@catalog_bp.route('/products', methods=['GET']) ## used - search dla printProducts i Cart - główny get produktów
+@catalog_bp.route('/products', methods=['GET']) ## used - cartPartOne , searchProducts
 def search_products():
 
     """-------------------------------Pobranie produktu po product_id lub wyszukiwanie z paginacją po search-------------------------------"""
@@ -519,10 +520,10 @@ def connect_attribute_to_product():
         required_fields = ['product_id', 'attributes']
         for field in required_fields:
             if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+                return jsonify({'error': f'{field} jest wymagane'}), 400
 
         if not Products.query.get(data.get('product_id')):
-            return jsonify({"error": "Invalid product"}), 400
+            return jsonify({"error": "Nieprawidłowy numer id produktu"}), 400
         
         attributes_data = data.get('attributes', [])
 
@@ -533,10 +534,10 @@ def connect_attribute_to_product():
             value = attribute.get('value')
 
             if not attribute_id or not value:
-                return jsonify({"error": "Attribute id and value are required"}), 400
+                return jsonify({"error": "Id atrybutu i wartość są wymagane"}), 400
 
             if not Attributes.query.get(attribute_id):
-                return jsonify({"error": f"Invalid attribute {attribute_id}"}), 400
+                return jsonify({"error": f"Nieprawidłowy atrybut {attribute_id}"}), 400
             
             existing = ProductAttributes.query.filter(
                 ProductAttributes.product_id==data.get('product_id'),
@@ -544,7 +545,7 @@ def connect_attribute_to_product():
             ).first()
 
             if existing:
-                return jsonify({'error': 'Attribute already connected to product'}), 400
+                return jsonify({'error': 'Atrybut jest już przypisany do tego produktu'}), 400
 
             new_attribute = ProductAttributes(
                 product_id=data.get('product_id'),
@@ -556,7 +557,7 @@ def connect_attribute_to_product():
 
         db.session.commit()
 
-        return jsonify({'message': f'Successfully added {len(created_connections)} attributes to product'}), 201
+        return jsonify({'message': f'Dodano {len(created_connections)} atrybutów do produktu'}), 201
 
     except Exception as e:
         db.session.rollback()
@@ -600,7 +601,7 @@ def get_product_details(slug):
     try:
         product = Products.query.filter_by(slug=slug).first()
         if not product:
-            return jsonify({'error': 'Product not found'}), 404
+            return jsonify({'error': 'Nie odnaleziono produktu'}), 404
         
         # Pobieramy atrybuty
         attributes = db.session.query(
@@ -613,7 +614,7 @@ def get_product_details(slug):
         ).all()
 
         return jsonify({
-            "product": product.to_json_description_view(), # nie wiem czy nie będzie tutaj trzeba dać prostrzego wglądu, bez kategorii , updated at itd
+            "product": product.to_json_description_view(), #TODO: nie wiem czy nie będzie tutaj trzeba dać prostrzego wglądu, bez kategorii , updated at itd
             "attributes": [{"name": name, "value": value} for name, value in attributes]
         }), 200
 
@@ -633,7 +634,7 @@ def get_full_attribute_and_product_connection_info(product_id):
         ## dla panelu administratora gdzie będą potrzebne wszystkie informacje o połączeniu atrybutu z produktem
         product = Products.query.get(product_id)
         if not product:
-            return jsonify({'error': 'Product not found'}), 404
+            return jsonify({'error': 'Nie odnaleziono produktu'}), 404
         
         results = ProductAttributes.query.filter_by(product_id=product_id).all()
 
@@ -644,7 +645,6 @@ def get_full_attribute_and_product_connection_info(product_id):
         return jsonify({'error': 'Internal server error'}), 500
     
     
-
 @catalog_bp.route('/admin/product-attributes/<int:connection_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
@@ -659,7 +659,7 @@ def delete_attribute_product_connection(connection_id):
         connection = ProductAttributes.query.get(connection_id)
 
         if not connection:
-            return jsonify({'error': 'There is no such connection'}), 404
+            return jsonify({'error': 'Nie ma takiego połączenia'}), 404
         
         product = Products.query.get(connection.product_id)
         attribute = Attributes.query.get(connection.attribute_id)
@@ -673,9 +673,7 @@ def delete_attribute_product_connection(connection_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Connection deleted successfully",
-            "product": deleted_connection['product'],
-            "attribute": deleted_connection['attribute']
+            "message": f"Połączenie {deleted_connection['product']} - {deleted_connection['attribute']} usunięte pomyślnie"
         }), 200
 
     except Exception as e:
@@ -683,8 +681,7 @@ def delete_attribute_product_connection(connection_id):
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-    
-    
+      
 @catalog_bp.route('/admin/product-attributes/<int:ProductAttributes_id>', methods=['PUT'])
 @jwt_required()
 @role_required('admin')
@@ -699,14 +696,14 @@ def modify_connection_value(ProductAttributes_id):
         connection = ProductAttributes.query.get(ProductAttributes_id)
 
         if not connection:
-            return jsonify({'error': 'There is no such connection'}), 400
+            return jsonify({'error': 'Nie ma takiego połączenia'}), 400
 
         connection.value = data.get('value', connection.value)
 
         db.session.commit()
 
         return jsonify({
-            "message": "Product aattribute value modified successfully",
+            "message": "Wartość połączenia atrybutu z produktem zmodyfikowana pomyślnie",
             "product": connection.to_json()
         }), 200
 
@@ -732,13 +729,13 @@ def add_attribute_weight_for_category():
         required_fields = ['attribute_id', 'category_id', 'weight']
         for field in required_fields:
             if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+                return jsonify({'error': f'Pole {field} jest wymagane'}), 400
 
         if not Attributes.query.get(data.get('attribute_id')):
-            return jsonify({"error": "Invalid attribute"}), 400
+            return jsonify({"error": "Nie ma takiego atrybutu"}), 400
 
         if not Categories.validate_category_id(data.get('category_id')):
-            return jsonify({"error": "Invalid category"}), 400
+            return jsonify({"error": "Nie ma takiej kategorii"}), 400
         
         existing_entry = AttributeWeights.query.filter(
             AttributeWeights.attribute_id == data.get('attribute_id'),
@@ -746,7 +743,7 @@ def add_attribute_weight_for_category():
         ).first()
 
         if existing_entry:
-            return jsonify({'error': 'This attribute is already assigned to the given category'}), 400
+            return jsonify({'error': 'Ten atrybut jest już przypisany do danej kategorii'}), 400
 
 
         set_up_weight = AttributeWeights(
@@ -759,7 +756,7 @@ def add_attribute_weight_for_category():
 
 
         return jsonify({
-            "message": "Category weight for product set succesfully",
+            "message": "Waga kategorii dla produktu ustawiona pomyślnie",
             "product": set_up_weight.to_json()
         }), 200
 
@@ -769,7 +766,6 @@ def add_attribute_weight_for_category():
         return jsonify({'error': 'Internal server error'}), 500
     
     
-
 @catalog_bp.route('/admin/attribute-weights/<int:AttributeWeights_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
@@ -782,7 +778,7 @@ def delete_attribute_category_weight(AttributeWeights_id):
         attribute_weight = AttributeWeights.query.get(AttributeWeights_id)
 
         if not attribute_weight:
-            return jsonify({'error': 'There is no such attribute weight'}), 404
+            return jsonify({'error': 'Nie ma takiej wagi atrybutu'}), 404
         
         attribute = Attributes.query.get(attribute_weight.attribute_id)
         category = Categories.query.get(attribute_weight.category_id)
@@ -792,13 +788,11 @@ def delete_attribute_category_weight(AttributeWeights_id):
             'category': category.name if category else None
         }
 
-        db.session.delete(deleted_connection)
+        db.session.delete(attribute_weight)
         db.session.commit()
 
         return jsonify({
-            "message": "Connection deleted successfully",
-            "product": deleted_connection['attribute'],
-            "attribute": deleted_connection['category']
+            "message": f"Wagę  dla połączneia {deleted_connection['attribute']} - {deleted_connection['category']} usunięto pomyślnie"
         }), 200
     
 
@@ -822,14 +816,14 @@ def modify_attribute_weight(AttributeWeights_id):
         attribute_weight = AttributeWeights.query.get(AttributeWeights_id)
 
         if not attribute_weight:
-            return jsonify({'error': 'There is no such attribute weight'}), 404
+            return jsonify({'error': 'Nie ma takiej wagi atrybutu'}), 404
 
         attribute_weight.weight = data.get('weight', attribute_weight.weight)
 
         db.session.commit()
 
         return jsonify({
-            "message": "Product attribute value modified successfully",
+            "message": "Wartość połączenia atrybutu z produktem zmodyfikowana pomyślnie",
             "product": attribute_weight.to_json()
         }), 200
 
@@ -838,8 +832,7 @@ def modify_attribute_weight(AttributeWeights_id):
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-
-    
+   
 @catalog_bp.route('/admin/attribute-weights/<int:category_id>', methods=['GET'])
 @jwt_required()
 @role_required('admin')
@@ -850,12 +843,12 @@ def get_attribute_weights_for_category(category_id):
     try:
 
         if not Categories.validate_category_id(category_id):
-            return jsonify({"error": "Invalid category"}), 400
+            return jsonify({"error": "Nie ma takiej kategorii"}), 400
 
         results = AttributeWeights.query.filter_by(category_id=category_id).all()
 
         if not results:
-            return jsonify({'error': 'There are no attribute weights for this category'}), 404
+            return jsonify({'error': 'Nie ma wag atrybutów dla tej kategorii'}), 404
 
         return jsonify([result.to_json() for result in results]), 200
 
@@ -881,13 +874,13 @@ def add_product_accessory_relation():
         required_fields = ['product_id', 'accessory_product_id']
         for field in required_fields:
             if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+                return jsonify({'error': f'Pole {field} jest wymagane'}), 400
 
         if not Products.query.get(data.get('product_id')):
-            return jsonify({"error": "Invalid product"}), 400
+            return jsonify({"error": "Nie ma takiego produktu"}), 400
 
         if not Products.query.get(data.get('accessory_product_id')):
-            return jsonify({"error": "Invalid product"}), 400
+            return jsonify({"error": "Nie ma takiego akcesorium"}), 400
         
         existing_entry = ProductAccessories.query.filter(
             ProductAccessories.product_id == data.get('product_id'),
@@ -895,7 +888,7 @@ def add_product_accessory_relation():
         ).first()
 
         if existing_entry:
-            return jsonify({'error': 'This attribute is already assigned to the given category'}), 400
+            return jsonify({'error': 'Ta relacja akcesorium z produktem już istnieje'}), 400
 
 
         set_up_accessory = ProductAccessories(
@@ -908,7 +901,7 @@ def add_product_accessory_relation():
 
 
         return jsonify({
-            "message": "Accessory for product set succcess",
+            "message": "Relacja akcesorium z produktem została dodana pomyślnie",
             "product": set_up_accessory.to_json()
         }), 200
 
@@ -918,7 +911,6 @@ def add_product_accessory_relation():
         return jsonify({'error': 'Internal server error'}), 500
     
     
-
 @catalog_bp.route('/admin/product-accessories/<int:relation_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('admin')
@@ -932,7 +924,7 @@ def delete_product_accessory_relation(relation_id):
         accessory_relation = ProductAccessories.query.get(relation_id)
 
         if not accessory_relation:
-            return jsonify({'error': 'There is no such accessory relation'}), 404
+            return jsonify({'error': 'Nie ma takiej relacji akcesorium z produktem'}), 404
         
         product = Products.query.get(accessory_relation.product_id)
         accessory = Products.query.get(accessory_relation.accessory_product_id)
@@ -946,9 +938,7 @@ def delete_product_accessory_relation(relation_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Connection deleted successfully",
-            "product": deleted_connection['product'],
-            "attribute": deleted_connection['accessory']
+            "message": f"Relacja akcesorium  {deleted_connection['accessory']} z produktem {deleted_connection['product']} została usunięta pomyślnie"
         }), 200
 
     except Exception as e:
@@ -971,14 +961,14 @@ def modify_relation_weight(relation_id):
         relation_weight = ProductAccessories.query.get(relation_id)
 
         if not relation_weight:
-            return jsonify({'error': 'There is no such relation'}), 404
+            return jsonify({'error': 'Nie ma takiej relacji akcesorium z produktem'}), 404
 
         relation_weight.weight = data.get('weight', relation_weight.weight)
 
         db.session.commit()
 
         return jsonify({
-            "message": "Product aattribute value modified successfully",
+            "message": "Pozytywnie zmieniono wagę relacji akcesorium z produktem",
             "product": relation_weight.to_json()
         }), 200
 
@@ -987,7 +977,6 @@ def modify_relation_weight(relation_id):
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-
     
 @catalog_bp.route('/admin/product-accessories/<int:product_id>', methods=['GET'])
 @jwt_required()
@@ -999,12 +988,12 @@ def get_all_accessories_for_product(product_id):
     try:
 
         if not Products.query.get(product_id):
-            return jsonify({"error": "Invalid product"}), 400
+            return jsonify({"error": "Nie ma takiego produktu"}), 400
 
         results = ProductAccessories.query.filter_by(product_id=product_id).all()
 
         if not results:
-            return jsonify({'error': 'There are no accessories for this product'}), 404
+            return jsonify({'error': 'Nie ma akcesoriów przypisanych do tego produktu'}), 404
 
         return jsonify([result.to_json() for result in results]), 200
 
@@ -1031,16 +1020,16 @@ def add_promotion():
         required_fields = ['name', 'discount_percent', 'start_date', 'end_date']
         for field in required_fields:
             if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+                return jsonify({'error': f'Pole {field} jest wymagane'}), 400
 
         if Promotions.query.filter_by(name=data.get('name')).first():
-            return jsonify({"error": "A promotion with this name already exists"}), 409
+            return jsonify({"error": "Promocja o tej nazwie już istnieje"}), 409
 
         if not Promotions.validate_discount(data.get('discount_percent')):
-            return jsonify({"error": "Discount needs to be bigger than 0%"}), 400
+            return jsonify({"error": "Zniżka musi być większa niż 0%"}), 400
 
         if not Promotions.validate_promotion_live(data.get('start_date'), data.get('end_date')):
-            return jsonify({"error": "The end date must be later than the start date"})
+            return jsonify({"error": "Data końcowa musi być późniejsza niż data początkowa"})
 
         set_up_promotion = Promotions(
             name=data.get('name'),
@@ -1053,7 +1042,7 @@ def add_promotion():
 
 
         return jsonify({
-            "message": "Adding Promotion successsfull",
+            "message": "Dodanie promocji przebiegło pomyślnie",
             "product": set_up_promotion.to_json()
         }), 200
 
@@ -1075,7 +1064,7 @@ def delete_promotion(promotion_id):
         promotion = Promotions.query.get(promotion_id)
 
         if not promotion:
-            return jsonify({'error': 'There is no promotion with such id'}), 404
+            return jsonify({'error': 'Brak promocji o tym numerze ID'}), 404
         
         promotion_name = {
             "name": promotion.name
@@ -1085,8 +1074,7 @@ def delete_promotion(promotion_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Promotion deletion successsfull",
-            "Promotion": promotion_name.to_json()
+            "message": f"Promocja {promotion_name['name']} została usunięta pomyślnie"
         }), 200
 
     except Exception as e:
@@ -1109,7 +1097,7 @@ def modify_promotion(promotion_id):
         promotion = Promotions.query.get(promotion_id)
 
         if not promotion:
-            return jsonify({'error': 'There is no promotion with such id'}), 404
+            return jsonify({'error': 'Brak promocji o tym numerze ID'}), 404
 
         promotion.name = data.get('name', promotion.name)
         promotion.discount_percent = data.get('discount_percent', promotion.discount_percent)
@@ -1119,7 +1107,7 @@ def modify_promotion(promotion_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Promotion data modified successfully",
+            "message": "Dane promocji zostały zmodyfikowane pomyślnie",
             "product": promotion.to_json()
         }), 200
 
@@ -1139,9 +1127,11 @@ def get_all_promotions():
     promotions = Promotions.query.all()
     return jsonify([promotion.to_json() for promotion in promotions]), 200
 
+
+
 ## ###################################################################### Przypisywanie produktów do promocji ######################################################################
 
-# react będzie przechowywał w usestate listę produktów które następnie będą przekazywane do endpoint dodającego promocje to bazy danych
+#TODO: react będzie przechowywał w usestate listę produktów które następnie będą przekazywane do endpoint dodającego promocje to bazy danych
 
 @catalog_bp.route('/admin/product-promotions/<int:promotion_id>', methods=['POST'])
 @jwt_required()
@@ -1155,17 +1145,17 @@ def add_products_to_promotion(promotion_id):
         products_ids = data.get('product_ids') # przekazujemy do endpoint listę produktów 
 
         if not promotion_id or not products_ids:
-            return jsonify({'error': 'promotion_id and product_ids are required'}), 400
+            return jsonify({'error': 'Wymagane jest ID promocji oraz lista ID produktów'}), 400
 
         if not Promotions.query.get(promotion_id):
-            return jsonify({'error': 'Promotion not found'}), 404
+            return jsonify({'error': 'Brak promocji o podanym ID'}), 404
 
         added = []
         for product_id in products_ids:
             product = Products.query.get(product_id)
             if not product:
                 continue  # sprawdzamy czy dany produkt istnieje, jak nie to go pomijamy
-      # można tutaj doać listę skipped która przechowywała by listę odrzuconych i zwrócić ją w wyniku
+      #TODO: można tutaj doać listę skipped która przechowywała by listę odrzuconych i zwrócić ją w wyniku
             exists = ProductPromotions.query.filter_by(product_id=product_id).first() # sprawdzamy czy dany produkt jeż już w jakiejś promocji. Nie może być w 2 na raz
 
             if not exists:
@@ -1178,7 +1168,7 @@ def add_products_to_promotion(promotion_id):
         db.session.commit()
 
         return jsonify({
-            'message': f'Added {len(added)} products to promotion',
+            'message': f'Dodano {len(added)} produktów do promocji',
             'product_ids': added
         }), 200
 
@@ -1186,7 +1176,6 @@ def add_products_to_promotion(promotion_id):
         db.session.rollback()
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-
 
 
 @catalog_bp.route('/product-promotions/<int:promotion_id>', methods=['GET']) ## used - promotionSLider
@@ -1217,7 +1206,7 @@ def remove_product_from_promotion(product_id):
 
         products = ProductPromotions.query.filter_by(product_id=product_id).first()
         if not products:
-            return jsonify({'error': 'This product was not added to this promotion'}), 404
+            return jsonify({'error': 'Produkt o podanym ID nie jest przypisany do żadnej promocji'}), 404
         
         product = Products.query.get(products.product_id)
 
@@ -1229,12 +1218,11 @@ def remove_product_from_promotion(product_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Product removed from promotion",
-            "Product": removed
+            "message": f"Produkt {removed['name']} został usunięty z promocji"
         }), 200
     
     except Exception as e:
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-# można by zmodyfikować ten endpoint tak aby pozwalał na usunięcie wielu produktów z promocji na raz
+#TODO: można by zmodyfikować ten endpoint tak aby pozwalał na usunięcie wielu produktów z promocji na raz

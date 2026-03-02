@@ -46,3 +46,9 @@ def _money(value):
         do dwóch miejsc po przecinku jako float.
         """
         return float(round(value, 2))
+
+def load_product_map(product_ids):
+    from backend.models import Products
+    products = Products.query.filter(Products.id.in_(product_ids)).all()
+    return {product.id: product for product in products}
+

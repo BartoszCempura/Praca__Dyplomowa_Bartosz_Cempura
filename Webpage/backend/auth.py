@@ -7,7 +7,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, set_re
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['POST']) ## used - loginPage
 def login():
 
     """-------------------------------Weryfikacja użytkownika i generowanie tokenu JWT-------------------------------"""
@@ -38,8 +38,7 @@ def login():
         print(f"[ERROR]: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-    
-@auth_bp.route("/refresh", methods=["POST"])
+@auth_bp.route("/refresh", methods=["POST"]) ## used - tokenHandler
 @jwt_required(refresh=True)  # musi być refresh w nagłówku
 def refresh():
 
@@ -49,9 +48,7 @@ def refresh():
     access_token = create_access_token(identity=identity) # Tworzymy nowy token dostępu
     return jsonify(access_token=access_token), 200
 
-
-
-@auth_bp.route('/logout', methods=['POST'])
+@auth_bp.route('/logout', methods=['POST']) ## used - tokenHandler, navbarUserMenu
 def logout():
 
     """-------------------------------Przy Logout usuwamy cookie z refresh tokenem-------------------------------"""

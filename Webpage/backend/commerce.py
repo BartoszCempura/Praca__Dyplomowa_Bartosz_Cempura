@@ -23,10 +23,10 @@ def add_delivery_method():
         data = request.get_json()
 
         if not data.get('name'):
-            return jsonify({'error': 'Name is required'}), 400
+            return jsonify({'error': 'Wymagana nazwa'}), 400
         
         if DeliveryMethods.query.filter_by(name=data.get('name')).first():
-            return jsonify({"error": "Delivery method with this name already exists"}), 409
+            return jsonify({"error": "Metoda dostawy o podanej nazwie już istnieje"}), 409
 
         new_delivery_method = DeliveryMethods(
             name=data.get('name'),
@@ -38,8 +38,8 @@ def add_delivery_method():
         db.session.add(new_delivery_method)
         db.session.commit()
 
-        return jsonify({'message': 'Delivery method added successfully',
-                        'Delivery method': new_delivery_method.to_json()
+        return jsonify({'message': 'Pomyślnie dodano metodę dostawy',
+                        'Metoda dostawy': new_delivery_method.to_json()
                         }), 201
 
     except Exception as e:
@@ -85,7 +85,7 @@ def modify_delivery_method(delivery_id):
         delivery = DeliveryMethods.query.get(delivery_id)
 
         if not delivery:
-            return jsonify({'error': 'There is no delivery method with such id'}), 404
+            return jsonify({'error': 'Brak metodydostawy o tym numerze ID'}), 404
         
         delivery.name = data.get('name', delivery.name)
         delivery.fee = data.get('fee', delivery.fee)
@@ -95,8 +95,8 @@ def modify_delivery_method(delivery_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Delivery method data modified successfully",
-            "product": delivery.to_json()
+            "message": "Dane metody dostawy zmodyfikowane pomyślnie",
+            "metoda dostawy": delivery.to_json()
         }), 200
 
     except Exception as e:
@@ -125,7 +125,7 @@ def add_payment_method():
             return jsonify({'error': 'Name is required'}), 400
         
         if PaymentMethods.query.filter_by(name=data.get('name')).first():
-            return jsonify({"error": "Delivery method with this name already exists"}), 409
+            return jsonify({"error": "Metoda płatności o tej nazwie już istnieje"}), 409
 
         new_payment_method = PaymentMethods(
             name=data.get('name'),
@@ -137,8 +137,8 @@ def add_payment_method():
         db.session.add(new_payment_method)
         db.session.commit()
 
-        return jsonify({'message': 'Payment method added successfully',
-                        'Payment method': new_payment_method.to_json()
+        return jsonify({'message': 'Pomyślnie dodano metodę płatności',
+                        'Metoda płatności': new_payment_method.to_json()
                         }), 201
 
     except Exception as e:
@@ -184,7 +184,7 @@ def modify_payment_method(payment_id):
         payment = PaymentMethods.query.get(payment_id)
 
         if not payment:
-            return jsonify({'error': 'There is no payment method with such id'}), 404
+            return jsonify({'error': 'Brak metody płatności o podanym ID'}), 404
         
         payment.name = data.get('name', payment.name)
         payment.image = data.get('image', payment.image)
@@ -194,8 +194,8 @@ def modify_payment_method(payment_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Payment method data modified successfully",
-            "product": payment.to_json()
+            "message": "Dane metody płatności zmodyfikowane pomyślnie",
+            "metoda płatności": payment.to_json()
         }), 200
 
     except Exception as e:
@@ -209,77 +209,8 @@ def modify_payment_method(payment_id):
 
 ## ###################################################################### Koszyk i produkty w koszyku ######################################################################
 
-"""
-@commerce_bp.route('/carts', methods=['POST'])
-@jwt_required()
-def add_product_to_cart():
 
-    try:
-        user_id = get_jwt_identity()
-        data = request.get_json()
-        product_id = data.get('product_id')
-
-        if not product_id:
-            return jsonify({'error': 'ID produktu jest wymagane'}), 400
-
-        product = Products.query.get(product_id)
-        if not product:
-            return jsonify({'error': 'Nie znaleziono produktu'}), 404
-
-        if product.quantity <= 0:
-            return jsonify({'error': 'Wyczerpano zapas produktu'}), 400
-
-        # Znajdź lub utwórz koszyk użytkownika
-        cart = Carts.query.filter_by(user_id=user_id).first()
-        if not cart:
-            cart = Carts(user_id=user_id)
-            db.session.add(cart)
-            db.session.flush()  # potrzebne, by mieć cart.id
-
-        # Sprawdź, czy produkt jest już w koszyku
-        product_in_cart = CartProducts.query.filter_by(
-            cart_id=cart.id,
-            product_id=product_id
-        ).first()
-
-        price_with_discount = product.price_including_promotion()
-
-        if product_in_cart:
-            # Zwiększ ilość w koszyku o 1
-            product_in_cart.quantity += 1
-        else:
-            # Dodaj nowy produkt do koszyka
-            new_product_in_cart = CartProducts(
-                cart_id=cart.id,
-                product_id=product_id,
-                quantity=1,
-                unit_price_with_discount=price_with_discount
-            )
-            db.session.add(new_product_in_cart)
-
-        # Zmniejsz stan magazynowy o 1
-        product.quantity -= 1
-
-        # Przelicz koszt koszyka
-        cart.total_products_cost = db.session.query(
-            func.coalesce(
-                db.func.sum(CartProducts.quantity * CartProducts.unit_price_with_discount),
-                Decimal("0.00")
-            )
-        ).filter_by(cart_id=cart.id).scalar()
-
-        db.session.commit()
-
-        return jsonify({'message': 'Produkt dodano do koszyka'}), 201
-
-    except Exception as e:
-        db.session.rollback()
-        print(f"[ERROR]: {str(e)}")
-        return jsonify({'error': 'Błąd serwera'}), 500
-
-"""
-
-@commerce_bp.route('/carts', methods=['PUT']) ## used - addToCart 
+@commerce_bp.route('/carts', methods=['PUT']) ## used - funkcje  cartActions -> productCard, cartPartTwo, productDetails  
 @jwt_required()
 def add_product_to_cart():
 
@@ -346,7 +277,7 @@ def add_product_to_cart():
     except Exception as e:
         db.session.rollback()
         print(f"[ERROR]: {str(e)}")
-        return jsonify({'error': 'Błąd serwera'}), 500
+        return jsonify({'error': 'Internal server error'}), 500
        
 @commerce_bp.route('/carts', methods=['GET']) ## used - Cart , productCard
 @jwt_required(optional=True)
@@ -387,7 +318,7 @@ def get_cart():
 ## ###################################################################### Transakcje i produkty w nich ######################################################################
 
 
-@commerce_bp.route('/transactions', methods=['POST']) ## used - finalizacja transakcji
+@commerce_bp.route('/transactions', methods=['POST']) ## used - cartPartTwo
 @jwt_required()
 def closing_purchase():
 
@@ -400,7 +331,7 @@ def closing_purchase():
         required_fields = ['billing_address_id', 'shipping_address_id', 'delivery_method_id', 'payment_method_id', 'products']
         for field in required_fields:
             if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+                return jsonify({'error': f'Pole {field} jest wymagane'}), 400
 
         cart = Carts.query.filter_by(user_id=user_id).first()
         if not cart:
@@ -445,7 +376,7 @@ def closing_purchase():
         db.session.add(new_transaction)
         db.session.flush()  # potrzebne, by mieć transaction.id
 
-        
+        # blokujemy produkty aby nikt inny nie mógł ich kupić w tym samym czasie - zabezpieczenie przed oversellingiem
         for product in products:
             db_product_data = Products.query.filter_by(id=product["product_id"]).with_for_update().first()
 
@@ -481,7 +412,7 @@ def closing_purchase():
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@commerce_bp.route('/admin/transactions/<int:transaction_id>', methods=['PUT']) ## used - kokpit modyfiacja statusu transakcji
+@commerce_bp.route('/admin/transactions/<int:transaction_id>', methods=['PUT']) ## used - adminDashboard
 @jwt_required()
 @role_required('admin')
 def modify_transaction_status(transaction_id):
@@ -524,8 +455,8 @@ def modify_transaction_status(transaction_id):
         db.session.commit()
 
         return jsonify({
-            "message": "Transaction data modified successfully",
-            "changes": changes
+            "message": "Dane transakcji zmienione pomyślnie",
+            "zmiany": changes
         }), 200
 
     except Exception as e:
@@ -534,7 +465,7 @@ def modify_transaction_status(transaction_id):
         return jsonify({'error': 'Internal server error'}), 500
     
 
-@commerce_bp.route('/transactions', methods=['GET']) ## used - kokpit transakcje
+@commerce_bp.route('/transactions', methods=['GET']) ## used - adminDashboard
 @jwt_required()
 def get_all_user_transactions():
 
@@ -544,7 +475,7 @@ def get_all_user_transactions():
         user_id = get_jwt_identity()
         user = User.query.get(user_id) # tę sama funkcjonalnośc może używać admin ale dla wszystkich tranzakcji w bazie danych
         if not user:
-            return jsonify({"error": "User not found"}), 404
+            return jsonify({"error": "Nie znaleziono użytkownika"}), 404
         
         status = request.args.get('status')
         raw_date_from = request.args.get('date_from')
@@ -572,7 +503,7 @@ def get_all_user_transactions():
             if date_from:       
                 transakcje = transakcje.filter(Transactions.created_at >= date_from)
             else:
-                return jsonify({"error": "Invalid date_from format"}), 400
+                return jsonify({"error": "Nieprawidłowy format date_from"}), 400
             
         if raw_date_to:
             date_to = str_date(raw_date_to)
@@ -580,7 +511,7 @@ def get_all_user_transactions():
                 date_to = date_to.replace(hour=23, minute=59, second=59)
                 transakcje = transakcje.filter(Transactions.created_at <= date_to)
             else:
-                return jsonify({"error": "Invalid date_to format"}), 400
+                return jsonify({"error": "Nieprawidłowy format date_to"}), 400
             
         transakcje = transakcje.order_by(Transactions.created_at.desc())
 
