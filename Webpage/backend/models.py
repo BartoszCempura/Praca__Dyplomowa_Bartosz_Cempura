@@ -33,9 +33,9 @@ class User(db.Model): # model reprezentujący użytkownika w bazie danych
     phone_number = db.Column(db.String(20), nullable=False, unique=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    role = db.Column(db.String(50), nullable=False, default='user') # domyślnie każdy użytkownik jest zwykłym użytkownikiem
+    role = db.Column(db.String(50), nullable=False, default='user') # domyślnie każdy użytkownik jest zwykłym użytkownikiem - rola w bazie nie na serwerze bazy danych
 
-    def to_json(self): # metoda do konwersji obiektu użytkownika na słownik JSON
+    def to_json(self):
         return {
             "id": self.id,
             "login": self.login,
@@ -68,11 +68,8 @@ class User(db.Model): # model reprezentujący użytkownika w bazie danych
     @staticmethod
     def validate_phone(phone):
         pattern = r'^[0-9]{3} [0-9]{3} [0-9]{3}$'
-        # Sprawdzenie podstawowego formatu numeru telefonu
-        # Pozwala na format 123-45-67-89 z trzema cyframi, myślnikiem i dwiema cyframi
-        # Można dostosować do innych formatów, jeśli to konieczne
+        # Pozwala na format xxx xxx xxx
         return re.match(pattern, phone) is not None
-
 
 
 class AddressType(enum.Enum):
@@ -161,7 +158,7 @@ class Categories(db.Model): # model reprezentujący kategorię w bazie danych
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False, unique=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey('catalog.categories.id'), nullable=True) # kategorie z null to kategorie główne ładowane podczas uruchomienia strony
+    parent_id = db.Column(db.Integer, db.ForeignKey('catalog.categories.id', ondelete='SET NULL'), nullable=True) # kategorie z null to kategorie główne ładowane podczas uruchomienia strony
     # kategorie które mają parent_id to kategorie podrzędne i będą ładowane po najechaniu na przycisk kategorii głównej
     slug = db.Column(db.String(255), unique=True, nullable=False) # unikalny identyfikator kategorii, używany w URL
     isused = db.Column(db.Boolean, default=True) # czy kategoria jest używana w produktach
@@ -196,7 +193,6 @@ class Categories(db.Model): # model reprezentujący kategorię w bazie danych
         return True  
 
 
-    
 class Attributes(db.Model): # model reprezentujący atrybut w bazie danych
     __tablename__ = 'attributes'
     __table_args__ = {'schema': 'catalog'}
@@ -210,7 +206,6 @@ class Attributes(db.Model): # model reprezentujący atrybut w bazie danych
             "name": self.name
         }
     
-
 
 class Products(db.Model): # model reprezentujący produkt w bazie danych
     __tablename__ = 'products'
@@ -281,7 +276,7 @@ class Products(db.Model): # model reprezentujący produkt w bazie danych
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
-    
+    #TODO: rozwiązanie może powodować N + 1 zapytan do bazy
     def price_including_promotion(self):
         now = datetime.now(timezone.utc)
 
@@ -324,11 +319,11 @@ class ProductAttributes(db.Model): # model reprezentujący atrybut w bazie danyc
         }
 
 
-
 class AttributeWeights(db.Model):
     __tablename__ = 'attribute_weights'
     __table_args__ = (
         UniqueConstraint('category_id', 'attribute_id', name='attribute_weights_category_id_attribute_id_unique'),
+        CheckConstraint('weight >= 0 and weight <= 1.00', name='attribute_category_connection_weight_check'),
         {'schema': 'catalog'}
     )
 
@@ -345,10 +340,12 @@ class AttributeWeights(db.Model):
             "weight": self.weight
         }
     
+
 class ProductAccessories(db.Model):
     __tablename__ = 'product_accessories'
     __table_args__ = (
         UniqueConstraint('product_id', 'accessory_product_id', name='product_accessories_product_id_accessory_product_id_unique'),
+        CheckConstraint('weight >= 0.01 and weight <= 1.00', name='product_accessories_weight_check'),
         {'schema': 'catalog'}
     )
 
@@ -405,7 +402,8 @@ class Promotions(db.Model):
             return start < end
         except Exception:
             return False
-        
+
+
 class ProductPromotions(db.Model):
     __tablename__ = 'product_promotions'
     __table_args__ = (
@@ -562,7 +560,8 @@ class TransactionStatus(enum.Enum):
     Shipped = 'Shipped'
     Completed = 'Completed'
     Cancelled = 'Cancelled'
-        
+
+
 class Transactions (db.Model):
     __tablename__ = 'transactions'
     __table_args__ = ({'schema': 'commerce'})
@@ -627,7 +626,6 @@ class Transactions (db.Model):
         }
 
 
-
 class TransactionProducts (db.Model):
     __tablename__ = 'transaction_products'
     __table_args__ = (
@@ -658,6 +656,7 @@ class TransactionProducts (db.Model):
             "unit_price_with_discount": self.unit_price_with_discount
         }
 
+
 class Wishlists (db.Model):
     __tablename__ = 'wishlists'
     __table_args__ = (
@@ -680,6 +679,7 @@ class Wishlists (db.Model):
 """Modele dla api analytics 
     - UserProductInteractions: model przechowujący interakcje użytkowników z danym produktem na stronie
     - ProductReviews: model przechowujący recenzje produktów
+    - ProductRecommendations: model przechowujący rekomendacje produktów
     """
 
 class UserProductInteractions(db.Model):
@@ -710,7 +710,6 @@ class UserProductInteractions(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
 
-    
 
 class ProductReviews (db.Model):
     __tablename__ = 'product_reviews'
@@ -752,6 +751,7 @@ class ProductReviews (db.Model):
             "rating": self.rating,
             "review": self.review
         }
+
 
 class ProductRecommendations(db.Model):
     __tablename__ = 'product_recommendations'
