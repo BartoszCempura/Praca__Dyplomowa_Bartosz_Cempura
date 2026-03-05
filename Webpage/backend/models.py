@@ -687,6 +687,7 @@ class UserProductInteractions(db.Model):
         Index('idx_user_interactions_user', 'user_id'),
         Index('idx_user_interactions_created', 'created_at'),
         Index('idx_user_interactions_type', 'type'),
+        CheckConstraint("type IN ('View', 'AddToCart', 'Purchase', 'Review', 'AddToWishlist')", name='user_product_interactions_type_check'),
         {'schema': 'analytics'}
     )
 
@@ -722,8 +723,8 @@ class ProductReviews (db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='SET NULL'), nullable=True)
     rating = db.Column(db.Numeric(2, 1), nullable=False)
     review = db.Column(db.Text, nullable=True)
-    is_verified_purchase = db.Column(db.Boolean, default=False)
-    is_approved = db.Column(db.Boolean, default=False)
+    is_verified_purchase = db.Column(db.Boolean, nullable=False, default=False)
+    is_approved = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -744,9 +745,10 @@ class ProductReviews (db.Model):
     
     def to_json_user_view(self):
         return {
-            "user": self.user.login,
+            "user": self.user.login if self.user else None,
             "rating": self.rating,
-            "review": self.review
+            "review": self.review,
+            "created_at": self.created_at.isoformat() if self.created_at else None
         }
 
 
