@@ -502,6 +502,10 @@ const CustomTooltip = ({ active, payload }) => {
                                   <p className="font-bold">Użytkownik: <span className="text-gray-500">{transaction.user.first_name} {transaction.user.last_name}</span></p>
                                   <p className="font-bold">Kontakt: <span className="text-gray-500">Tel: {transaction.user.phone_number} Email: {transaction.user.email}</span></p>
                                 </div>
+                                <div className="flex flex-col">
+                                  <p className="font-bold">Termin dostawy: <span className={transaction.delivery_deadline ? "text-gray-500" : "text-yellow-500"}>{transaction.delivery_deadline || 'Oczekiwanie na wysyłkę'}</span></p>
+                                  <p className="font-bold">Ostatnia aktualizacja: <span className="text-gray-500">{transaction.updated_at}</span></p>
+                                </div>
                               </div>
 
                               {/* Status */}
@@ -514,7 +518,7 @@ const CustomTooltip = ({ active, payload }) => {
                                 >
                                   <option value="Pending">Oczekujące</option>
                                   <option value="Shipped">Wysłane</option>
-                                  <option value="Completed">Zakończone</option>
+                                  <option value="Completed" disabled={transaction.status !== "Shipped"}>Zakończone</option>
                                   <option value="Cancelled">Anulowane</option>
                                 </select>
           
@@ -527,7 +531,8 @@ const CustomTooltip = ({ active, payload }) => {
                               <div className="collapse-title font-semibold my-0 text-center">Szczeguły</div>
                                 <div className="collapse-content text-sm">
 
-                                  <div className="divider mt-0"></div>
+                                  <div className="divider mt-0 mb-0"></div>
+
 
                                   {/* Products */}
                                   <div className="space-y-2 mx-5">
@@ -543,31 +548,63 @@ const CustomTooltip = ({ active, payload }) => {
 
                                   <div className="divider mb-3"></div>
 
+                                  <div className="grid grid-cols-2 gap-5">
+                                      <div className="flex justify-end">
+                                        <span className="font-bold text-center">Metoda dostawy: </span>
+                                      </div>
+                                      <div className="flex justify-start">
+                                        <span className="text-gray-500">{transaction.delivery_method}</span>
+                                      </div>
+                                    </div>
+
+
+                                  <div className="divider mb-3"></div>
+
                                   {/* Addresses */}
                                   <div className="grid grid-cols-2 gap-5 text-sm mx-5">
-                                    <div className="text-end">
-                                      <p className="font-semibold">Adres wysyłki:</p>
-                                      <p>{transaction.shipping_address_data.first_name} {transaction.shipping_address_data.last_name}</p>
-                                      <p>{transaction.shipping_address_data.street_name} {transaction.shipping_address_data.building_number}</p>
-                                      <p>{transaction.shipping_address_data.zip_code} {transaction.shipping_address_data.city}</p>
+                                    <div className="flex justify-center items-center">
+                                      <div className="text-center">
+                                        <p className="font-semibold">Adres wysyłki:</p>
+                                        <p>{transaction.shipping_address_data.first_name} {transaction.shipping_address_data.last_name}</p>
+                                        <p>{transaction.shipping_address_data.street_name} {transaction.shipping_address_data.building_number}</p>
+                                        <p>{transaction.shipping_address_data.zip_code} {transaction.shipping_address_data.city}</p>
+                                      </div>
                                     </div>
-                                    <div className="text-start">
-                                      <p className="font-semibold">Adres rozliczeniowy:</p>
-                                      <p>{transaction.billing_address_data.first_name} {transaction.billing_address_data.last_name}</p>
-                                      <p>{transaction.billing_address_data.street_name} {transaction.billing_address_data.building_number}</p>
-                                      <p>{transaction.billing_address_data.zip_code} {transaction.billing_address_data.city}</p>
+                                    <div className="flex justify-center items-center">
+                                      <div className="text-center">
+                                        <p className="font-semibold">Adres rozliczeniowy:</p>
+                                        <p>{transaction.billing_address_data.first_name} {transaction.billing_address_data.last_name}</p>
+                                        <p>{transaction.billing_address_data.street_name} {transaction.billing_address_data.building_number}</p>
+                                        <p>{transaction.billing_address_data.zip_code} {transaction.billing_address_data.city}</p>
+                                      </div>
                                     </div>
                                   </div>
 
                                   <div className="divider mb-3"></div>
 
+                                    <div className="grid grid-cols-2 gap-5">
+                                      <div className="flex justify-end">
+                                        <span className="font-bold">Metoda płatności: </span>
+                                      </div>
+                                      <div className="flex justify-start">
+                                        <span className="text-gray-500">{transaction.payment_method}</span>
+                                      </div>
+                                    </div>
+                                  
+
+                                  <div className="divider mb-3"></div>
+
                                   {/* Total */}
-                                  <div className="flex justify-center items-center mb-6 gap-5">
-                                    <span className="font-bold text-xl test-end">Należność:</span>
-                                    <span className="text-xl font-bold text-orange-400 text-start">
-                                      {transaction.total_transaction_value} zł
-                                    </span>
-                                  </div>
+                                  <div className="grid grid-cols-2 gap-5">
+                                      <div className="flex justify-end">
+                                        <span className="text-xl font-bold">Należność:</span>
+                                      </div>
+                                      <div className="flex justify-start">
+                                        <span className="text-xl font-bold text-orange-400">
+                                          {transaction.total_transaction_value} zł
+                                        </span>
+                                      </div>
+                                    </div>
 
                                   {transaction.notes && (
                                     <div className="mt-3 p-5 bg-base-300 rounded">

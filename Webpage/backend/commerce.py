@@ -370,7 +370,7 @@ def closing_purchase():
             shipping_address_data=shipping_address.to_json(),
             delivery_method_id=delivery_method.id,
             payment_method_id=payment_method.id,
-            delivery_deadline=DeliveryMethods.delivery_date(delivery_method),
+            delivery_deadline=None,
             notes=data.get('notes')
         )
         db.session.add(new_transaction)
@@ -432,8 +432,14 @@ def modify_transaction_status(transaction_id):
             changes.append(f"Status zmieniony z {transaction.status.value} na {new_status}")
             transaction.status = TransactionStatus(new_status)
 
-            if transaction.status == TransactionStatus.Cancelled:
+            if transaction.status == TransactionStatus.Shipped:
+                transaction.delivery_deadline = DeliveryMethods.delivery_date(transaction.delivery_method)
 
+            if transaction.status == TransactionStatus.Pending:
+                transaction.delivery_deadline = None
+
+            if transaction.status == TransactionStatus.Cancelled:
+                transaction.delivery_deadline = None
                 products_associated_with_transaction = TransactionProducts.query.filter_by(transaction_id=transaction.id).all()
                 for transaction_product in products_associated_with_transaction:
                     product = Products.query.get(transaction_product.product_id)

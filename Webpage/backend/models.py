@@ -445,14 +445,18 @@ class ProductPromotions(db.Model):
 
 class DeliveryMethods(db.Model):
     __tablename__ = 'delivery_methods'
-    __table_args__ = ({'schema': 'commerce'})
+    __table_args__ = (
+        CheckConstraint('fee >= 0', name='delivery_methods_fee'),
+        CheckConstraint('estimated_delivery_days > 0', name='delivery_methods_estimated_delivery_days_check'),
+        UniqueConstraint('name', name='delivery_methods_name_unique'),
+        {'schema': 'commerce'})
 
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     fee = db.Column(Numeric(10, 2), nullable=False, default=0.00)
     estimated_delivery_days = db.Column(db.Integer, nullable=False, default=3)
-    is_active = db.Column(db.Boolean, nullable=False, default=True) # istotne aby nie usówać metody , ponieważ może to zaszkodzić danym transakcji z użyciem tej metody płatności
+    is_active = db.Column(db.Boolean, nullable=False, default=True) # istotne aby nie usówać metody , ponieważ może to zaszkodzić danym transakcji z jej użyciem
     
 
     def to_json(self):
@@ -472,7 +476,11 @@ class DeliveryMethods(db.Model):
     
 class PaymentMethods (db.Model):
     __tablename__ = 'payment_methods'
-    __table_args__ = ({'schema': 'commerce'})
+    __table_args__ = (
+        CheckConstraint('fee >= 0', name='payment_methods_fee'),
+        UniqueConstraint('name', name='payment_methods_name_unique'),
+        {'schema': 'commerce'}
+    )
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
@@ -542,17 +550,6 @@ class CartProducts (db.Model):
             "quantity": self.quantity,
             "unit_price_with_discount": self.unit_price_with_discount
         }
-    """ # zmieniono metode wprowadzania danych. Teraz można wprowadzać dane ujemne aby usunąc produkt z listy
-    @staticmethod
-    def validate_quantity(quantity):
-        try:
-            quantity = int(quantity) # zabespieczenie przed wprowadzeniem string
-            if quantity < 1: # quantity musi być przynajmniej 1
-                return None
-            return quantity
-        except (TypeError, ValueError):
-            return None
-    """
         
 
 class TransactionStatus(enum.Enum):
@@ -567,20 +564,20 @@ class Transactions (db.Model):
     __table_args__ = ({'schema': 'commerce'})
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_management.users.id', ondelete='SET NULL'), nullable=False)
     total_transaction_value = db.Column(Numeric(10, 2), nullable=False, default=0.00)
     billing_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_addresses.id', ondelete='SET NULL'), nullable=True)
     shipping_address_id = db.Column(db.Integer, db.ForeignKey('user_management.users_addresses.id', ondelete='SET NULL'), nullable=True)
-    billing_address_data = db.Column(JSONB, nullable=False) # rozwiązanie przehowuje słownik z adresem wykożystanym w tranzakcji. W celach historycznych i audytowych
-    shipping_address_data = db.Column(JSONB, nullable=False) ## /\
+    billing_address_data = db.Column(JSONB, nullable=False, default={}) # rozwiązanie przehowuje słownik z adresem wykożystanym w tranzakcji. W celach historycznych i audytowych
+    shipping_address_data = db.Column(JSONB, nullable=False, default={}) ## /\
     status = db.Column(
         db.Enum(TransactionStatus, name='transaction_status', schema='commerce'),
         nullable=False,
         default=TransactionStatus.Pending
     )
-    delivery_method_id = db.Column(db.Integer, db.ForeignKey('commerce.delivery_methods.id', ondelete='CASCADE'), nullable=False)
-    payment_method_id = db.Column(db.Integer, db.ForeignKey('commerce.payment_methods.id', ondelete='CASCADE'), nullable=False)
-    delivery_deadline = db.Column(db.Date)
+    delivery_method_id = db.Column(db.Integer, db.ForeignKey('commerce.delivery_methods.id', ondelete='RESTRICT '), nullable=False)
+    payment_method_id = db.Column(db.Integer, db.ForeignKey('commerce.payment_methods.id', ondelete='RESTRICT '), nullable=False)
+    delivery_deadline = db.Column(db.Date, nullable=True)
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -607,7 +604,7 @@ class Transactions (db.Model):
             "status": self.status.value,
             "delivery_method": self.delivery_method.name,
             "payment_method": self.payment_method.name,
-            "delivery_deadline": self.delivery_deadline,
+            "delivery_deadline": self.delivery_deadline.strftime("%Y-%m-%d") if self.delivery_deadline else None,
             "notes": self.notes,
             "created_at": self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
             "updated_at": self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None,
