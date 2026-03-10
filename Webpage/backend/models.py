@@ -330,7 +330,7 @@ class AttributeWeights(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     attribute_id = db.Column(db.Integer, db.ForeignKey('catalog.attributes.id', ondelete='CASCADE'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('catalog.categories.id', ondelete='CASCADE'), nullable=False)
-    weight = db.Column(Numeric(3, 2), nullable=False, default=1.00)
+    weight = db.Column(Numeric(3, 2), nullable=False)
 
     def to_json(self):
         return {

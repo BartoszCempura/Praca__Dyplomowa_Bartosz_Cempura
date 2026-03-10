@@ -16,18 +16,15 @@ function TopProducts() {
   const CARD_WIDTH = 320;   // w-96 = 384px
   const GAP = 40;  // gap-10 = 40px
   
-
-  // ---- LOAD PRODUCTS ----
   useEffect(() => {
     async function load() {
       const data = await getTopProducts();
       setProducts(data.topProducts || []);
-      setOffset(0); // reset offset on load
+      setOffset(0); 
     }
     load();
   }, []);
 
-  // ---- SCROLL BUTTONS LOGIC ----
   const next = () => {
     if (!canScrollNext) return;
     const scrollAmount = (CARD_WIDTH + GAP) * CARDS_TO_SHOW;
@@ -47,7 +44,6 @@ function TopProducts() {
     });
   };
 
-  // ---- BUTTON DISABLE LOGIC ----
   useEffect(() => {
     function checkScroll() {
       if (!containerRef.current || !trackRef.current) return;
@@ -55,10 +51,8 @@ function TopProducts() {
       const containerWidth = containerRef.current.offsetWidth;
       const trackWidth = trackRef.current.scrollWidth;
 
-      // Can scroll left?
       setCanScrollPrev(offset < 0);
 
-      // Can scroll right?
       setCanScrollNext(Math.abs(offset) + containerWidth < trackWidth  - 1);
     }
 

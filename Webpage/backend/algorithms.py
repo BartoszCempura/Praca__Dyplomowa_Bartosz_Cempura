@@ -41,7 +41,7 @@ def get_top_products():
             )
         ).label('score')
 
-        # z UserProductInteractions pobieral tylko product_id i wartość wagi dla typu interakcji
+        # z UserProductInteractions pobiera tylko product_id i wartość wagi dla typu interakcji
         # filtrowanie interakcji z ostatniego tygodnia
         # grupuje wyniki po product_id
         # sortuje wyniki malejąco według sumy wartości wag

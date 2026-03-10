@@ -101,7 +101,7 @@ function Home() {
             <h1 className="text-4xl font-bold bg-[linear-gradient(to_right,#06b6d4_0%,#67e8f9_50%,#f59e0b_55%,#f59e0b_100%)] bg-clip-text text-transparent">Bestseller</h1>
           </div>
           <div className="bg-base-100 p-4 text-center">
-            <h1 className="text-4xl font-bold">Top produkty tego miesiąca</h1>
+            <h1 className="text-4xl font-bold">Top produkty tego tygodnia</h1>
           </div>
       </div>
       <div className="container grid grid-cols-[30%_70%] items-center mx-auto my-10">

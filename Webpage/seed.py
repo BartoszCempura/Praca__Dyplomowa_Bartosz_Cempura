@@ -994,7 +994,7 @@ def seed_transactions():
             "status": "Pending",
             "delivery_method_id": 1,
             "payment_method_id": 4,
-            "delivery_deadline": "2026-02-13",
+            "delivery_deadline": None,
             "notes": "Proszę zadzwonić pod numer 2 domofonu ",
             "created_at": "2026-02-11 13:42:44.592662+01",
             "updated_at": "2026-02-11 13:42:44.592662+01",

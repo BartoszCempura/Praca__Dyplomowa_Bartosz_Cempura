@@ -56,7 +56,7 @@ def update_accesory_weight():
             for pair in all_product_accesory_relations:
                 pair.weight = 0.01
             db.session.commit()
-            # dla obsługi zmian wprowadzanych przez admina warto by dodać mechanizm wykluczający zerowanie wag przez niego zdefiniowanych np poprzez dodatkową kolumnę w tabeli ProductAccessories
+            #TODO: dla obsługi zmian wprowadzanych przez admina warto by dodać mechanizm wykluczający zerowanie wag przez niego zdefiniowanych np poprzez dodatkową kolumnę w tabeli ProductAccessories
 
             recent_transactions = Transactions.query.filter(
                 Transactions.created_at >= thirty_days_ago
