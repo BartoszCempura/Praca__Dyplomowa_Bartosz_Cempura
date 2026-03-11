@@ -77,7 +77,7 @@ function CartPartOne() {
 
       <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900 mt-21">
         <div className="card-body items-center">
-            <div className="radial-progress text-amber-500 mb-2" style={{ "--value": 30 } /* as React.CSSProperties */ } aria-valuenow={30} role="progressbar">
+            <div className="radial-progress text-amber-500 mb-2" style={{ "--value": 30 } /* as React.CSS properties */ } aria-valuenow={30} role="progressbar">
                               30%
             </div>
             <span className="text-info mb-2">

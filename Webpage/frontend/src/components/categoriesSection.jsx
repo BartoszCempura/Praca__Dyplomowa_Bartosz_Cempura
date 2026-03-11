@@ -29,15 +29,17 @@ function Menu() {
         {category.children.length > 0 ? (
           <>
             {/* Przycisk rozwijający menu */}
-            <div tabIndex={0} role="button" className="btn btn-ghost m-2">
+            <button 
+            onClick={(e) => e.currentTarget.blur()}
+            className="btn btn-ghost m-2">
               {category.name}
-            </div>
+            </button>
 
             {/* Dropdown z podkategoriami */}
-            <ul tabIndex={-1} className="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-sm left-0">
+            <ul className="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-sm left-0">
               {category.children.map((child) => (
                 <li key={child.id}>
-                  <Link to={`/${child.slug}`} onClick={() => setSelectedCategorySlug(child.slug)}>
+                  <Link to={`/${child.slug}`} onClick={(e) => e.currentTarget.blur()}>
                     {child.name}
                   </Link>
                 </li>
@@ -46,7 +48,7 @@ function Menu() {
           </>
         ) : (
           // Kategoria bez podkategorii
-          <Link to={`/${category.slug}`} onClick={() => setSelectedCategorySlug(category.slug)} className="btn btn-ghost m-2">
+          <Link to={`/${category.slug}`} onClick={(e) => e.currentTarget.blur()} className="btn btn-ghost m-2">
             {category.name}
           </Link>
         )}

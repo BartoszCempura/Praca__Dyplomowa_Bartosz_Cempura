@@ -1,42 +1,30 @@
 import { useState, useEffect } from "react";
-import api from "../api/tokenHandler";
-
+import { getItem } from "../utils/tempCartStorage";
 
 export function useCart(productId) {
   const [isInCart, setIsInCart] = useState(false);
 
-  async function checkIfInCart(productId) {
-    try {
-      const response = await api.get("/commerce/carts");
-      const products = response.data.products || [];
-
-      let exists = false; // sprawdzamy czy produkt znajduje się juz w koszyku - wymagane dla mechanizmu wyłączania przycisku Dodaj do koszyka
-        for (let i = 0; i < products.length; i++) {
-          if (products[i].product_id === productId) {
-            exists = true;
-            break;
-          }
-        } 
-
-      setIsInCart(exists);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-
   useEffect(() => {
-    if (!productId) return; // hook działa TYLKO jeśli przekazano ID
+    if (!productId) return;
 
-    const handler = () => checkIfInCart(productId);
+    const check = () => {
+      const item = getItem(productId);
+      setIsInCart(!!item);
+    };
 
-    // pierwsze sprawdzenie
-    handler();
+    const handler = (e) => {
+      if (!e.detail) return;
 
-    // nasłuch na zmiany koszyka
+      if (e.detail.productId === productId) {
+        check();
+      }
+    };
+
+    check(); // pierwsze sprawdzenie
+
     window.addEventListener("cartChange", handler);
-
     return () => window.removeEventListener("cartChange", handler);
+
   }, [productId]);
 
   return isInCart;

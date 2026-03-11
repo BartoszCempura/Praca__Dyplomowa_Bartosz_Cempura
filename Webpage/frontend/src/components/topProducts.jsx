@@ -63,7 +63,7 @@ function TopProducts() {
   }, [products, offset]);
 
   return (
-    <div ref={containerRef} className="w-full overflow-hidden mx-auto">
+    <div ref={containerRef} className="w-full overflow-hidden mx-auto relative">
       <div className="flex flex-col justify-center items-center">
         <div className="relative w-full pl-8">
             {/* Pojemnik z produktami */}
@@ -85,7 +85,7 @@ function TopProducts() {
 
 
             {/* Przyciski nawigacji - absolute positioning */}
-            <div className="absolute left-1 right-1 top-1/2 flex -translate-y-1/2 transform justify-between pointer-events-none">
+            <div className="absolute -left-0 -right-0 top-1/2 flex -translate-y-1/2 transform justify-between pointer-events-none z-20">
               <button 
                 disabled={!canScrollPrev} 
                 onClick={prev} 

@@ -5,13 +5,13 @@ export function getCart() {
   return stored ? JSON.parse(stored) : {};
 }
 
-export function saveCart(cart) {
+export function saveCart(cart, productId = null) {
   if (Object.keys(cart).length === 0) {
     localStorage.removeItem(STORAGE_KEY);
   } else {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
   }
-  window.dispatchEvent(new Event("cartChange"));
+  window.dispatchEvent(new CustomEvent("cartChange", { detail: {productId}}));
 }
 
 export function saveCartSilent(cart) {
@@ -34,18 +34,18 @@ export function getItem(productId) { // pobiera jednen produkt z koszyka
 export function setItem(productId, data) { // ustawia/aktualizuje jeden produkt w koszyku
   const cart = getCart();
   cart[productId] = data;
-  saveCart(cart);
+  saveCart(cart, productId);
 }
 
 export function removeItem(productId) {
   const cart = getCart();
   delete cart[productId];
-  saveCart(cart);
+  saveCart(cart, productId);
 }
 
 export function clearCart() {
   localStorage.removeItem(STORAGE_KEY);
-  window.dispatchEvent(new Event("cartChange"));
+  window.dispatchEvent(new CustomEvent("cartChange", { detail: {productId: null} }));
 }
 
 export function updateQuantity(productId, change) { // pozwala na zmiane ilości produktu w koszyku - dodaje lub odejmuje
@@ -60,7 +60,7 @@ export function updateQuantity(productId, change) { // pozwala na zmiane ilości
   // ilości <= 0 - usuń produkt
   if (newQuantity <= 0) {
     delete cart[productId];
-    saveCart(cart);
+    saveCart(cart, productId);
     return;
   }
 
@@ -75,5 +75,5 @@ export function updateQuantity(productId, change) { // pozwala na zmiane ilości
     quantity_user: newQuantity,
   };
 
-  saveCart(cart);
+  saveCart(cart, productId);
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "./productCard";
 import api from "../api/tokenHandler";
+import TopProducts from "./topProducts";
 
 function SearchProducts() {
   const [searchParams] = useSearchParams();
@@ -41,8 +42,13 @@ function SearchProducts() {
               </ul>
             </div>
 
-            <div className="bg-base-100 p-4 text-center shadow-md">
-              <h1 className="text-4xl font-bold">Top produkty tego miesiąca</h1>
+            <div className="bg-base-100 p-4 text-center">
+              <h1 className="text-4xl font-bold">Top produkty tego tygodnia</h1>
+            </div>
+            <div className="container grid grid-cols-[15%_70%_15%] items-center mx-auto my-10">
+              <div></div>
+            <TopProducts/>
+              <div></div>
             </div>
           </div>
         )}
