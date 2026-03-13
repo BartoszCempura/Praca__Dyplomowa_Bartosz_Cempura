@@ -251,7 +251,7 @@ const CustomTooltip = ({ active, payload }) => {
 
   const daysWithSales = selectedProductData.filter(item => item.sold > 0).length;
   const weeklyAverage = daysWithSales > 0 ? selectedProductPurchaseCount / daysWithSales : 0;
-  
+
   return (
     <>
       {/*-----------------tytuł strony ------------------------*/}
@@ -589,7 +589,18 @@ const CustomTooltip = ({ active, payload }) => {
 
                                   {/* Addresses */}
                                   <div className="grid grid-cols-2 gap-5 text-sm mx-5">
-                                    <div className="flex justify-center items-center">
+                                    {JSON.stringify(transaction.shipping_address_data) === JSON.stringify(transaction.billing_address_data) ? (
+                                    <div className="flex justify-center items-center col-span-2">
+                                      <div className="text-center">
+                                        <p className="font-semibold">Adres wysyłki i rozliczeniowy:</p>
+                                        <p>{transaction.shipping_address_data.first_name} {transaction.shipping_address_data.last_name}</p>
+                                        <p>{transaction.shipping_address_data.street_name} {transaction.shipping_address_data.building_number}</p>
+                                        <p>{transaction.shipping_address_data.zip_code} {transaction.shipping_address_data.city}</p>
+                                      </div>
+                                    </div>
+                                    ) : (
+                                      <>
+                                      <div className="flex justify-center items-center">
                                       <div className="text-center">
                                         <p className="font-semibold">Adres wysyłki:</p>
                                         <p>{transaction.shipping_address_data.first_name} {transaction.shipping_address_data.last_name}</p>
@@ -605,6 +616,8 @@ const CustomTooltip = ({ active, payload }) => {
                                         <p>{transaction.billing_address_data.zip_code} {transaction.billing_address_data.city}</p>
                                       </div>
                                     </div>
+                                    </>
+                                    )}
                                   </div>
 
                                   <div className="divider mb-3"></div>

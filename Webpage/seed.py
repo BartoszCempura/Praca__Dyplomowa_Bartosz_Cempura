@@ -4,6 +4,8 @@ from datetime import datetime
 from sqlalchemy import text
 
 def reset_sequences():
+    db.session.execute(text("ALTER SEQUENCE user_management.users_id_seq RESTART WITH 1"))
+    db.session.execute(text("ALTER SEQUENCE user_management.users_addresses_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE catalog.categories_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE catalog.attributes_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE catalog.products_id_seq RESTART WITH 1"))
@@ -29,9 +31,131 @@ def reset_database():
     db.session.query(Categories).delete()
     db.session.query(AttributeWeights).delete()
     db.session.query(UserProductInteractions).delete()
+    db.session.query(UserAddress).delete()
+    db.session.query(User).delete()
     #db.session.query(PaymentMethods).delete()
     #db.session.query(DeliveryMethods).delete()
     db.session.commit()
+
+def seed_users():
+    added_count = 0
+    print("Dodawanie kont użytkowników...")
+    użytkownicy = [
+        {"login": "admin",
+        "password": "scrypt:32768:8:1$FOS7I9BzzJgvYnBl$a66809ae01bcfc05dbda1940801abe51ba4d2e09ee57908ebbb0035d97f2981e4cb9f4391d0e59d166d891233cf052440840c032325ecac8f10f0a748155f70f", 
+        "first_name": "admin", 
+        "last_name": "admin", 
+        "email": "admin@example.com", 
+        "phone_number": "663 127 479",
+        "created_at": "2025-10-03 14:45:55.917208+02",
+        "updated_at": "2026-02-22 19:03:13.492577+01",
+        "role": "admin"},
+        {"login": "Remiq",
+        "password": "scrypt:32768:8:1$Fec8sNsY6rbtlehw$231c053f489b85b34ab6e4f2696bb3619c51ddda29564d31b6c537747417ea2150527747ea9006bfd0667bae56469a2c64ab1d268a7992167c5675128a0d3d8f", 
+        "first_name": "Bartosz", 
+        "last_name": "Cempura", 
+        "email": "BartoszCem@gmail.com", 
+        "phone_number": "661 100 000",
+        "created_at": "2025-11-04 12:53:22.670588+01",
+        "updated_at": "2025-11-04 12:53:22.851297+01",
+        "role": "user"}
+    ]
+
+    for data in użytkownicy:
+        istnieje = User.query.filter_by(login=data["login"]).first()
+        if not istnieje:
+            new_user = User(
+                login=data["login"],
+                password=data["password"],
+                first_name=data["first_name"],
+                last_name=data["last_name"],
+                email=data["email"],
+                phone_number=data["phone_number"],
+                created_at=data["created_at"],
+                updated_at=data["updated_at"],
+                role=data["role"]
+            )
+            db.session.add(new_user)
+            added_count += 1
+    db.session.commit()
+    print(f"Dodano {added_count} nowych użytkowników.")
+
+def seed_user_adresses():
+    added_count = 0
+    print("Dodawanie adresów użytkowników ...")
+    user_adresses = [
+        {"user_id": 1,
+         "title": "Adres Mamy",
+         "company_name": None,
+         "first_name": "Antonina",
+         "last_name": "Rogalska",
+         "nip": None,
+         "street_name": "Strzemienna",
+         "building_number": "15",
+         "flat_number": None,
+         "zip_code": "26-603",
+         "city": "Radom",
+         "type": "Default"
+         },
+        {"user_id": 1,
+         "title": None,
+         "company_name": "Piekarnia Cukiernia Mochowo s. p. z.o.o.",
+         "first_name": None,
+         "last_name": None,
+         "nip": "774-285334-5",
+         "street_name": "Jana i Jędrzeja Śniadeckich",
+         "building_number": "20",
+         "flat_number": 10,
+         "zip_code": "00-656",
+         "city": "Warszawa",
+         "type": "Billing"
+         },
+        {"user_id": 1,
+         "title": "Teściu",
+         "company_name": None,
+         "first_name": "Waldemar",
+         "last_name": "Kobuszewski",
+         "nip": None,
+         "street_name": "Harcerska",
+         "building_number": "21",
+         "flat_number": 5,
+         "zip_code": "26-604",
+         "city": "Radom",
+         "type": "Shipping"
+         },
+         {"user_id": 1,
+         "title": None,
+         "company_name": None,
+         "first_name": "Karolina",
+         "last_name": "Warda",
+         "nip": None,
+         "street_name": "Polna",
+         "building_number": "17",
+         "flat_number": 32,
+         "zip_code": "26-607",
+         "city": "Radom",
+         "type": "Shipping"
+         },
+         {"user_id": 2,
+         "title": "Dom",
+         "company_name": None,
+         "first_name": "Aleksander",
+         "last_name": "Kowalczyk",
+         "nip": None,
+         "street_name": "Ostateczna",
+         "building_number": "13",
+         "flat_number": 24,
+         "zip_code": "09-470",
+         "city": "Bodzanów",
+         "type": "Default"
+         },
+    ]
+    for data in user_adresses:
+            new_user_adresses = UserAddress(**data)
+            db.session.add(new_user_adresses)
+            added_count += 1
+    db.session.commit()
+    print(f"Dodano {added_count} nowych adresów użytkowników.")
 
 def seed_main_categories():
     added_count = 0
@@ -989,8 +1113,8 @@ def seed_transactions():
         {
             "user_id": 1,
             "total_transaction_value": 5276.24,
-            "billing_address_id": 46,
-            "shipping_address_id": 46,
+            "billing_address_id": 1,
+            "shipping_address_id": 1,
             "status": "Pending",
             "delivery_method_id": 1,
             "payment_method_id": 4,
@@ -999,7 +1123,7 @@ def seed_transactions():
             "created_at": "2026-02-11 13:42:44.592662+01",
             "updated_at": "2026-02-11 13:42:44.592662+01",
             "billing_address_data": {
-                "id": 46,
+                "id": 1,
                 "nip": None,
                 "city": "Radom",
                 "type": "Default",
@@ -1014,7 +1138,7 @@ def seed_transactions():
                 "building_number": "15"
             },
             "shipping_address_data": {
-                "id": 46,
+                "id": 1,
                 "nip": None,
                 "city": "Radom",
                 "type": "Default",
@@ -1032,8 +1156,8 @@ def seed_transactions():
         {
             "user_id": 2,
             "total_transaction_value": 271.74,
-            "billing_address_id": 52,
-            "shipping_address_id": 52,
+            "billing_address_id": 5,
+            "shipping_address_id": 5,
             "status": "Pending",
             "delivery_method_id": 1,
             "payment_method_id": 4,
@@ -1042,7 +1166,7 @@ def seed_transactions():
             "created_at": "2026-02-11 13:45:20.152394+01",
             "updated_at": "2026-02-11 13:45:20.152394+01",
             "billing_address_data": {
-                "id": 52,
+                "id": 5,
                 "nip": None,
                 "city": "Bodzanów",
                 "type": "Default",
@@ -1057,7 +1181,7 @@ def seed_transactions():
                 "building_number": "13"
             },
             "shipping_address_data": {
-                "id": 52,
+                "id": 5,
                 "nip": None,
                 "city": "Bodzanów",
                 "type": "Default",
@@ -1374,6 +1498,8 @@ def seed_database():
         reset_database()
         reset_sequences()
 
+        seed_users()
+        seed_user_adresses()
         seed_main_categories()
         seed_sub_categories()
         seed_attributes()
