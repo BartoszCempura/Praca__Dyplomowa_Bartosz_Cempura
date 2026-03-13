@@ -17,15 +17,39 @@ def clear_expired_carts():
     with app.app_context():
         try:
             from . import db
-            from .models import Carts
+            from .models import Carts, CartProducts, Products
+            from .utils import load_product_map
             
             print("clear_expired_carts job started")
             
             qualification_for_deletion = datetime.now(timezone.utc) - timedelta(hours=12)
             
-            deleted_count = Carts.query.filter(
+            deleted_count = 0
+            expired_carts = Carts.query.filter(
                 Carts.updated_at <= qualification_for_deletion
-            ).delete(synchronize_session=False)
+            ).all()
+            expired_carts_ids = [cart.id for cart in expired_carts]
+            cart_products = (
+                CartProducts.query.with_entities(CartProducts.product_id)
+                .filter(CartProducts.cart_id.in_(expired_carts_ids))
+                .all()
+            )
+
+            product_counts ={}
+            for (product_id,) in cart_products:
+                if product_id in product_counts:
+                    product_counts[product_id] += 1
+                else:
+                    product_counts[product_id] = 1
+
+            products_to_be_returned = load_product_map(product_counts.keys())
+
+            for product_id, count in product_counts.items():
+                products_to_be_returned[product_id].quantity += count
+            
+            for cart in expired_carts:
+                db.session.delete(cart)
+                deleted_count += 1
             
             # Zatwierdzamy zmiany
             db.session.commit()

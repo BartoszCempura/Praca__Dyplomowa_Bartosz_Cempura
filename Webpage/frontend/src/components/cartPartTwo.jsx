@@ -293,19 +293,14 @@ function CartPartTwo() {
                         <div className="flex flex-col items-center">
                             <div className={`grid gap-6 ${billingAdresses.length < 2 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2" }`}>
                                 {billingAdresses.map((address) => (
-                                    <div 
-                                        key={address.id}
-                                        className={`cursor-pointer rounded-lg hover:bg-base-200 ${
-                                            billingAdress?.id === address.id ? "ring-2 ring-amber-500" : ""
-                                        }`}
-                                        onClick={() => handleSelectBillingAdress(address.id)}
-                                    >
+                                    <div key={address.id} className={`cursor-pointer rounded-lg hover:bg-base-200 ${billingAdress?.id === address.id ? "ring-2 ring-amber-500" : ""}`}
+                                        onClick={() => handleSelectBillingAdress(address.id)}>
                                         <AddressCard variant="modal" {...address} />
                                     </div>
                                     ))}
                                     <div className="flex justify-center">
                                         <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
-                                                        Dodaj
+                                            Dodaj
                                         </button>
                                     </div>
                             </div>
@@ -314,19 +309,14 @@ function CartPartTwo() {
                             <div className="flex flex-col items-center">
                                 <div className={`grid gap-6 ${shippingAdresses.length < 2 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2" }`}>
                                 {shippingAdresses.map((address) => (
-                                    <div 
-                                        key={address.id}
-                                        className={`cursor-pointer rounded-lg hover:bg-base-200 ${
-                                            shippingAdress?.id === address.id ? "ring-2 ring-amber-500" : ""
-                                        }`}
-                                        onClick={() => handleSelectShippingAdress(address.id)}
-                                    >
+                                    <div key={address.id} className={`cursor-pointer rounded-lg hover:bg-base-200 ${shippingAdress?.id === address.id ? "ring-2 ring-amber-500" : ""}`}
+                                        onClick={() => handleSelectShippingAdress(address.id)}>
                                         <AddressCard variant="modal" {...address} />
                                     </div>
                                     ))}
                                     <div className="flex justify-center">
                                         <button className="btn btn-custom btn-block" onClick={() => navigate('/dane-do-zamowien')}>
-                                                        Dodaj
+                                            Dodaj
                                         </button>
                                     </div>
                                 </div>

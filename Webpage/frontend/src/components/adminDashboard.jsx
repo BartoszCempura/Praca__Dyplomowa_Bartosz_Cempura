@@ -78,8 +78,6 @@ function AdminDashboard() {
 
       setHowManyPorchased(data.products_purchased_this_week)
 
-      setSelectedProductPurchaseCount
-
       setproductPurchaseHistory(data.product_purchase_history)
 
       if (data.product_purchase_history.length > 0) {
@@ -244,6 +242,16 @@ const CustomTooltip = ({ active, payload }) => {
     }
   });
 
+  let maxDailySold = 0;
+  for (let item of selectedProductData) {
+    if (item.sold > maxDailySold) {
+      maxDailySold = item.sold;
+    }
+  }
+
+  const daysWithSales = selectedProductData.filter(item => item.sold > 0).length;
+  const weeklyAverage = daysWithSales > 0 ? selectedProductPurchaseCount / daysWithSales : 0;
+  
   return (
     <>
       {/*-----------------tytuł strony ------------------------*/}
@@ -330,18 +338,29 @@ const CustomTooltip = ({ active, payload }) => {
                   <div className="grid grid-cols-3 gap-4 text-center mt-10">
                     <div className="stat">
                       <div className="stat-title">Najpopularniejszy</div>
-                      <div className="stat-value text-primary">{chartData[0].name} ( {chartData[0].score} )</div>
+                      <div className="stat-value text-primary break-words">
+                        {chartData[0].name} 
+                      </div>
+                      <div className="stat-value text-primary">
+                        ( {chartData[0].score} )
+                      </div>
                     </div>
                     <div className="stat">
                       <div className="stat-title">Najczęściej kupowany</div>
+                      <div className="stat-value text-secondary break-words">
+                        {mostPurchased.name} 
+                      </div>
                       <div className="stat-value text-secondary">
-                        {mostPurchased.name} ( {mostPurchased.purchase_count} )
+                        ( {mostPurchased.purchase_count} )
                       </div>
                     </div>
                     <div className="stat">
                       <div className="stat-title">Najczęściej oglądany</div>
+                      <div className="stat-value break-words">
+                        {topViewed.name} 
+                      </div>
                       <div className="stat-value">
-                        {topViewed.name} ( {topViewed.view_count} )
+                        ( {topViewed.view_count} )
                       </div>
                     </div>
                   </div>
@@ -392,7 +411,7 @@ const CustomTooltip = ({ active, payload }) => {
                       <ResponsiveContainer width="100%" aspect={2}>
                         <LineChart data={selectedProductData} margin={{ top: 15, right: 50, left: 0, bottom: 15}}>
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis heiht="auto" dataKey="date" dy={15}/>
+                          <XAxis dataKey="date" dy={15}/>
                           <YAxis width="auto" label={{ value: 'Ilość zakupów', angle: -90, position: 'insideLeft' }}/>
                           <Tooltip content={<CustomTooltip />} />
                           <Legend />
@@ -408,10 +427,18 @@ const CustomTooltip = ({ active, payload }) => {
                       </ResponsiveContainer>
                     </div>
 
-                    <div className="flex justify-center gap-4 text-center mt-10">
+                    <div className="grid grid-cols-3 justify-center gap-4 text-center mt-10">
                       <div className="stat">
                         <div className="stat-title">Ilość sprzedanych sztuk w przeciągu 7 dni</div>
                         <div className="stat-value text-primary">{selectedProductPurchaseCount}</div>
+                      </div>
+                      <div className="stat">
+                        <div className="stat-title">Najwięcej sprzedano pojedyńczego dnia</div>
+                        <div className="stat-value text-secondary">{maxDailySold}</div>
+                      </div>
+                      <div className="stat">
+                        <div className="stat-title">Średnia tygodniowa sprzedaż w dni z aktywną sprzedażą</div>
+                        <div className="stat-value">{weeklyAverage.toFixed(2)}</div>
                       </div>               
                     </div>
 
