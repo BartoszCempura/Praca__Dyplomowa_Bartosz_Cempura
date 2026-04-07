@@ -67,6 +67,14 @@ function PromotionSlider({ promotionId }) {
     return () => window.removeEventListener("resize", checkScroll);
   }, [products, offset]);
 
+  if (!products) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div ref={containerRef} className="container w-full overflow-hidden mx-auto">
       <div className="flex flex-col">

@@ -68,7 +68,7 @@ function AdminDashboard() {
       if (data.product_purchase_history.length > 0) {
         const firstProductId = data.product_purchase_history[0].id;
         setSelectedProductId(firstProductId);
-        loadProductChartData(firstProductId);
+        loadProductChartData(firstProductId, data.product_purchase_history);
 
         const firstProductSaleData = data.products_purchased_this_week.find(p =>p.id === firstProductId);
         setSelectedProductPurchaseCount(firstProductSaleData?.purchase_count || 0);
@@ -168,15 +168,14 @@ const CustomTooltip = ({ active, payload }) => {
     setSelectedProductPurchaseCount(purchaseData?.purchase_count || 0);
   }
 
-  const loadProductChartData = async (productId) => {
+  const loadProductChartData = async (productId, historyData = null) => {
     setLoading(true);
-  try {
-    const productHistory = [];
-    for (let item of productPurchaseHistory) {
-      if (item.id === parseInt(productId)) {
-        productHistory.push(item);
-      }
-    }
+    try {
+      const data = historyData ?? productPurchaseHistory;
+
+      const productHistory = data
+        .filter(item => item.id === parseInt(productId))
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
 
     if (!productHistory.length) {
       setSelectedProductData([]);
