@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Tworzymy instancję axios z baseURL "/api", żeby korzystała z proxy Vite
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
