@@ -289,7 +289,7 @@ def init_scheduler(app):
             id='calculate_product_similarity_job',
             func=calculate_product_similarity,
             trigger='interval',   # 'interval' zamiast 'cron', bo chodzi o odstęp czasu
-            minutes=5,
+            minutes=1,              # co 1 minutę (do testów, potem można zmienić na np. co 24h)
             replace_existing=True,
             max_instances=1
         )

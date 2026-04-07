@@ -1,0 +1,4 @@
+pg_restore -v --no-owner --no-acl -d "postgresql://neondb_owner:npg_8ePArWaKMit6@ep-lively-term-amhod68h.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require" "C:\Repozytorium Programy\Praca__Dyplomowa_Bartosz_Cempura\Additional Files\shopdb_backup.backup"
+
+
+pg_dump -h localhost -d shopdb -U postgres -p 5432 -Fc > "D:\shopdb_backup.backup"
