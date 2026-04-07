@@ -82,15 +82,17 @@ function ProductCard({ id, name, slug, category_slug, image, unit_price, unit_pr
           <Link to={`/product/${slug}`}>
             <h2 className="card-title text-base">{name}</h2>
           </Link>
+
+          <div className="flex-1" />
           
           {/* Cena */}
           {unit_price_with_discount !== unit_price ? (
-            <div className="flex flex-col gap-1 mb-1">
-              <span className="text-lg font-semibold text-amber-500">{unit_price_with_discount} PLN</span>
-              <span className="line-through text-sm text-gray-500">{unit_price} PLN</span>
+            <div className="flex gap-1 mb-1 mt-auto">
+              <span className="text-md font-semibold text-amber-500">{unit_price_with_discount} PLN</span>
+              <span className="line-through text-xs text-gray-500">{unit_price} PLN</span>
             </div>
           ) : (
-            <span className="text-lg font-semibold">{unit_price_with_discount} PLN</span>
+            <span className="text-lg font-semibold mt-auto">{unit_price_with_discount} PLN</span>
           )}
           
           {/* Przycisk */}

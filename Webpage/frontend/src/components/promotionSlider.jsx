@@ -70,12 +70,8 @@ function PromotionSlider({ promotionId }) {
   return (
     <div ref={containerRef} className="container w-full overflow-hidden mx-auto">
       <div className="flex flex-col">
-        <div className="relative w-full">
-          <h1 className="text-4xl font-bold text-center">
-            Produkty w promocyjnych cenach
-          </h1>
+        <div className="flex justify-center items-center w-full gap-10">  
           {/* Przyciski nawigacji - absolute positioning */}
-            <div className="absolute left-1 right-1 top-1/2 flex -translate-y-1/2 transform justify-around pointer-events-none">
               <button 
                 disabled={!canScrollPrev} 
                 onClick={prev} 
@@ -83,6 +79,9 @@ function PromotionSlider({ promotionId }) {
               >
                 ❮
               </button>
+              <h1 className="text-4xl font-bold text-center">
+                Produkty w promocyjnych cenach
+              </h1>
               <button 
                 disabled={!canScrollNext} 
                 onClick={next} 
@@ -90,7 +89,6 @@ function PromotionSlider({ promotionId }) {
               >
                 ❯
               </button>
-            </div>
         </div>
             {/* Pojemnik z produktami */}
             <div
