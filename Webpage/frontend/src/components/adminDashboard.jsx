@@ -49,21 +49,6 @@ function AdminDashboard() {
     try {
       const data = await getTopProducts();
       
-      if (data.topProducts.length === 0) {
-        setChartData([]);
-        return;
-      }
-
-      if (data.product_purchase_history.length === 0) {
-        setproductPurchaseHistory([]);
-        return;
-      }
-
-      if (data.products_purchased_this_week.length === 0) {
-        setHowManyPorchased([]);
-        return;
-      }
-      
       const rechartsData = data.topProducts.map((product) => ({
         name: product.name,
         score: parseFloat(product.popularity_score || 0),
