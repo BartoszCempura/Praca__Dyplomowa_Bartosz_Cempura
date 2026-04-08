@@ -25,7 +25,7 @@ function Bestseller() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col justify-center items-center">
+      <div className="flex flex-col justify-center items-center py-10">
           <span className="loading loading-bars loading-lg text-primary"></span>
           <p className="text-gray-500">Please wait...</p>
       </div>
