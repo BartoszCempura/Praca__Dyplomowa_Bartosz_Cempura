@@ -311,6 +311,7 @@ const CustomTooltip = ({ active, payload }) => {
               {loadingPopularity ? (
                 <div className="flex justify-center items-center h-96">
                   <span className="loading loading-bars loading-lg text-primary"></span>
+                  <p className="text-gray-500">Please wait...</p>
                 </div>
               ) : chartData.length === 0 ? (
                 <div className="text-center py-20">
@@ -397,6 +398,7 @@ const CustomTooltip = ({ active, payload }) => {
               {loadingSales ? (
                 <div className="flex justify-center items-center h-96">
                   <span className="loading loading-bars loading-lg text-primary"></span>
+                  <p className="text-gray-500">Please wait...</p>
                 </div>
               ) : productPurchaseHistory.length === 0 ? (
                 <div className="text-center py-20">
@@ -503,7 +505,8 @@ const CustomTooltip = ({ active, payload }) => {
               {/* Loading */}
               {loadingTransactions ? (
                 <div className="flex justify-center py-20">
-                  <span className="loading loading-spinner loading-lg"></span>
+                  <span className="loading loading-bars loading-lg text-primary"></span>
+                  <p className="text-gray-500">Please wait...</p>
                 </div>
               ) : (
                 <>

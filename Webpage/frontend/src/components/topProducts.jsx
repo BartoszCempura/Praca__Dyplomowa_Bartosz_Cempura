@@ -75,9 +75,10 @@ function TopProducts() {
 
    if (isLoading) {
     return (
-      <div className="text-center py-10">
-        <p className="text-gray-500">Loading...</p>
-      </div>
+        <div className="flex flex-col justify-center items-center">
+            <span className="loading loading-bars loading-lg text-primary"></span>
+            <p className="text-gray-500">Please wait...</p>
+        </div>  
     );
   }
 
@@ -86,6 +87,9 @@ function TopProducts() {
       <div className="text-center py-10">
         <p className="text-red-500">
           Error: {error?.message || "Nie udało się pobrać danych"}
+        </p>
+        <p className="text-red-500">
+          Please refresh the page
         </p>
       </div>
     );
