@@ -309,7 +309,7 @@ const CustomTooltip = ({ active, payload }) => {
             <div className="flex flex-col gap-6 p-20">
               {/* Loading */}
               {loadingPopularity ? (
-                <div className="flex justify-center items-center h-96">
+                <div className="flex flex-col justify-center items-center h-96">
                   <span className="loading loading-bars loading-lg text-primary"></span>
                   <p className="text-gray-500">Please wait...</p>
                 </div>
@@ -396,7 +396,7 @@ const CustomTooltip = ({ active, payload }) => {
               </div>
               {/* Loading */}
               {loadingSales ? (
-                <div className="flex justify-center items-center h-96">
+                <div className="flex flex-col justify-center items-center h-96">
                   <span className="loading loading-bars loading-lg text-primary"></span>
                   <p className="text-gray-500">Please wait...</p>
                 </div>
@@ -504,7 +504,7 @@ const CustomTooltip = ({ active, payload }) => {
 
               {/* Loading */}
               {loadingTransactions ? (
-                <div className="flex justify-center py-20">
+                <div className="flex flex-col justify-center py-20">
                   <span className="loading loading-bars loading-lg text-primary"></span>
                   <p className="text-gray-500">Please wait...</p>
                 </div>
