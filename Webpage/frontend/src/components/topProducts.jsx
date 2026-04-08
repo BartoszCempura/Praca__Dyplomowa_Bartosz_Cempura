@@ -4,6 +4,8 @@ import ProductCard from "./productCard";
 
 function TopProducts() {
   const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [offset, setOffset] = useState(0);
 
   const trackRef = useRef(null);
@@ -18,9 +20,18 @@ function TopProducts() {
   
   useEffect(() => {
     async function load() {
-      const data = await getTopProducts();
-      setProducts(data.topProducts || []);
-      setOffset(0); 
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await getTopProducts();
+        setProducts(data.topProducts || []);
+      } catch (err) {
+        setError(err);
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
+        setOffset(0);
+      }
     }
     load();
   }, []);
@@ -62,7 +73,7 @@ function TopProducts() {
     return () => window.removeEventListener("resize", checkScroll);
   }, [products, offset]);
 
-  if (!products) {
+   if (isLoading) {
     return (
       <div className="text-center py-10">
         <p className="text-gray-500">Loading...</p>
@@ -70,14 +81,53 @@ function TopProducts() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-red-500">
+          Error: {error?.message || "Nie udało się pobrać danych"}
+        </p>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-gray-500">Brak zarejestrowanych interakcji.</p>
+      </div>
+    );
+  }
+ 
   return (
     <div ref={containerRef} className="w-full overflow-hidden mx-auto relative">
       <div className="flex flex-col justify-center items-center">
         <div className="relative w-full pl-8">
+            {/* Przyciski nawigacji - absolute positioning */}
+
+            <div className="flex justify-center items-center w-full gap-10 mb-10">
+              <button 
+                disabled={!canScrollPrev} 
+                onClick={prev} 
+                className="btn btn-circle pointer-events-auto shadow-sm hover:shadow-amber-500 transition-shadow duration-100"
+              >
+                ❮
+              </button>
+
+              <h1 className="text-4xl font-bold">Top produkty tego tygodnia</h1>
+          
+              <button 
+                disabled={!canScrollNext} 
+                onClick={next} 
+                className="btn btn-circle pointer-events-auto shadow-sm hover:shadow-amber-500 transition-shadow duration-100"
+              >
+                ❯
+              </button>
+            </div>
             {/* Pojemnik z produktami */}
             <div
               ref={trackRef}
-              className="grid grid-rows-2 transition-transform duration-500 ease-in-out"
+              className="grid grid-rows-2 transition-transform duration-500 ease-in-out ml-5"
               style={{ 
                 transform: `translate3d(${offset}px, 0, 0)`,
                 gridAutoFlow: 'column',
@@ -89,25 +139,6 @@ function TopProducts() {
               {products.map((p) => (
                 <ProductCard key={p.id} id={p.id} variant="topProducts" {...p} />
               ))}
-            </div>
-
-
-            {/* Przyciski nawigacji - absolute positioning */}
-            <div className="absolute -left-0 -right-0 top-1/2 flex -translate-y-1/2 transform justify-between pointer-events-none z-20">
-              <button 
-                disabled={!canScrollPrev} 
-                onClick={prev} 
-                className="btn btn-circle pointer-events-auto shadow-sm hover:shadow-amber-500 transition-shadow duration-100"
-              >
-                ❮
-              </button>
-              <button 
-                disabled={!canScrollNext} 
-                onClick={next} 
-                className="btn btn-circle pointer-events-auto shadow-sm hover:shadow-amber-500 transition-shadow duration-100"
-              >
-                ❯
-              </button>
             </div>
           </div>
 

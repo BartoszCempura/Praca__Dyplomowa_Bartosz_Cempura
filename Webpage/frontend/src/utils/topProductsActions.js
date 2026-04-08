@@ -8,9 +8,7 @@ let cache = {
 };
 
 async function fetchAndUpdateCache() {
-  try {
     const response = await api.get("/algorithms/top-products");
-    
     cache.data = {
       topProducts: response.data.top_products || [],
       mostPurchased: response.data.most_purchased_product || null,
@@ -19,10 +17,7 @@ async function fetchAndUpdateCache() {
       mostViewed: response.data.top_viewed_product || null
     };
     cache.timestamp = Date.now();
-
-  } catch (err) {
-    console.error(err);
-  }
+    return cache.data;
 }
 
 // Uruchamia się automatycznie co godzinę gdy moduł jest załadowany
@@ -38,12 +33,6 @@ export async function getTopProducts() {
   }
 
   // Cache pusty (pierwsze uruchomienie) — pobierz od razu
-  await fetchAndUpdateCache();
-  return cache.data ?? {
-    topProducts: [],
-    mostPurchased: null,
-    product_purchase_history: [],
-    products_purchased_this_week: [],
-    mostViewed: null
-  };
+  return await fetchAndUpdateCache();
+
 }
