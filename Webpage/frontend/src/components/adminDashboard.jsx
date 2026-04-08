@@ -5,7 +5,9 @@ import { getTransactions, setTransactionStatus } from "../utils/transactionsActi
 
 function AdminDashboard() {
   const [kokpitSection, setKokpitSection ] = useState("products_popularity");
-  const [loading, setLoading] = useState(false);
+  const [loadingPopularity, setLoadingPopularity] = useState(false);
+  const [loadingSales, setLoadingSales] = useState(false);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   const [chartData, setChartData] = useState([]);
 
@@ -38,23 +40,24 @@ function AdminDashboard() {
 
   // operacje z użyciem algorytmu popularności
   useEffect(() => {
-    if (kokpitSection === "products_popularity" || kokpitSection === "sales_list") {
-      loadChartData();
+    if (kokpitSection === "products_popularity") {
+      loadPopularityChartData();
+    } else if (kokpitSection === "sales_list") {
+      loadSalesChartData();
     }
   }, [kokpitSection]);
 
-  const loadChartData = async () => {
-    setLoading(true);
+  const loadPopularityChartData = async () => {
+    setLoadingPopularity(true);
     
     try {
       const data = await getTopProducts();
-      
+ 
       const rechartsData = data.topProducts.map((product) => ({
         name: product.name,
         score: parseFloat(product.popularity_score || 0),
         id: product.id
       }));
-
       setChartData(rechartsData);
 
       setTopViewed(data.mostViewed)
@@ -62,7 +65,22 @@ function AdminDashboard() {
       setMoustPurchased(data.mostPurchased)
 
       setHowManyPorchased(data.products_purchased_this_week)
+      
+    } catch (err) {
+      console.error(err);
+      setChartData([]);
+    } finally {
+      setLoadingPopularity(false);
+    }
+  };
 
+
+  const loadSalesChartData = async () => {
+    setLoadingSales(true);
+    
+    try {
+      const data = await getTopProducts();
+      
       setproductPurchaseHistory(data.product_purchase_history)
 
       if (data.product_purchase_history.length > 0) {
@@ -73,13 +91,12 @@ function AdminDashboard() {
         const firstProductSaleData = data.products_purchased_this_week.find(p =>p.id === firstProductId);
         setSelectedProductPurchaseCount(firstProductSaleData?.purchase_count || 0);
       }
-      
+
     } catch (err) {
       console.error(err);
-      setChartData([]);
       setproductPurchaseHistory([]);
     } finally {
-      setLoading(false);
+      setLoadingSales(false);
     }
   };
 
@@ -117,7 +134,7 @@ const CustomTooltip = ({ active, payload }) => {
     }, [filters]);
 
   const loadTransactions = async () => {
-      setLoading(true);
+      setLoadingTransactions(true);
       
       try {
         const data = await getTransactions(filters);
@@ -134,7 +151,7 @@ const CustomTooltip = ({ active, payload }) => {
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        setLoadingTransactions(false);
       }
     };
 
@@ -169,7 +186,7 @@ const CustomTooltip = ({ active, payload }) => {
   }
 
   const loadProductChartData = async (productId, historyData = null) => {
-    setLoading(true);
+    setLoadingSales(true);
     try {
       const data = historyData ?? productPurchaseHistory;
 
@@ -213,7 +230,7 @@ const CustomTooltip = ({ active, payload }) => {
       console.error(err);
       setSelectedProductData([]);
     } finally {
-      setLoading(false);
+      setLoadingSales(false);
     }
   };
 
@@ -291,22 +308,22 @@ const CustomTooltip = ({ active, payload }) => {
 
             <div className="flex flex-col gap-6 p-20">
               {/* Loading */}
-              {loading ? (
+              {loadingPopularity ? (
                 <div className="flex justify-center items-center h-96">
                   <span className="loading loading-bars loading-lg text-primary"></span>
                 </div>
               ) : chartData.length === 0 ? (
                 <div className="text-center py-20">
                   <p className="text-xl text-gray-500">Brak danych</p>
-                  <button onClick={loadChartData} className="btn btn-custom mt-4">
+                  <button onClick={loadPopularityChartData} className="btn btn-custom mt-4">
                     Odśwież
                   </button>
                 </div>
               ) : (
                 <>
                   {/* wykres */}
-                  <div className="w-full rounded-xl p-5 border">
-                    <ResponsiveContainer width="100%" aspect={2}> 
+                  <div className="w-full h-96 rounded-xl p-5 border">
+                    <ResponsiveContainer key={chartData.length} width="100%" height="100%"> 
                       <BarChart data={chartData}> 
                         <CartesianGrid strokeDasharray="3 3" vertical />
                         <XAxis  hide={true}/>
@@ -351,7 +368,7 @@ const CustomTooltip = ({ active, payload }) => {
 
                   {/* Przyciski */}
                   <div className="flex justify-center gap-4 pt-10 border-t">
-                    <button onClick={loadChartData} className="btn btn-custom">
+                    <button onClick={loadPopularityChartData} className="btn btn-custom">
                       Odśwież
                     </button>
                   </div>
@@ -377,22 +394,22 @@ const CustomTooltip = ({ active, payload }) => {
                   </select>
               </div>
               {/* Loading */}
-              {loading ? (
+              {loadingSales ? (
                 <div className="flex justify-center items-center h-96">
                   <span className="loading loading-bars loading-lg text-primary"></span>
                 </div>
               ) : productPurchaseHistory.length === 0 ? (
                 <div className="text-center py-20">
                   <p className="text-xl text-gray-500">Brak danych</p>
-                  <button onClick={loadChartData} className="btn btn-custom mt-4">
+                  <button onClick={loadSalesChartData} className="btn btn-custom mt-4">
                     Odśwież
                   </button>
                 </div>
               ) : (
                 <>
                   {/* wykres */}
-                    <div className="w-full rounded-xl p-5 border">
-                      <ResponsiveContainer width="100%" aspect={2}>
+                    <div className="w-full h-96 rounded-xl p-5 border">
+                      <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={selectedProductData} margin={{ top: 15, right: 50, left: 0, bottom: 15}}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="date" dy={15}/>
@@ -428,7 +445,7 @@ const CustomTooltip = ({ active, payload }) => {
 
                   {/* Przyciski */}
                   <div className="flex justify-center gap-4 pt-10 border-t">
-                    <button onClick={loadChartData} className="btn btn-custom">
+                    <button onClick={loadSalesChartData} className="btn btn-custom">
                       Odśwież
                     </button>
                   </div>
@@ -484,7 +501,7 @@ const CustomTooltip = ({ active, payload }) => {
               </div>
 
               {/* Loading */}
-              {loading ? (
+              {loadingTransactions ? (
                 <div className="flex justify-center py-20">
                   <span className="loading loading-spinner loading-lg"></span>
                 </div>

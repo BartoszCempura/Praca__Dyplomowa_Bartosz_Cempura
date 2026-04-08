@@ -20,6 +20,12 @@ async function fetchAndUpdateCache() {
     return cache.data;
 }
 
+export function invalidateCache() {
+  cache.data = null;
+  cache.timestamp = null;
+}
+
+window.addEventListener("loginStatusChange", invalidateCache);
 // Uruchamia się automatycznie co godzinę gdy moduł jest załadowany
 setInterval(fetchAndUpdateCache, CACHE_DURATION);
 
