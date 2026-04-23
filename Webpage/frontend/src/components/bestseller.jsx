@@ -54,9 +54,9 @@ function Bestseller() {
   }
 
   return (
-    <div className="bg-base-100 p-4 text-center">
+    <div className=" text-center mr-7">
       <h1 className="text-4xl font-bold bg-[linear-gradient(to_right,#06b6d4_0%,#67e8f9_50%,#f59e0b_55%,#f59e0b_100%)] bg-clip-text text-transparent mb-10">Bestseller</h1>
-      <div className="flex justify-center">
+      <div className="flex justify-start items-start">
         <ProductCard id={product.id} variant="bestseller" {...product} />
       </div>
     </div>

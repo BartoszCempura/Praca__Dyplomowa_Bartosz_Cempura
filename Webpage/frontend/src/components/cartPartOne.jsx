@@ -77,9 +77,15 @@ function CartPartOne() {
 
       <aside className="bg-base-200 p-4 rounded-lg shadow-md my-10 border-1 border-gray-900 mt-21">
         <div className="card-body items-center">
+          {products && products.length > 0 ? (
             <div className="radial-progress text-amber-500 mb-2" style={{ "--value": 30 } /* as React.CSS properties */ } aria-valuenow={30} role="progressbar">
                               30%
             </div>
+          ):( 
+            <div className="radial-progress text-amber-500 mb-2" style={{ "--value": 0 } /* as React.CSS properties */ } aria-valuenow={0} role="progressbar">
+                              0%
+            </div>
+          )}
             <span className="text-info mb-2">
               Wartość: {cartValue.toFixed(2)} zł
             </span>

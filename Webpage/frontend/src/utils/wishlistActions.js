@@ -35,7 +35,7 @@ export async function addToWishlist(id) {
   try {
     await api.post("/commerce/wishlists", {product_id: id});
      trackInteraction(id, 'AddToWishlist');
-    window.dispatchEvent(new Event("wishlistChange"));
+    window.dispatchEvent(new Event("WhishlistChange"));
   } catch (err) {
     console.error(err);
     if (err.response?.status === 401) {
@@ -50,7 +50,7 @@ export async function removeFromWishlist(id) {
 
     try {
         await api.delete(`/commerce/wishlists/${id}`);
-        window.dispatchEvent(new Event("wishlistChange"));
+        window.dispatchEvent(new Event("WhishlistChange"));
     } catch (err) {
         console.error(err);
         if (err.response?.status === 401) {

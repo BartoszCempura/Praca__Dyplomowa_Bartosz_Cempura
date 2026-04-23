@@ -215,7 +215,7 @@ if (variant === "topProducts") {
 
 if (variant === "bestseller") {
   return (
-    <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 relative mx-10 group"
+    <div className="card bg-base-200 shadow-md hover:shadow-black/40 transition-shadow duration-100 border border-gray-900 relative group"
     style={{ height: 'calc((96px * 2) + 24px)' }}>
         <figure className="overflow-hidden rounded-lg h-full bg-white">
           <Link to={`/product/${slug}`}>

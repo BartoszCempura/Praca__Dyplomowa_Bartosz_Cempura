@@ -77,7 +77,7 @@ def change_password():
 
     if not user:
         return jsonify({'error': 'Nie znaleziono użytkownika'}), 404
- 
+    
     if not data.get('old_password') or not data.get('new_password'):
         return jsonify({'error': 'Oba pola są wymagane'}), 400
 
@@ -86,7 +86,7 @@ def change_password():
        
     if data.get('old_password') == data.get('new_password'):
         return jsonify({'error': 'Nowe hasło musi różnić się od starego hasła'}), 400
-
+    
     user.set_password(data['new_password'])
     db.session.commit()
 

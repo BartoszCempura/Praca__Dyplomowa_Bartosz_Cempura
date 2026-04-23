@@ -16,7 +16,7 @@ function TopProducts() {
 
   const CARDS_TO_SHOW = 3;  // Ilość kart do pokazania
   const CARD_WIDTH = 320;   // w-96 = 384px
-  const GAP = 40;  // gap-10 = 40px
+  const GAP = 47;  // gap-10 = 40px
   
   useEffect(() => {
     async function load() {
@@ -136,7 +136,7 @@ function TopProducts() {
                 transform: `translate3d(${offset}px, 0, 0)`,
                 gridAutoFlow: 'column',
                 gridAutoColumns: '320px', // Szerokość kolumny (w-96) 
-                columnGap: '40px', // gap-10
+                columnGap: GAP, // gap-10
                 rowGap: '24px'// gap-6
               }}
             >
