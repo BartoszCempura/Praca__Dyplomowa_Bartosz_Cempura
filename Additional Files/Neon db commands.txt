@@ -1,9 +1,0 @@
-Wszystko do wykonania w CMD:
-cd \Program Files\PostgreSQL\17\bin
-
-W NEON Connect to database jest hasło
-
-pg_restore -v --no-owner --no-acl -d "postgresql://neondb_owner:npg_x8pUvMi4ydqZ@ep-wild-king-ak9cwoke-pooler.c-3.us-west-2.aws.neon.tech/shopdb?sslmode=require&channel_binding=require" "C:\Repozytorium Programy\Praca__Dyplomowa_Bartosz_Cempura\Additional Files\shopdb_backup.backup"
-
-pg_dump -h localhost -d shopdb -U postgres -p 5432 -Fc > "D:\shopdb_backup.backup"
-
