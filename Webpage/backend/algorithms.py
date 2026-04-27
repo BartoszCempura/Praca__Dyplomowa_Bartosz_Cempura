@@ -27,8 +27,6 @@ def get_top_products():
         # Jaka data była 7 dni temuj
         one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
 
-#________________________________________Most popular products na podstawie interakcji________________________________________
-
         # przypisanie wartości wagi dla interakcji z produktem
         weighted_score = func.sum(
             case(
@@ -59,28 +57,6 @@ def get_top_products():
             .all()
         )
 
-        # pobieranie danych o produkcie. 
-        most_popular_products = []
-
-        most_popular_products_dict = load_product_map([product_id for product_id, _ in product_scores])
-
-        for product_id, score in product_scores:
-            product = most_popular_products_dict.get(product_id)
-
-            if not product:
-                continue
-
-            if user and user.role == 'admin':
-                product_data = product.to_json()
-                product_data['popularity_score'] = float(score)
-                most_popular_products.append(product_data)
-            else:
-                most_popular_products.append(product.to_json_user_view())
-
-
-#_______________________________________Obliczanie liczby zakupów produktu w ostatnim tygodniu_________________________________________
-
-
         purchase_calculation = (
             UserProductInteractions.query.with_entities(
                 UserProductInteractions.product_id,
@@ -92,32 +68,6 @@ def get_top_products():
         .group_by(UserProductInteractions.product_id)
         .order_by(desc('purchase_count'))
         ).all()
-   
-        number_of_product_purchases_dict = load_product_map([product_id for product_id, _ in purchase_calculation])
-
-        # produkt o największej liczbie zakupów w ostatnim tygodniu
-        top_purchase_product = None
-        top_purchase = purchase_calculation[0] if purchase_calculation else None
-
-        if top_purchase:
-            product_id, purchase_count = top_purchase
-            product = number_of_product_purchases_dict.get(product_id)
-
-            top_purchase_product =  product.to_json_user_view()
-            top_purchase_product['purchase_count'] = purchase_count
-
-        # lista produktów z liczbą zakupów w ostatnim tygodniu
-        products_purchased_this_week = []
-        for product_id, purchase_count in purchase_calculation:
-            product = number_of_product_purchases_dict.get(product_id)
-
-            if not product:
-                continue
-
-            single_product_data =  product.to_json_user_view()
-            single_product_data['purchase_count'] = purchase_count
-            products_purchased_this_week.append(single_product_data)
-
 
         daily_purchases = (
             UserProductInteractions.query.with_entities(
@@ -137,25 +87,6 @@ def get_top_products():
             .all()
         )
 
-        # lista produktów z liczbą zakupów w poszczególne dni w ostatnim tygodniu
-        product_purchase_history = []
-        product_purchase_history_dict = load_product_map([product_id for product_id, _, _ in daily_purchases])
-
-        for product_id, purchase_date, daily_count in daily_purchases:
-            product = product_purchase_history_dict.get(product_id)
-
-            if not product:
-                continue
-
-            product_data = product.to_json_user_view()
-            product_data['date'] = purchase_date.strftime('%Y-%m-%d')
-            product_data['count'] = daily_count
-            product_purchase_history.append(product_data)
-
-
-#_______________________________________Najczęściej oglądany produkt_________________________________________
-
-
         top_viewed = (
             UserProductInteractions.query.with_entities(
                 UserProductInteractions.product_id,
@@ -168,15 +99,91 @@ def get_top_products():
         .order_by(desc('view_count'))
         .first()
         )
+
+        all_product_ids = set()
+        all_product_ids.update(pid for pid, _ in product_scores)
+        all_product_ids.update(pid for pid, _ in purchase_calculation)
+        all_product_ids.update(pid for pid, _, _ in daily_purchases)
+        if top_viewed:
+            all_product_ids.add(top_viewed[0])
+
+        product_map = load_product_map(all_product_ids)
+
+#________________________________________Most popular products na podstawie interakcji________________________________________
+
+
+        most_popular_products = []
+
+        for product_id, score in product_scores:
+            product = product_map.get(product_id)
+
+            if not product:
+                continue
+
+            if user and user.role == 'admin':
+                product_data = product.to_json()
+                product_data['popularity_score'] = float(score)
+                most_popular_products.append(product_data)
+            else:
+                most_popular_products.append(product.to_json_user_view())
+
+
+#_______________________________________Obliczanie liczby zakupów produktu w ostatnim tygodniu_________________________________________
+
+
+        # produkt o największej liczbie zakupów w ostatnim tygodniu
+        top_purchase_product = None
+        top_purchase = purchase_calculation[0] if purchase_calculation else None
+
+        if top_purchase:
+            product_id, purchase_count = top_purchase
+            product = product_map.get(product_id)
+
+            top_purchase_product =  product.to_json_user_view()
+            top_purchase_product['purchase_count'] = purchase_count
+
+        # lista produktów z liczbą zakupów w ostatnim tygodniu
+        products_purchased_this_week = []
+        for product_id, purchase_count in purchase_calculation:
+            product = product_map.get(product_id)
+
+            if not product:
+                continue
+
+            single_product_data =  product.to_json_user_view()
+            single_product_data['purchase_count'] = purchase_count
+            products_purchased_this_week.append(single_product_data)
+
+    
+        # lista produktów z liczbą zakupów w poszczególne dni w ostatnim tygodniu
+        product_purchase_history = []
+
+        for product_id, purchase_date, daily_count in daily_purchases:
+            product = product_map.get(product_id)
+
+            if not product:
+                continue
+
+            product_data = product.to_json_user_view()
+            product_data['date'] = purchase_date.strftime('%Y-%m-%d')
+            product_data['count'] = daily_count
+            product_purchase_history.append(product_data)
+
+
+#_______________________________________Najczęściej oglądany produkt_________________________________________
+
         
         top_viewed_product = None
         if top_viewed:
             product_id, view_count = top_viewed
-            product = Products.query.get(product_id)
+            product = product_map.get(product_id)
 
             if product:
                 top_viewed_product =  product.to_json_user_view()
                 top_viewed_product['view_count'] = view_count
+
+
+#_________________________________________________Koniec_____________________________________________________
 
 
         return jsonify({

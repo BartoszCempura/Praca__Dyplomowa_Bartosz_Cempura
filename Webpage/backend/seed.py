@@ -1,9 +1,9 @@
-from backend import create_app, db
-from backend.models import *
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import text
 
 def reset_sequences():
+    from backend import db
+
     db.session.execute(text("ALTER SEQUENCE user_management.users_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE user_management.users_addresses_id_seq RESTART WITH 1"))
     db.session.execute(text("ALTER SEQUENCE catalog.categories_id_seq RESTART WITH 1"))
@@ -21,6 +21,9 @@ def reset_sequences():
 
 
 def reset_database():
+    from backend import db
+    from backend.models import User, UserAddress, Categories, Attributes, Products, ProductAttributes, Promotions, AttributeWeights, Transactions, TransactionProducts, UserProductInteractions, ProductPromotions
+
     db.session.query(ProductPromotions).delete()
     db.session.query(ProductAttributes).delete()
     db.session.query(TransactionProducts).delete()
@@ -38,6 +41,9 @@ def reset_database():
     db.session.commit()
 
 def seed_users():
+    from backend import db 
+    from backend.models import User
+
     added_count = 0
     print("Dodawanie kont użytkowników...")
     użytkownicy = [
@@ -81,6 +87,9 @@ def seed_users():
     print(f"Dodano {added_count} nowych użytkowników.")
 
 def seed_user_adresses():
+    from backend import db 
+    from backend.models import UserAddress
+
     added_count = 0
     print("Dodawanie adresów użytkowników ...")
     user_adresses = [
@@ -158,6 +167,9 @@ def seed_user_adresses():
     print(f"Dodano {added_count} nowych adresów użytkowników.")
 
 def seed_main_categories():
+    from backend import db 
+    from backend.models import Categories
+
     added_count = 0
     print("Dodawanie kategorii głównych...")
     main_categories = [
@@ -175,6 +187,9 @@ def seed_main_categories():
     print(f"Dodano {added_count} nowych kategorii głównych.")
 
 def seed_sub_categories():
+    from backend import db 
+    from backend.models import Categories
+
     added_count = 0
     print("Dodawanie podkategorii...")
     sub_categories = [
@@ -205,6 +220,9 @@ def seed_sub_categories():
     print(f"Dodano {added_count} nowych podkategorii.")
 
 def seed_attributes():
+    from backend import db 
+    from backend.models import Attributes
+
     added_count = 0
     print("Dodawanie atrybutów produktów...")
     attributes = [
@@ -246,6 +264,9 @@ def seed_attributes():
     print(f"Dodano {added_count} nowych atrybutów.")
 
 def seed_product_attributes():
+    from backend import db 
+    from backend.models import ProductAttributes
+
     print("Dodawanie atrybutów produktów...")
     product_attributes = [
         # Atrybuty dla laptopów
@@ -817,6 +838,9 @@ def seed_product_attributes():
     print(f"Proces dodawania atrybutów produktów zakończony.")
 
 def seed_products():
+    from backend import db 
+    from backend.models import Products
+
     added_count = 0
     print("Dodawanie produktów...")
     products = [
@@ -901,6 +925,9 @@ def seed_products():
     print(f"Dodano {added_count} nowych produktów.")
 
 def seed_attribute_weights():
+    from backend import db 
+    from backend.models import AttributeWeights
+
     added_count = 0
     print("Dodawanie wag atrybutów...")
     attributes_weights = [
@@ -1004,6 +1031,9 @@ def seed_attribute_weights():
     print(f"Ustawiono {added_count} nowych wag atrybutów.")
 
 def seed_delivery_methods(): ## nie używane obecnie
+    from backend import db 
+    from backend.models import DeliveryMethods
+
     added_count = 0
     print("Dodawanie metod dostawy...")
     delivery_methods = [
@@ -1021,6 +1051,9 @@ def seed_delivery_methods(): ## nie używane obecnie
     print(f"Dodano {added_count} nowych metod dostawy.")
 
 def seed_payment_methods(): ## nie używane obecnie
+    from backend import db 
+    from backend.models import PaymentMethods
+
     added_count = 0
     print("Dodawanie metod płatności...")
     payment_methods = [
@@ -1040,6 +1073,9 @@ def seed_payment_methods(): ## nie używane obecnie
     print(f"Dodano {added_count} nowych metod płatności.")  
 
 def seed_promotions():
+    from backend import db 
+    from backend.models import Promotions
+
     added_count = 0
     print("Dodawanie promocji...")
     promotions = [
@@ -1056,6 +1092,9 @@ def seed_promotions():
     print(f"Dodano {added_count} nowych promocji.")
 
 def seed_product_in_promoton():
+    from backend import db 
+    from backend.models import ProductPromotions, Products, Promotions
+
     added_count = 0
     print("Dodawanie produktów do promocji...")
     
@@ -1084,6 +1123,9 @@ def seed_product_in_promoton():
     print(f"Dodano {added_count} produktów do promocji.")
 
 def seed_transacion_products():
+    from backend import db 
+    from backend.models import TransactionProducts
+
     added_count = 0
     print("Dodawanie produktów do transakcji...")
 
@@ -1106,7 +1148,10 @@ def seed_transacion_products():
     db.session.commit()
     print(f"Dodano {added_count} produktów do transakcji.")
 
-def seed_transactions(): 
+def seed_transactions():
+    from backend import db 
+    from backend.models import Transactions
+
     added_count = 0
     print("Dodawanie transakcji...")
     transactions = [
@@ -1208,6 +1253,9 @@ def seed_transactions():
     print(f"Dodano {added_count} nowych transakcji.")
 
 def seed_product_interactions():
+    from backend import db 
+    from backend.models import UserProductInteractions
+
     added_count = 0
     print("Dodawanie interakcji z produktami...")
     
@@ -1490,8 +1538,8 @@ def seed_product_interactions():
     db.session.commit()
     print(f"Dodano {added_count} interakcji z produktami")
 
-def seed_database():
-    app = create_app()  # Utwórz instancję aplikacji
+def seed_database(app):
+  # Utwórz instancję aplikacji
     
     with app.app_context():
         print("Czyszczenie bazy danych...")

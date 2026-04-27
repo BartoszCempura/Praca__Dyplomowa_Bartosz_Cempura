@@ -1,18 +1,15 @@
 
 import os
 from flask_apscheduler import APScheduler
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from sqlalchemy import MetaData
 from datetime import datetime, timedelta, timezone
+from .seed import seed_database
 
 scheduler = APScheduler()
 
-def clear_expired_carts():
+def clear_expired_carts(app):
 
     """-------------------------------Job usówania koszyków nieaktualizowanych przez 3 dni-------------------------------"""
 
-    # Pobieramy instancję aplikacji z scheduler. Niezbędne aby uniknąć pętli importów
-    app = scheduler.app
     
     with app.app_context():
         try:
@@ -61,11 +58,9 @@ def clear_expired_carts():
             print(f"Error in clear_expired_carts job: {str(e)}")
             raise
 
-def update_accesory_weight():
+def update_accesory_weight(app):
 
     """-------------------------------Job aktualizowania wagi akcesorium na bazie sprzedaży z okresu 30 dni-------------------------------"""
-
-    app = scheduler.app
     
     with app.app_context():
         try:
@@ -126,11 +121,11 @@ def update_accesory_weight():
             print(f"Error in update_accesory_weight job: {str(e)}")
             raise
 
-def calculate_product_similarity():
+def calculate_product_similarity(app):
 
     """-------------------------------Job wykonujący obliczanie podobieństwa produktów dla systemu rekomendacji-------------------------------"""
-    app = scheduler.app
     
+
     with app.app_context():
         try:
             from . import db
@@ -228,6 +223,9 @@ def calculate_product_similarity():
             print(f"Error in calculate_product_similarity job: {str(e)}")
             raise
 
+def run_seed(app):
+    seed_database(app)
+
 def should_run_scheduler():
 
     """-------------------------------Metoda do określenia warunków uruchomienia procesu scheduler-------------------------------"""
@@ -235,9 +233,7 @@ def should_run_scheduler():
     ## w przypadku wprowadzenia konfiguracji dla środowiskaprodukcyjnego trzeba tu będzie dodać warunki np czy istnieje zmienna środowiskowa ENABLE_SCHEDULER=1
 
     if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
-        return False
-    
-        
+        return False  
     return True
 
 def init_scheduler(app):
@@ -247,12 +243,10 @@ def init_scheduler(app):
     if not should_run_scheduler():
         return
     
-    database_url = os.environ.get('DATABASE_URL')
-    metadata = MetaData(schema='utils')
     
     app.config.update({
         'SCHEDULER_JOBSTORES': {
-            'default': SQLAlchemyJobStore(url=database_url, metadata=metadata)
+            'default': {'type': 'memory'} 
         },
         'SCHEDULER_API_ENABLED': True,
         'SCHEDULER_TIMEZONE': 'UTC'
@@ -261,36 +255,46 @@ def init_scheduler(app):
     scheduler.init_app(app)
     scheduler.start()
 
-    scheduler.remove_all_jobs()
-    print("Removed all existing jobs from database")
-    
-    if not scheduler.get_job('clear_expired_carts_job'):
-        scheduler.add_job(
-            id='clear_expired_carts_job',
-            func=clear_expired_carts,
-            trigger='interval',
-            hours=12,
-            replace_existing=True,
-            max_instances=1
+    scheduler.add_job(
+        id='clear_expired_carts_job',
+        func=lambda:clear_expired_carts(app),
+        trigger='cron',
+        hour=1,
+        minute=30,
+        replace_existing=True,
+        max_instances=1
     )
 
-    if not scheduler.get_job('update_accesory_weight_job'):
-        scheduler.add_job(
-            id='update_accesory_weight_job',
-            func=update_accesory_weight,
-            trigger='interval',   # 'interval' zamiast 'cron', bo chodzi o odstęp czasu
-            days=30,              # co 30 dni
-            replace_existing=True,
-            max_instances=1
-        )
 
-    if not scheduler.get_job('calculate_product_similarity_job'):
-        scheduler.add_job(
-            id='calculate_product_similarity_job',
-            func=calculate_product_similarity,
-            trigger='interval',   # 'interval' zamiast 'cron', bo chodzi o odstęp czasu
-            minutes=1,              # co 1 minutę (do testów, potem można zmienić na np. co 24h)
-            replace_existing=True,
-            max_instances=1
-        )
+    scheduler.add_job(
+        id='update_accesory_weight_job',
+        func=lambda:update_accesory_weight(app),
+        trigger='interval',
+        days=30,
+        replace_existing=True,
+        max_instances=1
+    )
+
+
+    scheduler.add_job(
+        id='calculate_product_similarity_job',
+        func=lambda:calculate_product_similarity(app),
+        trigger='cron',
+        hour=1,
+        minute=20, 
+        replace_existing=True,
+        max_instances=1
+    )
+
+
+    scheduler.add_job(
+        id='seed_job',
+        func=lambda:run_seed(app),
+        trigger='cron',
+        hour=1,
+        minute=0,
+        replace_existing=True,
+        max_instances=1
+    )
+
 
