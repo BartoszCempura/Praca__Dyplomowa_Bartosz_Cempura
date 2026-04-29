@@ -45,7 +45,11 @@ def create_app():
 
     db.init_app(app) ## inicjalizujemy bazę danych z aplikacją Flask
     jwt.init_app(app) ## inicjalizujemy JWTManager z aplikacją Flask
-    CORS(app, supports_credentials=True) ## włączamy CORS, aby aplikacja mogła obsługiwać żądania z innych domen
+    frontend_url = os.environ.get("FRONTEND_URL") ## zmienna ustawiona na serwerze render
+    cors_orygins = ["http://localhost:5173"]
+    if frontend_url:
+        cors_orygins.append(frontend_url)
+    CORS(app, supports_credentials=True, origins=cors_orygins) ## włączamy CORS, aby aplikacja mogła obsługiwać żądania z innych domen
 
     from .auth import auth_bp ## importujemy moduł auth, który będzie zawierał endpointy związane z logowaniem i uwierzytelnianiem
     app.register_blueprint(auth_bp) 

@@ -1,12 +1,34 @@
 import Bestseller from "./bestseller";
 import PromotionSlider from "./promotionSlider";
 import TopProducts from "./topProducts";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef ,useState } from "react";
+import api from "../api/tokenHandler";
 
 function Home() {
 
   const sliderRef = useRef(null);
   const sliderIntervalRef = useRef(null);
+
+  const [backendReady, setBackendReady] = useState(false);
+  const [checkingBackend, setCheckingBackend] = useState(true);
+
+  useEffect(() => {
+    const wakeBackend = async () => {
+      console.log("Sprawdzam backend...");
+      
+      try {
+        const response =await api.get("/utils/health");
+        console.log("Health response:", response.data);
+        setBackendReady(true);
+      } catch (error) {
+        console.error("Health error:", error);
+        setBackendReady(false);
+      } finally {
+        setCheckingBackend(false);
+      }
+    }
+    wakeBackend();
+  }, []);
 
   const next = () => {
 
@@ -87,12 +109,18 @@ function Home() {
         </div>
       </div>
 
-      <div className="container grid grid-cols-[30%_70%] items-center mx-auto my-10">
-        <Bestseller/>
-        <TopProducts/>
-      </div>
-      
-      <PromotionSlider promotionId={1} />
+      {checkingBackend && <div>Budzenie backendu...</div>}
+
+      {!checkingBackend && backendReady && (
+        <>
+          <div className="container grid grid-cols-[30%_70%] items-center mx-auto my-10">
+            <Bestseller />
+            <TopProducts />
+          </div>
+
+          <PromotionSlider promotionId={1} />
+        </>
+      )}
 
     </>
   );
