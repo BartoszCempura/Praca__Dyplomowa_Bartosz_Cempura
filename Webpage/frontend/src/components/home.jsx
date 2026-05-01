@@ -1,6 +1,7 @@
 import Bestseller from "./bestseller";
 import PromotionSlider from "./promotionSlider";
 import TopProducts from "./topProducts";
+import BackendLoader from "./backendLoader";
 import { useEffect, useRef ,useState } from "react";
 import api from "../api/tokenHandler";
 
@@ -109,7 +110,7 @@ function Home() {
         </div>
       </div>
 
-      {checkingBackend && <div>Budzenie backendu...</div>}
+      {checkingBackend && <BackendLoader />}
 
       {!checkingBackend && backendReady && (
         <>
