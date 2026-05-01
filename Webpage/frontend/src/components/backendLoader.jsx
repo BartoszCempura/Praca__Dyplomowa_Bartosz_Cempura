@@ -12,7 +12,7 @@ function BackendLoader() {
     }, []);
 
     return ( 
-        <div className="flex items-center justify-center h-32 bg-white/80">
+        <div className="flex items-center justify-center h-32">
             <div className="text-center text-3xl font-semibold px-6 py-4">
                 Budzenie backendu{Array(dots).fill(".").join("")}
             </div>
