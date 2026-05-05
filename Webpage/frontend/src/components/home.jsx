@@ -83,7 +83,7 @@ function Home() {
       <div ref={sliderRef} className="carousel w-full h-100">
         <div className="carousel-item relative w-full">
           <img
-            src="https://img.daisyui.com/images/stock/photo-1625726411847-8cbb60cc71e6.webp"
+            src="/images/other/Promocja.png"
             className="w-full" />
           <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
             <button onClick={prev} className="btn btn-circle">❮</button>
@@ -101,7 +101,7 @@ function Home() {
         </div>
         <div className="carousel-item relative w-full">
           <img
-            src="https://img.daisyui.com/images/stock/photo-1665553365602-b2fb8e5d1707.webp"
+            src="/images/other/baner.png"
             className="w-full" />
           <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
             <button onClick={prev} className="btn btn-circle">❮</button>
