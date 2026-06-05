@@ -43,6 +43,6 @@ The backend is built using Flask with PostgreSQL and SQLAlchemy, while the front
 Task automation is implemented using APScheduler.
 
 The main goal of the project was to gain practical knowledge of how e-commerce systems are designed and developed, which was successfully achieved.
-
-<img width="1906" height="918" alt="Zrzut ekranu 2026-06-05 133142" src="https://github.com/user-attachments/assets/b84503e9-0449-4ff4-a3ef-69392bceeb0a" />
+</br>
+<img width="1906" height="918" align="center" alt="Zrzut ekranu 2026-06-05 133142" src="https://github.com/user-attachments/assets/b84503e9-0449-4ff4-a3ef-69392bceeb0a" />
 
