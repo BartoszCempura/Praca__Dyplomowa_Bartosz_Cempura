@@ -19,7 +19,9 @@ Automatyzacje działań zaimplementowano za pomocą rozwiązania APScheduler
 
 Głównym celem pracy było uzyskanie wiedzy o działaniu i procesie produkcji systemu e-commerce, co w mojej ocenie zostało w pełni spełnione.
 
----------------------------------------------------------------------EN--------------------------------------------------------------------------------------
+<div class="separator">
+  <span>EN</span>
+</div>
 
 This project is an engineering thesis concluding a 3.5-year degree in Computer Science, with a specialization in programming and databases.
 The project consists of a full e-commerce system, including an online store and an administrative panel.
