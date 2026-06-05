@@ -45,3 +45,26 @@ Task automation is implemented using APScheduler.
 The main goal of the project was to gain practical knowledge of how e-commerce systems are designed and developed, which was successfully achieved.
 
 <img width="1906" height="918" alt="Zrzut ekranu 2026-06-05 133142" src="https://github.com/user-attachments/assets/b84503e9-0449-4ff4-a3ef-69392bceeb0a" />
+
+<style>
+  .separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.separator::before,
+.separator::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #000;
+}
+
+.separator::before {
+  margin-right: 10px;
+}
+
+.separator::after {
+  margin-left: 10px;
+}
+</style>
