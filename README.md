@@ -1,3 +1,7 @@
+</br>
+<p align="center">-------------------------------------------------- PL --------------------------------------------------</p>
+</br>
+
 Projekt stanowi Pracę Inżynierską zamykającą 3.5 letni okres studiów z dziedziny Informatyki na specjalizacji programowanie i Bazy danych. 
 Jego przedmiotem jest pełen system e-commerce składający się z sklepu internetowego oraz panelu administracyjnego.
 
@@ -45,6 +49,6 @@ Task automation is implemented using APScheduler.
 The main goal of the project was to gain practical knowledge of how e-commerce systems are designed and developed, which was successfully achieved.
 
 </br>
-
-<img width="1906" height="918" align="center" alt="Zrzut ekranu 2026-06-05 133142" src="https://github.com/user-attachments/assets/b84503e9-0449-4ff4-a3ef-69392bceeb0a" />
-
+<div align=center">
+  <img width="1906" height="918" alt="Zrzut ekranu 2026-06-05 133142" src="https://github.com/user-attachments/assets/b84503e9-0449-4ff4-a3ef-69392bceeb0a" />
+</div>
