@@ -1,5 +1,5 @@
 </br>
-<p align="center">-------------------------------------------------------------------------- PL --------------------------------------------------------------------------</p>
+<p align="center">------------------------------------------------------------------- PL -------------------------------------------------------------------</p>
 </br>
 
 Projekt stanowi Pracę Inżynierską zamykającą 3.5 letni okres studiów z dziedziny Informatyki na specjalizacji programowanie i Bazy danych. 
@@ -24,7 +24,7 @@ Automatyzacje działań zaimplementowano za pomocą rozwiązania APScheduler
 Głównym celem pracy było uzyskanie wiedzy o działaniu i procesie produkcji systemu e-commerce, co w mojej ocenie zostało w pełni spełnione.
 
 </br>
-<p align="center">--------------------------------------------------------------------- EN ---------------------------------------------------------------------</p>
+<p align="center">------------------------------------------------------------------- EN -------------------------------------------------------------------</p>
 </br>
 
 This project is an engineering thesis concluding a 3.5-year degree in Computer Science, with a specialization in programming and databases.
